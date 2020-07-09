@@ -27,34 +27,34 @@ const char* getVertexShaderSource()
 {
     // For now, you use a string for your shader code, in the assignment, shaders will be stored in .glsl files
     return
-        "#version 330 core\n"
-        "layout (location = 0) in vec3 aPos;"
-        "layout (location = 1) in vec3 aColor;"
-        ""
-        "uniform mat4 worldMatrix;"
-        "uniform mat4 viewMatrix = mat4(1.0);" //default value for view matrix (identity)
-        "uniform mat4 projectionMatrix = mat4(1.0);"
-        ""
-        "out vec3 vertexColor;"
-        "void main()"
-        "{"
-        "   vertexColor = aColor;"
-        "   mat4 modelViewProjection = projectionMatrix * viewMatrix * worldMatrix;"
-        "   gl_Position = modelViewProjection * vec4(aPos.x, aPos.y, aPos.z, 1.0);"
-        "}";
+                "#version 330 core\n"
+                "layout (location = 0) in vec3 aPos;"
+                "layout (location = 1) in vec3 aColor;"
+                ""
+                "uniform mat4 worldMatrix;"
+                "uniform mat4 viewMatrix = mat4(1.0);" //default value for view matrix (identity)
+                "uniform mat4 projectionMatrix = mat4(1.0);"
+                ""
+                "out vec3 vertexColor;"
+                "void main()"
+                "{"
+                "   vertexColor = aColor;"
+                "   mat4 modelViewProjection = projectionMatrix * viewMatrix * worldMatrix;"
+                "   gl_Position = modelViewProjection * vec4(aPos.x, aPos.y, aPos.z, 1.0);"
+                "}";
 }
 
 
 const char* getFragmentShaderSource()
 {
     return
-        "#version 330 core\n"
-        "in vec3 vertexColor;"
-        "out vec4 FragColor;"
-        "void main()"
-        "{"
-        "   FragColor = vec4(vertexColor.r, vertexColor.g, vertexColor.b, 1.0f);"
-        "}";
+                "#version 330 core\n"
+                "in vec3 vertexColor;"
+                "out vec4 FragColor;"
+                "void main()"
+                "{"
+                "   FragColor = vec4(vertexColor.r, vertexColor.g, vertexColor.b, 1.0f);"
+                "}";
 }
 
 
@@ -69,7 +69,7 @@ int compileAndLinkShaders()
     const char* vertexShaderSource = getVertexShaderSource();
     glShaderSource(vertexShader, 1, &vertexShaderSource, NULL);
     glCompileShader(vertexShader);
-
+    
     // check for shader compile errors
     int success;
     char infoLog[512];
@@ -79,13 +79,13 @@ int compileAndLinkShaders()
         glGetShaderInfoLog(vertexShader, 512, NULL, infoLog);
         std::cerr << "ERROR::SHADER::VERTEX::COMPILATION_FAILED\n" << infoLog << std::endl;
     }
-
+    
     // fragment shader
     int fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
     const char* fragmentShaderSource = getFragmentShaderSource();
     glShaderSource(fragmentShader, 1, &fragmentShaderSource, NULL);
     glCompileShader(fragmentShader);
-
+    
     // check for shader compile errors
     glGetShaderiv(fragmentShader, GL_COMPILE_STATUS, &success);
     if (!success)
@@ -93,23 +93,23 @@ int compileAndLinkShaders()
         glGetShaderInfoLog(fragmentShader, 512, NULL, infoLog);
         std::cerr << "ERROR::SHADER::FRAGMENT::COMPILATION_FAILED\n" << infoLog << std::endl;
     }
-
+    
     // link shaders
     int shaderProgram = glCreateProgram();
     glAttachShader(shaderProgram, vertexShader);
     glAttachShader(shaderProgram, fragmentShader);
     glLinkProgram(shaderProgram);
-
+    
     // check for linking errors
     glGetProgramiv(shaderProgram, GL_LINK_STATUS, &success);
     if (!success) {
         glGetProgramInfoLog(shaderProgram, 512, NULL, infoLog);
         std::cerr << "ERROR::SHADER::PROGRAM::LINKING_FAILED\n" << infoLog << std::endl;
     }
-
+    
     glDeleteShader(vertexShader);
     glDeleteShader(fragmentShader);
-
+    
     return shaderProgram;
 }
 
@@ -312,182 +312,15 @@ void drawAxisLines(int shader, GLuint vao[], float gridUnit) {
     glBindVertexArray(vao[3]);
     axisMatrix = glm::mat4(1.0f);
     //axisMatrix = scale(axisMatrix, vec3(0.03f, 0.0f, 0.0f));
-    glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &axisMatrix[0][0]);
-    glDrawArrays(GL_LINES, 0, 2);
+   glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &axisMatrix[0][0]);
+   glDrawArrays(GL_LINES, 0, 2);
 }
 
-
-//TAQI'S MODEL ("Q4")
-void drawTaqiModel(int shaderProgram, GLuint vao[], vec3 position, vec3 rotation, vec3 scaling, string renderMode)
-{
-    GLenum mode;
-    if (renderMode == "GL_POINTS")
-    {
-        mode = GL_POINTS;
-    }
-    if (renderMode == "GL_LINES")
-    {
-        mode = GL_LINES;
-    }
-    if (renderMode == "GL_TRIANGLES")
-    {
-        mode = GL_TRIANGLES;
-    }
-
-
-    glBindVertexArray(vao[4]);
-    GLuint worldMatrixLocation = glGetUniformLocation(shaderProgram, "worldMatrix");
-
-
-    //User update for scale
-    mat4 scaleUpdate = scale(glm::mat4(1.0f), glm::vec3(1.0f + scaling.x, 1.0f + scaling.y, 1.0f + scaling.z));
-    mat4 rotationUpdate = rotate(glm::mat4(1.0f), glm::radians(1.0f + rotation.y), glm::vec3(0.0f, 1.0f, 0.0f));
-
-    //Taqi's Model
-    //Cube scale (for most of the cubes)
-    mat4 scaleMatrix = scale(glm::mat4(1.0f), glm::vec3(1.5f, 0.5f, 1.0f));
-
-    //groupMatrix will be applied to all of the cubes for this model (will translate the complete model)
-    mat4 groupMatrix = translate(glm::mat4(1.0f), glm::vec3(-6.0f + position.x, 2.5f + position.y, 0.0f)) * rotationUpdate * scaleUpdate; //Translate model to upper left corner
-
-    //LETTER Q (bottom)
-    mat4 translationMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, 0.0f));
-    mat4 partMatrix = translationMatrix * scaleMatrix;
-    mat4 worldMatrix = groupMatrix * partMatrix;
-
-    glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &worldMatrix[0][0]);
-    glDrawArrays(mode, 0, 36);
-
-
-    //Left side of Q
-    translationMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(-0.5f, 1.0f, 0.0f));
-    mat4 rotationMatrix = rotate(glm::mat4(1.0f), glm::radians(90.0f), glm::vec3(0.0f, 0.0f, 1.0f));
-    partMatrix = translationMatrix * rotationMatrix * scaleMatrix;
-    worldMatrix = groupMatrix * partMatrix;
-
-    glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &worldMatrix[0][0]);
-    glDrawArrays(mode, 0, 36);
-
-
-    //Top of Q
-    translationMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 1.5f, 0.0f));
-    partMatrix = translationMatrix * scaleMatrix;
-    worldMatrix = groupMatrix * partMatrix;
-
-    glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &worldMatrix[0][0]);
-    glDrawArrays(mode, 0, 36);
-
-
-    //Right side of Q
-    translationMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(0.5f, 1.0f, 0.0f));
-    partMatrix = translationMatrix * rotationMatrix * scaleMatrix;
-    worldMatrix = groupMatrix * partMatrix;
-
-    glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &worldMatrix[0][0]);
-    glDrawArrays(mode, 0, 36);
-
-
-    //Q tail
-    translationMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(0.5f, 0.0f, 0.0f));
-    rotationMatrix = rotate(glm::mat4(1.0f), glm::radians(135.0f), glm::vec3(0.0f, 0.0f, 1.0f));
-    partMatrix = translationMatrix * rotationMatrix * scaleMatrix;
-    worldMatrix = groupMatrix * partMatrix;
-
-    glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &worldMatrix[0][0]);
-    glDrawArrays(mode, 0, 36);
-
-
-    //NUMBER 4 (bottom)
-    translationMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(2.5f, 0.5f, 0.0f));
-    partMatrix = translationMatrix * scaleMatrix;
-    worldMatrix = groupMatrix * partMatrix;
-
-    glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &worldMatrix[0][0]);
-    glDrawArrays(mode, 0, 36);
-
-
-    //Left side of 4
-    translationMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(2.0f, 1.0f, 0.0f));
-    rotationMatrix = rotate(glm::mat4(1.0f), glm::radians(90.0f), glm::vec3(0.0f, 0.0f, 1.0f));
-    partMatrix = translationMatrix * rotationMatrix * scaleMatrix;
-    worldMatrix = groupMatrix * partMatrix;
-
-    glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &worldMatrix[0][0]);
-    glDrawArrays(mode, 0, 36);
-
-
-    //Right side of 4
-    scaleMatrix = glm::scale(glm::mat4(1.0f), glm::vec3(2.2f, 0.5f, 1.0f));
-    translationMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(3.2f, 0.7f, 0.0f));
-    partMatrix = translationMatrix * rotationMatrix * scaleMatrix;
-    worldMatrix = groupMatrix * partMatrix;
-
-    glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &worldMatrix[0][0]);
-    glDrawArrays(mode, 0, 36);
-}
-
-//Update through user input
-void updateInput(GLFWwindow* window, vec3& position, vec3& rotation, vec3& scale, string& renderMode)
-{
-    //Scale
-    if (glfwGetKey(window, GLFW_KEY_U) == GLFW_PRESS)
-    {
-        scale += 0.1f;
-    }
-    if (glfwGetKey(window, GLFW_KEY_J) == GLFW_PRESS)
-    {
-        scale -= 0.1f;
-    }
-
-    //Position
-    if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
-    {
-        position.x -= 0.1f;
-    }
-    if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
-    {
-        position.x += 0.1f;
-    }
-    if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
-    {
-        position.y += 0.1f;
-    }
-    if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
-    {
-        position.y -= 0.1f;
-    }
-
-    //rotation (r and t)
-    if (glfwGetKey(window, GLFW_KEY_Z) == GLFW_PRESS)
-    {
-        rotation.y -= 5.0f;
-    }
-    if (glfwGetKey(window, GLFW_KEY_X) == GLFW_PRESS)
-    {
-        rotation.y += 5.0f;
-    }
-
-    //Rendering mode
-    if (glfwGetKey(window, GLFW_KEY_P) == GLFW_PRESS)
-    {
-        renderMode = "GL_POINTS";
-    }
-    if (glfwGetKey(window, GLFW_KEY_L) == GLFW_PRESS)
-    {
-        renderMode = "GL_LINES";
-    }
-    if (glfwGetKey(window, GLFW_KEY_T) == GLFW_PRESS)
-    {
-        renderMode = "GL_TRIANGLES";
-    }
-    
-}
-
-int main(int argc, char* argv[])
+int main(int argc, char*argv[])
 {
     // Initialize GLFW and OpenGL version
     glfwInit();
-
+    
 #if defined(PLATFORM_OSX)
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 2);
@@ -508,7 +341,7 @@ int main(int argc, char* argv[])
         return -1;
     }
     glfwMakeContextCurrent(window);
-
+    
 
     // Initialize GLEW
     glewExperimental = true; // Needed for core profile
@@ -520,7 +353,7 @@ int main(int argc, char* argv[])
 
     // Black background
     glClearColor(0.1f, 0.2f, 0.2f, 1.0f);
-
+    
     // Compile and link shaders here ...
     int shaderProgram = compileAndLinkShaders();
     glUseProgram(shaderProgram);
@@ -548,12 +381,12 @@ int main(int argc, char* argv[])
 
     GLuint viewMatrixLocation = glGetUniformLocation(shaderProgram, "viewMatrix");
     glUniformMatrix4fv(viewMatrixLocation, 1, GL_FALSE, &viewMatrix[0][0]);
-
+    
     const int modelCount = 5; //number of models to load
     GLuint vaoArray[modelCount], vboArray[modelCount];
     glGenVertexArrays(modelCount, &vaoArray[0]);
     glGenBuffers(modelCount, &vboArray[0]);
-
+   
     // Define and upload geometry to the GPU here ...
 
     //Ground Grid
@@ -565,7 +398,7 @@ int main(int argc, char* argv[])
 
     glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 2 * sizeof(glm::vec3), (void*)sizeof(glm::vec3));
     glEnableVertexAttribArray(1);
-
+    
     //Axis
     //X
     glBindVertexArray(vaoArray[1]);
@@ -606,35 +439,24 @@ int main(int argc, char* argv[])
 
     glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 2 * sizeof(glm::vec3), (void*)sizeof(glm::vec3));
     glEnableVertexAttribArray(1);
-
+    
     //createVertexArrayObject(&vaoArray[0], &vboArray[0], 0, gridVertexArray);
-
+    
     // Variables to be used later in tutorial
     float angle = 0;
     float rotationSpeed = 180.0f;  // 180 degrees per second
     float lastFrameTime = glfwGetTime();
 
-    //transformations
-    vec3 position(0.f);
-    vec3 rotation(0.f);
-    vec3 scaling(0.f);
-
-    string* renderMode = new string("GL_TRIANGLES"); //Render mode initially in triangles
-
     //float pointDisplacementUnit = 0.1f;
-    glEnable(GL_CULL_FACE);
-    //glEnable(GL_DEPTH_TEST);
-     // Entering Main Loop
-    while (!glfwWindowShouldClose(window))
+   glEnable(GL_CULL_FACE);
+   //glEnable(GL_DEPTH_TEST);
+    // Entering Main Loop
+    while(!glfwWindowShouldClose(window))
     {
-        //Get user inputs
-        updateInput(window, position, rotation, scaling, *renderMode);
-
         glm::mat4 viewMatrix = glm::mat4(1.0f);
         // Each frame, reset color of each pixel to glClearColor
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-      
+        
         // Draw geometry
         //glUseProgram(shaderProgram);
         //glBindVertexArray(vaoArray[0]);
@@ -642,16 +464,13 @@ int main(int argc, char* argv[])
        // GLuint worldMatrixLocation = glGetUniformLocation(shaderProgram, "worldMatrix");
         drawGroundGrid(shaderProgram, vaoArray, gridUnit);
         drawAxisLines(shaderProgram, vaoArray, gridUnit);
-
-        //MODELS
-        drawTaqiModel(shaderProgram, vaoArray, position, rotation, scaling, *renderMode);
-
+   
 
         //glBindVertexArray(0); 
         // End Frame
         glfwSwapBuffers(window);
         glfwPollEvents();
-
+        
         // Handle inputs
         if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
             glfwSetWindowShouldClose(window, true);
@@ -696,9 +515,9 @@ int main(int argc, char* argv[])
             glUniformMatrix4fv(projectionMatrixLocation, 1, GL_FALSE, &projectionMatrix[0][0]);
         }
     }
-
+    
     // Shutdown GLFW
     glfwTerminate();
-
+    
     return 0;
 }
