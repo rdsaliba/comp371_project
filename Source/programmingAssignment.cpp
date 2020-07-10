@@ -316,28 +316,47 @@ void drawAxisLines(int shader, GLuint vao[], float gridUnit) {
     glDrawArrays(GL_LINES, 0, 2);
 }
 
-void drawU6Model(int shader, GLuint vao[]) {
+
+//TAQI'S MODEL ("Q4")
+void drawTaqiModel(int shaderProgram, GLuint vao[], vec3 position, vec3 rotation, vec3 scaling, string renderMode)
+{
+    GLenum mode;
+    if (renderMode == "GL_POINTS")
+    {
+        mode = GL_POINTS;
+    }
+    if (renderMode == "GL_LINES")
+    {
+        mode = GL_LINES;
+    }
+    if (renderMode == "GL_TRIANGLES")
+    {
+        mode = GL_TRIANGLES;
+    }
+
+
     glBindVertexArray(vao[4]);
+    GLuint worldMatrixLocation = glGetUniformLocation(shaderProgram, "worldMatrix");
 
-    vec3 modelLocation = vec3(0.0f, -0.5f, -0.5f);
-    //mat4 uMatrix = scale(mat4(1.0f), vec3(5.0f, 2.0f, 2.0f));
-    GLuint worldMatrixLocation = glGetUniformLocation(shader, "worldMatrix");
-    mat4 projectionMatrix = perspective(70.0f, 1024.0f / 768.0f, 0.01f, 100.0f);
 
-    GLuint projectionMatrixLocation = glGetUniformLocation(shader, "projectionMatrix");
-    glUniformMatrix4fv(projectionMatrixLocation, 1, GL_FALSE, &projectionMatrix[0][0]);
+    //User update for scale
+    mat4 scaleUpdate = scale(glm::mat4(1.0f), glm::vec3(1.0f + scaling.x, 1.0f + scaling.y, 1.0f + scaling.z));
+    mat4 rotationUpdate = rotate(glm::mat4(1.0f), glm::radians(1.0f + rotation.y), glm::vec3(0.0f, 1.0f, 0.0f));
 
-    mat4 scaleMatrix = scale(mat4(1.0f), vec3(1.0f, 5.0f, 1.0f));
-    mat4 groupMatrix = translate(mat4(1.0f), modelLocation); //vec3(-4.0f, 3.0f, 0.0f));//modelLocation);
-    
-                                                             
-    //U-Bottom /*
-    mat4 translationMatrix = translate(mat4(1.0f), vec3(0.0f, 0.0f, 0.0f));
-    mat4 partMatrix = translationMatrix * scale(mat4(1.0f), vec3(3.0f, 1.0f, 1.0f));
-    mat4 uMatrix = groupMatrix * partMatrix;
+    //Taqi's Model
+    //Cube scale (for most of the cubes)
+    mat4 scaleMatrix = scale(glm::mat4(1.0f), glm::vec3(1.5f, 0.5f, 1.0f));
 
-    glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &uMatrix[0][0]);
-    glDrawArrays(GL_TRIANGLES, 0, 36);
+    //groupMatrix will be applied to all of the cubes for this model (will translate the complete model)
+    mat4 groupMatrix = translate(glm::mat4(1.0f), glm::vec3(-6.0f + position.x, 2.5f + position.y, 0.0f)) * rotationUpdate * scaleUpdate; //Translate model to upper left corner
+
+    //LETTER Q (bottom)
+    mat4 translationMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, 0.0f));
+    mat4 partMatrix = translationMatrix * scaleMatrix;
+    mat4 worldMatrix = groupMatrix * partMatrix;
+
+    glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &worldMatrix[0][0]);
+    glDrawArrays(mode, 0, 36);
 
     
     //U-Left
@@ -346,18 +365,122 @@ void drawU6Model(int shader, GLuint vao[]) {
     partMatrix = translationMatrix * scaleMatrix * rotationMatrix;
     uMatrix = groupMatrix * partMatrix;
 
-    glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &uMatrix[0][0]);
-    glDrawArrays(GL_TRIANGLES, 0, 36);
-    /*
-    //U-Right
-    translationMatrix = translate(mat4(1.0f), vec3(3.0f, 1.2f, -2.8f));
-    //rotationMatrix = rotate(mat4(1.0f), radians(-90.0f), vec3(0.0f, 0.0f, -1.0f));
+    glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &worldMatrix[0][0]);
+    glDrawArrays(mode, 0, 36);
+
+
+    //Top of Q
+    translationMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 1.5f, 0.0f));
+    partMatrix = translationMatrix * scaleMatrix;
+    worldMatrix = groupMatrix * partMatrix;
+
+    glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &worldMatrix[0][0]);
+    glDrawArrays(mode, 0, 36);
+
+
+    //Right side of Q
+    translationMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(0.5f, 1.0f, 0.0f));
     partMatrix = translationMatrix * rotationMatrix * scaleMatrix;
     uMatrix = groupMatrix * partMatrix;
 
-    glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &uMatrix[0][0]);
-    glDrawArrays(GL_TRIANGLES, 0, 36);
-    */
+    glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &worldMatrix[0][0]);
+    glDrawArrays(mode, 0, 36);
+
+
+    //Q tail
+    translationMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(0.5f, 0.0f, 0.0f));
+    rotationMatrix = rotate(glm::mat4(1.0f), glm::radians(135.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+    partMatrix = translationMatrix * rotationMatrix * scaleMatrix;
+    worldMatrix = groupMatrix * partMatrix;
+
+    glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &worldMatrix[0][0]);
+    glDrawArrays(mode, 0, 36);
+
+
+    //NUMBER 4 (bottom)
+    translationMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(2.5f, 0.5f, 0.0f));
+    partMatrix = translationMatrix * scaleMatrix;
+    worldMatrix = groupMatrix * partMatrix;
+
+    glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &worldMatrix[0][0]);
+    glDrawArrays(mode, 0, 36);
+
+
+    //Left side of 4
+    translationMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(2.0f, 1.0f, 0.0f));
+    rotationMatrix = rotate(glm::mat4(1.0f), glm::radians(90.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+    partMatrix = translationMatrix * rotationMatrix * scaleMatrix;
+    worldMatrix = groupMatrix * partMatrix;
+
+    glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &worldMatrix[0][0]);
+    glDrawArrays(mode, 0, 36);
+
+
+    //Right side of 4
+    scaleMatrix = glm::scale(glm::mat4(1.0f), glm::vec3(2.2f, 0.5f, 1.0f));
+    translationMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(3.2f, 0.7f, 0.0f));
+    partMatrix = translationMatrix * rotationMatrix * scaleMatrix;
+    worldMatrix = groupMatrix * partMatrix;
+
+    glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &worldMatrix[0][0]);
+    glDrawArrays(mode, 0, 36);
+}
+
+//Update through user input
+void updateInput(GLFWwindow* window, vec3& position, vec3& rotation, vec3& scale, string& renderMode)
+{
+    //Scale
+    if (glfwGetKey(window, GLFW_KEY_U) == GLFW_PRESS)
+    {
+        scale += 0.1f;
+    }
+    if (glfwGetKey(window, GLFW_KEY_J) == GLFW_PRESS)
+    {
+        scale -= 0.1f;
+    }
+
+    //Position
+    if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
+    {
+        position.x -= 0.1f;
+    }
+    if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
+    {
+        position.x += 0.1f;
+    }
+    if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
+    {
+        position.y += 0.1f;
+    }
+    if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
+    {
+        position.y -= 0.1f;
+    }
+
+    //rotation (r and t)
+    if (glfwGetKey(window, GLFW_KEY_Z) == GLFW_PRESS)
+    {
+        rotation.y -= 5.0f;
+    }
+    if (glfwGetKey(window, GLFW_KEY_X) == GLFW_PRESS)
+    {
+        rotation.y += 5.0f;
+    }
+
+    //Rendering mode
+    if (glfwGetKey(window, GLFW_KEY_P) == GLFW_PRESS)
+    {
+        renderMode = "GL_POINTS";
+    }
+    if (glfwGetKey(window, GLFW_KEY_L) == GLFW_PRESS)
+    {
+        renderMode = "GL_LINES";
+    }
+    if (glfwGetKey(window, GLFW_KEY_T) == GLFW_PRESS)
+    {
+        renderMode = "GL_TRIANGLES";
+    }
+    
 }
 
 int main(int argc, char* argv[])
@@ -491,12 +614,22 @@ int main(int argc, char* argv[])
     float rotationSpeed = 180.0f;  // 180 degrees per second
     float lastFrameTime = glfwGetTime();
 
+    //transformations
+    vec3 position(0.f);
+    vec3 rotation(0.f);
+    vec3 scaling(0.f);
+
+    string* renderMode = new string("GL_TRIANGLES"); //Render mode initially in triangles
+
     //float pointDisplacementUnit = 0.1f;
     glEnable(GL_CULL_FACE);
     //glEnable(GL_DEPTH_TEST);
      // Entering Main Loop
     while (!glfwWindowShouldClose(window))
     {
+        //Get user inputs
+        updateInput(window, position, rotation, scaling, *renderMode);
+
         glm::mat4 viewMatrix = glm::mat4(1.0f);
         // Each frame, reset color of each pixel to glClearColor
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -508,7 +641,10 @@ int main(int argc, char* argv[])
        // GLuint worldMatrixLocation = glGetUniformLocation(shaderProgram, "worldMatrix");
         drawGroundGrid(shaderProgram, vaoArray, gridUnit);
         drawAxisLines(shaderProgram, vaoArray, gridUnit);
-        drawU6Model(shaderProgram, vaoArray);
+
+        //MODELS
+        drawTaqiModel(shaderProgram, vaoArray, position, rotation, scaling, *renderMode);
+
 
         //glBindVertexArray(0); 
         // End Frame
