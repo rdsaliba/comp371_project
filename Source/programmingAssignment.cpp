@@ -318,21 +318,37 @@ void drawAxisLines(int shader, GLuint vao[], float gridUnit) {
 
 
 //TAQI'S MODEL ("Q4")
-void drawTaqiModel(int shaderProgram, GLuint vao[], vec3 scaling)
+void drawTaqiModel(int shaderProgram, GLuint vao[], vec3 position, vec3 rotation, vec3 scaling, string renderMode)
 {
+    GLenum mode;
+    if (renderMode == "GL_POINTS")
+    {
+        mode = GL_POINTS;
+    }
+    if (renderMode == "GL_LINES")
+    {
+        mode = GL_LINES;
+    }
+    if (renderMode == "GL_TRIANGLES")
+    {
+        mode = GL_TRIANGLES;
+    }
+
+
     glBindVertexArray(vao[4]);
     GLuint worldMatrixLocation = glGetUniformLocation(shaderProgram, "worldMatrix");
 
 
     //User update for scale
     mat4 scaleUpdate = scale(glm::mat4(1.0f), glm::vec3(1.0f + scaling.x, 1.0f + scaling.y, 1.0f + scaling.z));
+    mat4 rotationUpdate = rotate(glm::mat4(1.0f), glm::radians(1.0f + rotation.y), glm::vec3(0.0f, 1.0f, 0.0f));
 
     //Taqi's Model
     //Cube scale (for most of the cubes)
     mat4 scaleMatrix = scale(glm::mat4(1.0f), glm::vec3(1.5f, 0.5f, 1.0f));
 
     //groupMatrix will be applied to all of the cubes for this model (will translate the complete model)
-    mat4 groupMatrix = translate(glm::mat4(1.0f), glm::vec3(-6.0f, 2.5f, 0.0f)) * scaleUpdate; //Translate model to upper left corner
+    mat4 groupMatrix = translate(glm::mat4(1.0f), glm::vec3(-6.0f + position.x, 2.5f + position.y, 0.0f)) * rotationUpdate * scaleUpdate; //Translate model to upper left corner
 
     //LETTER Q (bottom)
     mat4 translationMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, 0.0f));
@@ -340,7 +356,7 @@ void drawTaqiModel(int shaderProgram, GLuint vao[], vec3 scaling)
     mat4 worldMatrix = groupMatrix * partMatrix;
 
     glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &worldMatrix[0][0]);
-    glDrawArrays(GL_TRIANGLES, 0, 36);
+    glDrawArrays(mode, 0, 36);
 
 
     //Left side of Q
@@ -350,7 +366,7 @@ void drawTaqiModel(int shaderProgram, GLuint vao[], vec3 scaling)
     worldMatrix = groupMatrix * partMatrix;
 
     glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &worldMatrix[0][0]);
-    glDrawArrays(GL_TRIANGLES, 0, 36);
+    glDrawArrays(mode, 0, 36);
 
 
     //Top of Q
@@ -359,7 +375,7 @@ void drawTaqiModel(int shaderProgram, GLuint vao[], vec3 scaling)
     worldMatrix = groupMatrix * partMatrix;
 
     glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &worldMatrix[0][0]);
-    glDrawArrays(GL_TRIANGLES, 0, 36);
+    glDrawArrays(mode, 0, 36);
 
 
     //Right side of Q
@@ -368,7 +384,7 @@ void drawTaqiModel(int shaderProgram, GLuint vao[], vec3 scaling)
     worldMatrix = groupMatrix * partMatrix;
 
     glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &worldMatrix[0][0]);
-    glDrawArrays(GL_TRIANGLES, 0, 36);
+    glDrawArrays(mode, 0, 36);
 
 
     //Q tail
@@ -378,7 +394,7 @@ void drawTaqiModel(int shaderProgram, GLuint vao[], vec3 scaling)
     worldMatrix = groupMatrix * partMatrix;
 
     glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &worldMatrix[0][0]);
-    glDrawArrays(GL_TRIANGLES, 0, 36);
+    glDrawArrays(mode, 0, 36);
 
 
     //NUMBER 4 (bottom)
@@ -387,7 +403,7 @@ void drawTaqiModel(int shaderProgram, GLuint vao[], vec3 scaling)
     worldMatrix = groupMatrix * partMatrix;
 
     glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &worldMatrix[0][0]);
-    glDrawArrays(GL_TRIANGLES, 0, 36);
+    glDrawArrays(mode, 0, 36);
 
 
     //Left side of 4
@@ -397,7 +413,7 @@ void drawTaqiModel(int shaderProgram, GLuint vao[], vec3 scaling)
     worldMatrix = groupMatrix * partMatrix;
 
     glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &worldMatrix[0][0]);
-    glDrawArrays(GL_TRIANGLES, 0, 36);
+    glDrawArrays(mode, 0, 36);
 
 
     //Right side of 4
@@ -407,11 +423,11 @@ void drawTaqiModel(int shaderProgram, GLuint vao[], vec3 scaling)
     worldMatrix = groupMatrix * partMatrix;
 
     glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &worldMatrix[0][0]);
-    glDrawArrays(GL_TRIANGLES, 0, 36);
+    glDrawArrays(mode, 0, 36);
 }
 
 //Update through user input
-void updateInput(GLFWwindow* window, vec3& position, vec3& rotation, vec3& scale)
+void updateInput(GLFWwindow* window, vec3& position, vec3& rotation, vec3& scale, string& renderMode)
 {
     //Scale
     if (glfwGetKey(window, GLFW_KEY_U) == GLFW_PRESS)
@@ -422,6 +438,49 @@ void updateInput(GLFWwindow* window, vec3& position, vec3& rotation, vec3& scale
     {
         scale -= 0.1f;
     }
+
+    //Position
+    if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
+    {
+        position.x -= 0.1f;
+    }
+    if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
+    {
+        position.x += 0.1f;
+    }
+    if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
+    {
+        position.y += 0.1f;
+    }
+    if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
+    {
+        position.y -= 0.1f;
+    }
+
+    //rotation (r and t)
+    if (glfwGetKey(window, GLFW_KEY_Z) == GLFW_PRESS)
+    {
+        rotation.y -= 5.0f;
+    }
+    if (glfwGetKey(window, GLFW_KEY_X) == GLFW_PRESS)
+    {
+        rotation.y += 5.0f;
+    }
+
+    //Rendering mode
+    if (glfwGetKey(window, GLFW_KEY_P) == GLFW_PRESS)
+    {
+        renderMode = "GL_POINTS";
+    }
+    if (glfwGetKey(window, GLFW_KEY_L) == GLFW_PRESS)
+    {
+        renderMode = "GL_LINES";
+    }
+    if (glfwGetKey(window, GLFW_KEY_T) == GLFW_PRESS)
+    {
+        renderMode = "GL_TRIANGLES";
+    }
+    
 }
 
 int main(int argc, char* argv[])
@@ -560,6 +619,8 @@ int main(int argc, char* argv[])
     vec3 rotation(0.f);
     vec3 scaling(0.f);
 
+    string* renderMode = new string("GL_TRIANGLES"); //Render mode initially in triangles
+
     //float pointDisplacementUnit = 0.1f;
     glEnable(GL_CULL_FACE);
     //glEnable(GL_DEPTH_TEST);
@@ -567,7 +628,7 @@ int main(int argc, char* argv[])
     while (!glfwWindowShouldClose(window))
     {
         //Get user inputs
-        updateInput(window, position, rotation, scaling);
+        updateInput(window, position, rotation, scaling, *renderMode);
 
         glm::mat4 viewMatrix = glm::mat4(1.0f);
         // Each frame, reset color of each pixel to glClearColor
@@ -583,7 +644,7 @@ int main(int argc, char* argv[])
         drawAxisLines(shaderProgram, vaoArray, gridUnit);
 
         //MODELS
-        drawTaqiModel(shaderProgram, vaoArray, scaling);
+        drawTaqiModel(shaderProgram, vaoArray, position, rotation, scaling, *renderMode);
 
 
         //glBindVertexArray(0); 
