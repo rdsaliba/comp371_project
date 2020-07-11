@@ -316,6 +316,10 @@ void drawAxisLines(int shader, GLuint vao[], float gridUnit) {
     glDrawArrays(GL_LINES, 0, 2);
 }
 
+void modelTransformations()
+{
+    
+}
 
 //TAQI'S MODEL ("Q4")
 void drawTaqiModel(int shaderProgram, GLuint vao[], vec3 position, vec3 rotation, vec3 scaling, string renderMode)
@@ -426,45 +430,47 @@ void drawTaqiModel(int shaderProgram, GLuint vao[], vec3 position, vec3 rotation
     glDrawArrays(mode, 0, 36);
 }
 
+
 //Update through user input
-void updateInput(GLFWwindow* window, vec3& position, vec3& rotation, vec3& scale, string& renderMode)
+void updateInput(GLFWwindow* window, vec3& position, vec3& rotation, vec3& scale, string& renderMode, float dt, int lastMouseLeftState)
 {
+
     //Scale
     if (glfwGetKey(window, GLFW_KEY_U) == GLFW_PRESS)
     {
-        scale += 0.1f;
+        scale += 0.5f * dt;
     }
     if (glfwGetKey(window, GLFW_KEY_J) == GLFW_PRESS)
     {
-        scale -= 0.1f;
+        scale -= 0.5f * dt;
     }
 
     //Position
     if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
     {
-        position.x -= 0.1f;
+        position.x -= 1.5f * dt;
     }
     if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
     {
-        position.x += 0.1f;
+        position.x += 1.5f * dt;
     }
     if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
     {
-        position.y += 0.1f;
+        position.y += 1.5f * dt;
     }
     if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
     {
-        position.y -= 0.1f;
+        position.y -= 1.5f * dt;
     }
 
     //rotation (r and t)
     if (glfwGetKey(window, GLFW_KEY_Z) == GLFW_PRESS)
     {
-        rotation.y -= 5.0f;
+        rotation.y -= 5.0f * dt;
     }
     if (glfwGetKey(window, GLFW_KEY_X) == GLFW_PRESS)
     {
-        rotation.y += 5.0f;
+        rotation.y += 5.0f * dt;
     }
 
     //Rendering mode
@@ -480,11 +486,22 @@ void updateInput(GLFWwindow* window, vec3& position, vec3& rotation, vec3& scale
     {
         renderMode = "GL_TRIANGLES";
     }
+
+    //World orientation
+    if (lastMouseLeftState == GLFW_RELEASE && glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS)
+    {
+
+    }
+
+    lastMouseLeftState = glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT);
     
 }
 
 int main(int argc, char* argv[])
 {
+
+
+
     // Initialize GLFW and OpenGL version
     glfwInit();
 
@@ -517,6 +534,9 @@ int main(int argc, char* argv[])
         glfwTerminate();
         return -1;
     }
+
+    //Disable mouse cursor
+    //glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 
     // Black background
     glClearColor(0.1f, 0.2f, 0.2f, 1.0f);
@@ -613,6 +633,7 @@ int main(int argc, char* argv[])
     float angle = 0;
     float rotationSpeed = 180.0f;  // 180 degrees per second
     float lastFrameTime = glfwGetTime();
+    int lastMouseLeftState = GLFW_RELEASE;
 
     //transformations
     vec3 position(0.f);
@@ -627,8 +648,12 @@ int main(int argc, char* argv[])
      // Entering Main Loop
     while (!glfwWindowShouldClose(window))
     {
+        //Frame time calculation
+        float dt = glfwGetTime() - lastFrameTime;
+        lastFrameTime += dt;
+
         //Get user inputs
-        updateInput(window, position, rotation, scaling, *renderMode);
+        updateInput(window, position, rotation, scaling, *renderMode, dt, lastMouseLeftState);
 
         glm::mat4 viewMatrix = glm::mat4(1.0f);
         // Each frame, reset color of each pixel to glClearColor
@@ -645,7 +670,6 @@ int main(int argc, char* argv[])
 
         //MODELS
         drawTaqiModel(shaderProgram, vaoArray, position, rotation, scaling, *renderMode);
-
 
         //glBindVertexArray(0); 
         // End Frame
