@@ -316,6 +316,50 @@ void drawAxisLines(int shader, GLuint vao[], float gridUnit) {
     glDrawArrays(GL_LINES, 0, 2);
 }
 
+void drawU6Model(int shader, GLuint vao[]) {
+    glBindVertexArray(vao[4]);
+
+    vec3 modelLocation = vec3(0.0f, -0.5f, -0.5f);
+    //mat4 uMatrix = scale(mat4(1.0f), vec3(5.0f, 2.0f, 2.0f));
+    GLuint worldMatrixLocation = glGetUniformLocation(shader, "worldMatrix");
+    mat4 projectionMatrix = perspective(70.0f, 1024.0f / 768.0f, 0.01f, 100.0f);
+
+    GLuint projectionMatrixLocation = glGetUniformLocation(shader, "projectionMatrix");
+    glUniformMatrix4fv(projectionMatrixLocation, 1, GL_FALSE, &projectionMatrix[0][0]);
+
+    mat4 scaleMatrix = scale(mat4(1.0f), vec3(1.0f, 5.0f, 1.0f));
+    mat4 groupMatrix = translate(mat4(1.0f), modelLocation); //vec3(-4.0f, 3.0f, 0.0f));//modelLocation);
+    
+                                                             
+    //U-Bottom /*
+    mat4 translationMatrix = translate(mat4(1.0f), vec3(0.0f, 0.0f, 0.0f));
+    mat4 partMatrix = translationMatrix * scale(mat4(1.0f), vec3(3.0f, 1.0f, 1.0f));
+    mat4 uMatrix = groupMatrix * partMatrix;
+
+    glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &uMatrix[0][0]);
+    glDrawArrays(GL_TRIANGLES, 0, 36);
+
+    
+    //U-Left
+    translationMatrix = translate(mat4(1.0f), vec3(-2.0f, 1.0f, -4.5f));
+    mat4 rotationMatrix = rotate(mat4(1.0f), radians(90.0f), vec3(0.0f, 0.0f, 1.0f));
+    partMatrix = translationMatrix * scaleMatrix * rotationMatrix;
+    uMatrix = groupMatrix * partMatrix;
+
+    glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &uMatrix[0][0]);
+    glDrawArrays(GL_TRIANGLES, 0, 36);
+    /*
+    //U-Right
+    translationMatrix = translate(mat4(1.0f), vec3(3.0f, 1.2f, -2.8f));
+    //rotationMatrix = rotate(mat4(1.0f), radians(-90.0f), vec3(0.0f, 0.0f, -1.0f));
+    partMatrix = translationMatrix * rotationMatrix * scaleMatrix;
+    uMatrix = groupMatrix * partMatrix;
+
+    glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &uMatrix[0][0]);
+    glDrawArrays(GL_TRIANGLES, 0, 36);
+    */
+}
+
 int main(int argc, char* argv[])
 {
     // Initialize GLFW and OpenGL version
@@ -359,7 +403,7 @@ int main(int argc, char* argv[])
     glUseProgram(shaderProgram);
 
     // Camera parameters for view transform
-    vec3 cameraPosition(0.0f, 7.0f, 20.0f);
+    vec3 cameraPosition(0.0f, 2.5f, 15.0f);
     vec3 cameraLookAt(0.0f, 0.0f, 0.0f);
     vec3 cameraUp(0.0f, 1.0f, 0.0f);
 
@@ -464,7 +508,7 @@ int main(int argc, char* argv[])
        // GLuint worldMatrixLocation = glGetUniformLocation(shaderProgram, "worldMatrix");
         drawGroundGrid(shaderProgram, vaoArray, gridUnit);
         drawAxisLines(shaderProgram, vaoArray, gridUnit);
-
+        drawU6Model(shaderProgram, vaoArray);
 
         //glBindVertexArray(0); 
         // End Frame
