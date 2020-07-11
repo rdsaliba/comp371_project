@@ -2,11 +2,12 @@
 
 Section: CC
 
-Students:
+**Students:**
 Taqi Haque - 40043834
 
 
-General controls:
+**General controls:**
+
 ESC: close window
 
 1-5: select model (NOT DONE)
@@ -14,7 +15,8 @@ ESC: close window
 H: home button (NOT DONE)
 
 
-Model Controls:
+**Model Controls:**
+
 U: scale up
 
 J: scale down
@@ -39,7 +41,8 @@ L: lines rendering mode
 T: triangles rendering mode
 
 
-Camera Controls: (NOT DONE)
+**Camera Controls: (NOT DONE)**
+
 G: move forward
 
 V: move back
@@ -56,7 +59,8 @@ Middle_mouse_button: tilt camera in y direction
 Left_mouse_button: Zoom in/out
 
 
-World orientation: (NOT DONE)
+**World orientation: (NOT DONE)**
+
 Left_arrow: rotation (CCW) about positive x axis
 
 Right_arrow: rotation (CCW) about negative x axis
