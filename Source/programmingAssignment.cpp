@@ -657,7 +657,7 @@ void modelFocusSwitch(int nextModel)
     if (SELECTEDMODELINDEX == nextModel) {
         return;
     }
-
+    //Update pointer to the selected model 
     focusedModel = &models[nextModel];
     SELECTEDMODELINDEX = nextModel;
 }
@@ -728,12 +728,12 @@ int main(int argc, char* argv[])
     GLuint viewMatrixLocation = glGetUniformLocation(shaderProgram, "viewMatrix");
     glUniformMatrix4fv(viewMatrixLocation, 1, GL_FALSE, &viewMatrix[0][0]);
 
-    const int modelCount = 5; //number of models to load
-    GLuint vaoArray[modelCount], vboArray[modelCount];
-    glGenVertexArrays(modelCount, &vaoArray[0]);
-    glGenBuffers(modelCount, &vboArray[0]);
+    const int geometryCount = 5; //number of models to load
+    GLuint vaoArray[geometryCount], vboArray[geometryCount];
+    glGenVertexArrays(geometryCount, &vaoArray[0]);
+    glGenBuffers(geometryCount, &vboArray[0]);
 
-    // Define and upload geometry to the GPU here ...
+    // Define and upload geometry for all our models to the GPU 
 
     //Ground Grid
     glBindVertexArray(vaoArray[0]);
@@ -745,7 +745,7 @@ int main(int argc, char* argv[])
     glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 2 * sizeof(glm::vec3), (void*)sizeof(glm::vec3));
     glEnableVertexAttribArray(1);
 
-    //Axis
+    //Axis lines
     //X
     glBindVertexArray(vaoArray[1]);
     glBindBuffer(GL_ARRAY_BUFFER, vboArray[1]);
@@ -776,7 +776,7 @@ int main(int argc, char* argv[])
     glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 2 * sizeof(glm::vec3), (void*)sizeof(glm::vec3));
     glEnableVertexAttribArray(1);
 
-    //Cube
+    //Cube (for individual models)
     glBindVertexArray(vaoArray[4]);
     glBindBuffer(GL_ARRAY_BUFFER, vboArray[4]);
     glBufferData(GL_ARRAY_BUFFER, sizeof(cubeVertexArray), cubeVertexArray, GL_STATIC_DRAW);
@@ -786,15 +786,11 @@ int main(int argc, char* argv[])
     glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 2 * sizeof(glm::vec3), (void*)sizeof(glm::vec3));
     glEnableVertexAttribArray(1);
 
-
-    // Variables to be used later in tutorial
-    float angle = 0;
-    float rotationSpeed = 180.0f;  // 180 degrees per second
-    float lastFrameTime = glfwGetTime();
-
+    //Assign initial control focus on a model
     focusedModel = &models[1];
+
+    //Enable hidden surface removal
     glEnable(GL_CULL_FACE);
-    //glEnable(GL_DEPTH_TEST);
      // Entering Main Loop
     while (!glfwWindowShouldClose(window))
     {
@@ -804,15 +800,14 @@ int main(int argc, char* argv[])
         // Each frame, reset color of each pixel to glClearColor
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
+        //Draw models in virtual world 
         drawGroundGrid(shaderProgram, vaoArray, gridUnit);
         drawAxisLines(shaderProgram, vaoArray, gridUnit);
 
-        //MODELS
         drawTaqiModel(shaderProgram, vaoArray);
         drawHauModel(shaderProgram, vaoArray);
 		drawWilliamModel(shaderProgram, vaoArray);
 
-        //glBindVertexArray(0); 
         // End Frame
         glfwSwapBuffers(window);
         glfwPollEvents();
@@ -821,20 +816,6 @@ int main(int argc, char* argv[])
         if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
             glfwSetWindowShouldClose(window, true);
 
-        // Projection Transform
-        if (glfwGetKey(window, GLFW_KEY_3) == GLFW_PRESS) {
-            glm::mat4 projectionMatrix = glm::perspective(glm::radians(45.0f), 1024.0f / 768.0f, 0.10f, 100.0f);
-
-            GLuint projectionMatrixLocation = glGetUniformLocation(shaderProgram, "projectionMatrix");
-            glUniformMatrix4fv(projectionMatrixLocation, 1, GL_FALSE, &projectionMatrix[0][0]);
-        }
-
-        if (glfwGetKey(window, GLFW_KEY_4) == GLFW_PRESS) {
-            glm::mat4 projectionMatrix = glm::ortho(-4.0f, 4.0f, -3.0f, 3.0f, -100.0f, 100.0f);
-
-            GLuint projectionMatrixLocation = glGetUniformLocation(shaderProgram, "projectionMatrix");
-            glUniformMatrix4fv(projectionMatrixLocation, 1, GL_FALSE, &projectionMatrix[0][0]);
-        }
     }
 
     // Shutdown GLFW
