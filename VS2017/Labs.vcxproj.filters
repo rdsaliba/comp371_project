@@ -18,6 +18,12 @@
     <Filter Include="Resource Files\Textures">
       <UniqueIdentifier>{88876fa3-1e9f-4223-8d1d-570a59edf1cd}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\Header Files">
+      <UniqueIdentifier>{004674a0-611c-4803-b2a2-50b0f09f1c14}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Class Files">
+      <UniqueIdentifier>{5fe91aac-1d7b-41cb-8b0f-849e81e7f4ea}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\Assets\Shaders\BlueColor.fragmentshader">
@@ -64,7 +70,18 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\Source\programmingAssignment.cpp">
+      <Filter>Source Files\Class Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Model.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\Source\Model.cpp">
+      <Filter>Source Files\Class Files</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\Source\Model.h">
+      <Filter>Source Files\Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>
