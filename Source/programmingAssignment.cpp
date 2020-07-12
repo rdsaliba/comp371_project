@@ -732,9 +732,10 @@ int main(int argc, char* argv[])
 		//Get user inputs
 		updateInput(window, position, rotation, scaling, *renderMode);
 
-		//Mouse Panning and Tilting
+		//Mouse Panning, Tilting and Zooming
 		int pan = glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_RIGHT);
 		int tilt = glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_MIDDLE);
+		int zoom = glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT);
 		if (pan == GLFW_PRESS)
 		{
 			double mouseposX, mouseposY;
@@ -761,6 +762,20 @@ int main(int argc, char* argv[])
 			const float cameraAngularSpeed = 60.0f;
 			cameraVerticalAngle -= dy * cameraAngularSpeed * dt;
 			vec3 eyeVertical(0.0f, cameraVerticalAngle, 0.0f);
+			viewMatrix = lookAt(eye + eyeVertical, center, up);
+			setViewMatrix(shaderProgram, viewMatrix);
+		}
+		if (zoom == GLFW_PRESS)
+		{
+			double mouseposX, mouseposY;
+			glfwGetCursorPos(window, &mouseposX, &mouseposY);
+			double dx = mouseposX - lastMousePosX;
+			double dy = mouseposY - lastMousePosY;
+			lastMousePosX = mouseposX;
+			lastMousePosY = mouseposY;
+			const float cameraAngularSpeed = 60.0f;
+			cameraVerticalAngle -= dy * cameraAngularSpeed * dt;
+			vec3 eyeVertical(0.0f, 0.0f, cameraVerticalAngle);
 			viewMatrix = lookAt(eye + eyeVertical, center, up);
 			setViewMatrix(shaderProgram, viewMatrix);
 		}
