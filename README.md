@@ -16,7 +16,7 @@ Section: CC
 
 ESC: close window
 
-1-5: select model (NOT DONE)
+1-5: select model
 
 H: home button
 
@@ -65,7 +65,7 @@ Middle_mouse_button: tilt camera in y direction
 Left_mouse_button: Zoom in/out
 
 
-### **World orientation:
+### **World orientation:**
 
 Left_arrow: rotation (CCW) about positive x axis
 
