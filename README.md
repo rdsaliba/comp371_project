@@ -5,8 +5,8 @@ Section: CC
 ## Team members
 | Name          | ID        | 
 | ------------- |:-------------:|
-| Taqi Haque |40043834 |
-|  |  | 
+| Taqi Haque | 40043834 |
+| Roy Saliba | 27381751 | 
 |  |  | 
 |  |  | 
 |  |  | 
