@@ -24,6 +24,7 @@
 using namespace glm;
 using namespace std;
 
+float gridUnit = 1.0f;
 void modelFocusSwitch(int nextModel);
 int SELECTEDMODELINDEX = 1;
 Model* focusedModel = NULL;
@@ -125,10 +126,9 @@ int compileAndLinkShaders()
     return shaderProgram;
 }
 
-float gridUnit = 1.0f;
-
 // Cube model
-vec3 cubeVertexArray[] = {  // position,                            color
+vec3 cubeVertexArray[] = {  
+    // position,                      olor
     vec3(-0.5f,-0.5f,-0.5f), vec3(1.0f, 0.0f, 0.0f), //left - red
     vec3(-0.5f,-0.5f, 0.5f), vec3(1.0f, 0.0f, 0.0f),
     vec3(-0.5f, 0.5f, 0.5f), vec3(1.0f, 0.0f, 0.0f),
@@ -227,52 +227,6 @@ vec3 zAxisVertexArray[] = {
      glm::vec3(0.0f, 0.0f, 1.0f)
 };
 
-GLuint createVertexArrayObject(vec3* vertexArray)
-{
-    // Create a vertex array
-    GLuint vertexArrayObject;
-    glGenVertexArrays(1, &vertexArrayObject);
-    glBindVertexArray(vertexArrayObject);
-
-    //glBindVertexArray(vao);
-
-    // Upload Vertex Buffer to the GPU, keep a reference to it (vertexBufferObject)
-    //glBindBuffer(GL_ARRAY_BUFFER, vbo);
-    //glBufferData(GL_ARRAY_BUFFER, sizeof(vertexArray), vertexArray, GL_STATIC_DRAW);
-
-    // Upload Vertex Buffer to the GPU, keep a reference to it (vertexBufferObject)
-    GLuint vertexBufferObject;
-    glGenBuffers(1, &vertexBufferObject);
-    glBindBuffer(GL_ARRAY_BUFFER, vertexBufferObject);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(vertexArray), vertexArray, GL_STATIC_DRAW);
-
-    glVertexAttribPointer(0,                   // attribute 0 matches aPos in Vertex Shader
-        3,                   // size
-        GL_FLOAT,            // type
-        GL_FALSE,            // normalized?
-        2 * sizeof(glm::vec3), // stride - each vertex contain 2 vec3 (position, color)
-        (void*)0             // array buffer offset
-    );
-    glEnableVertexAttribArray(0);
-
-
-    glVertexAttribPointer(1,                            // attribute 1 matches aColor in Vertex Shader
-        3,
-        GL_FLOAT,
-        GL_FALSE,
-        2 * sizeof(glm::vec3),
-        (void*)sizeof(glm::vec3)      // color is offseted a vec3 (comes after position)
-    );
-    glEnableVertexAttribArray(1);
-
-    glBindBuffer(GL_ARRAY_BUFFER, 0);
-    glBindVertexArray(0);
-
-    return vertexArrayObject;
-}
-
-
-
 /// <summary>
 /// draws 1 ground square
 /// </summary>
@@ -302,6 +256,12 @@ void drawGroundGrid(int shader, GLuint vao[], float pointDisplacementUnit) {
     }
 }
 
+/// <summary>
+/// Draws Axis lines centered at the origin
+/// </summary>
+/// <param name="shader"></param>
+/// <param name="vao"></param>
+/// <param name="gridUnit"></param>
 void drawAxisLines(int shader, GLuint vao[], float gridUnit) {
     glBindVertexArray(vao[1]);
     mat4 axisMatrix = mat4(1.0f);
