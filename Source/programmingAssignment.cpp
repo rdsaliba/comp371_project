@@ -42,7 +42,7 @@ const char* getVertexShaderSource()
 {
 	// TODO - Insert Vertex Shaders here ...
 	// For now, you use a string for your shader code, in the assignment, shaders will be stored in .glsl files
-	return 
+	return
 		"#version 330 core\n"
 		"layout (location=0) in vec3 aPos;"
 		"layout (location=1) in vec3 aColor;"
@@ -140,55 +140,62 @@ int compileAndLinkShaders()
 }
 float gridUnit = 1.0f;
 
+void setViewMatrix(int shaderProgram, mat4 viewMatrix)
+{
+	glUseProgram(shaderProgram);
+	GLuint viewMatrixLocation = glGetUniformLocation(shaderProgram, "viewMatrix");
+	glUniformMatrix4fv(viewMatrixLocation, 1, GL_FALSE, &viewMatrix[0][0]);
+}
+
 // Cube model
-	vec3 cubeVertexArray[] = {  // position,                            color
-	vec3(-0.5f,-0.5f,-0.5f), vec3(1.0f, 0.0f, 0.0f), //left - red
-	vec3(-0.5f,-0.5f, 0.5f), vec3(1.0f, 0.0f, 0.0f),
-	vec3(-0.5f, 0.5f, 0.5f), vec3(1.0f, 0.0f, 0.0f),
+vec3 cubeVertexArray[] = {  // position,                            color
+vec3(-0.5f,-0.5f,-0.5f), vec3(1.0f, 0.0f, 0.0f), //left - red
+vec3(-0.5f,-0.5f, 0.5f), vec3(1.0f, 0.0f, 0.0f),
+vec3(-0.5f, 0.5f, 0.5f), vec3(1.0f, 0.0f, 0.0f),
 
-	vec3(-0.5f,-0.5f,-0.5f), vec3(1.0f, 0.0f, 0.0f),
-	vec3(-0.5f, 0.5f, 0.5f), vec3(1.0f, 0.0f, 0.0f),
-	vec3(-0.5f, 0.5f,-0.5f), vec3(1.0f, 0.0f, 0.0f),
+vec3(-0.5f,-0.5f,-0.5f), vec3(1.0f, 0.0f, 0.0f),
+vec3(-0.5f, 0.5f, 0.5f), vec3(1.0f, 0.0f, 0.0f),
+vec3(-0.5f, 0.5f,-0.5f), vec3(1.0f, 0.0f, 0.0f),
 
-	vec3(0.5f, 0.5f,-0.5f), vec3(0.0f, 0.0f, 1.0f), // far - blue
-	vec3(-0.5f,-0.5f,-0.5f), vec3(0.0f, 0.0f, 1.0f),
-	vec3(-0.5f, 0.5f,-0.5f), vec3(0.0f, 0.0f, 1.0f),
+vec3(0.5f, 0.5f,-0.5f), vec3(0.0f, 0.0f, 1.0f), // far - blue
+vec3(-0.5f,-0.5f,-0.5f), vec3(0.0f, 0.0f, 1.0f),
+vec3(-0.5f, 0.5f,-0.5f), vec3(0.0f, 0.0f, 1.0f),
 
-	vec3(0.5f, 0.5f,-0.5f), vec3(0.0f, 0.0f, 1.0f),
-	vec3(0.5f,-0.5f,-0.5f), vec3(0.0f, 0.0f, 1.0f),
-	vec3(-0.5f,-0.5f,-0.5f), vec3(0.0f, 0.0f, 1.0f),
+vec3(0.5f, 0.5f,-0.5f), vec3(0.0f, 0.0f, 1.0f),
+vec3(0.5f,-0.5f,-0.5f), vec3(0.0f, 0.0f, 1.0f),
+vec3(-0.5f,-0.5f,-0.5f), vec3(0.0f, 0.0f, 1.0f),
 
-	vec3(0.5f,-0.5f, 0.5f), vec3(0.0f, 1.0f, 1.0f), // bottom - turquoise
-	vec3(-0.5f,-0.5f,-0.5f), vec3(0.0f, 1.0f, 1.0f),
-	vec3(0.5f,-0.5f,-0.5f), vec3(0.0f, 1.0f, 1.0f),
+vec3(0.5f,-0.5f, 0.5f), vec3(0.0f, 1.0f, 1.0f), // bottom - turquoise
+vec3(-0.5f,-0.5f,-0.5f), vec3(0.0f, 1.0f, 1.0f),
+vec3(0.5f,-0.5f,-0.5f), vec3(0.0f, 1.0f, 1.0f),
 
-	vec3(0.5f,-0.5f, 0.5f), vec3(0.0f, 1.0f, 1.0f),
-	vec3(-0.5f,-0.5f, 0.5f), vec3(0.0f, 1.0f, 1.0f),
-	vec3(-0.5f,-0.5f,-0.5f), vec3(0.0f, 1.0f, 1.0f),
+vec3(0.5f,-0.5f, 0.5f), vec3(0.0f, 1.0f, 1.0f),
+vec3(-0.5f,-0.5f, 0.5f), vec3(0.0f, 1.0f, 1.0f),
+vec3(-0.5f,-0.5f,-0.5f), vec3(0.0f, 1.0f, 1.0f),
 
-	vec3(-0.5f, 0.5f, 0.5f), vec3(0.0f, 1.0f, 0.0f), // near - green
-	vec3(-0.5f,-0.5f, 0.5f), vec3(0.0f, 1.0f, 0.0f),
-	vec3(0.5f,-0.5f, 0.5f), vec3(0.0f, 1.0f, 0.0f),
+vec3(-0.5f, 0.5f, 0.5f), vec3(0.0f, 1.0f, 0.0f), // near - green
+vec3(-0.5f,-0.5f, 0.5f), vec3(0.0f, 1.0f, 0.0f),
+vec3(0.5f,-0.5f, 0.5f), vec3(0.0f, 1.0f, 0.0f),
 
-	vec3(0.5f, 0.5f, 0.5f), vec3(0.0f, 1.0f, 0.0f),
-	vec3(-0.5f, 0.5f, 0.5f), vec3(0.0f, 1.0f, 0.0f),
-	vec3(0.5f,-0.5f, 0.5f), vec3(0.0f, 1.0f, 0.0f),
+vec3(0.5f, 0.5f, 0.5f), vec3(0.0f, 1.0f, 0.0f),
+vec3(-0.5f, 0.5f, 0.5f), vec3(0.0f, 1.0f, 0.0f),
+vec3(0.5f,-0.5f, 0.5f), vec3(0.0f, 1.0f, 0.0f),
 
-	vec3(0.5f, 0.5f, 0.5f), vec3(1.0f, 0.0f, 1.0f), // right - purple
-	vec3(0.5f,-0.5f,-0.5f), vec3(1.0f, 0.0f, 1.0f),
-	vec3(0.5f, 0.5f,-0.5f), vec3(1.0f, 0.0f, 1.0f),
+vec3(0.5f, 0.5f, 0.5f), vec3(1.0f, 0.0f, 1.0f), // right - purple
+vec3(0.5f,-0.5f,-0.5f), vec3(1.0f, 0.0f, 1.0f),
+vec3(0.5f, 0.5f,-0.5f), vec3(1.0f, 0.0f, 1.0f),
 
-	vec3(0.5f,-0.5f,-0.5f), vec3(1.0f, 0.0f, 1.0f),
-	vec3(0.5f, 0.5f, 0.5f), vec3(1.0f, 0.0f, 1.0f),
-	vec3(0.5f,-0.5f, 0.5f), vec3(1.0f, 0.0f, 1.0f),
+vec3(0.5f,-0.5f,-0.5f), vec3(1.0f, 0.0f, 1.0f),
+vec3(0.5f, 0.5f, 0.5f), vec3(1.0f, 0.0f, 1.0f),
+vec3(0.5f,-0.5f, 0.5f), vec3(1.0f, 0.0f, 1.0f),
 
-	vec3(0.5f, 0.5f, 0.5f), vec3(1.0f, 1.0f, 0.0f), // top - yellow
-	vec3(0.5f, 0.5f,-0.5f), vec3(1.0f, 1.0f, 0.0f),
-	vec3(-0.5f, 0.5f,-0.5f), vec3(1.0f, 1.0f, 0.0f),
+vec3(0.5f, 0.5f, 0.5f), vec3(1.0f, 1.0f, 0.0f), // top - yellow
+vec3(0.5f, 0.5f,-0.5f), vec3(1.0f, 1.0f, 0.0f),
+vec3(-0.5f, 0.5f,-0.5f), vec3(1.0f, 1.0f, 0.0f),
 
-	vec3(0.5f, 0.5f, 0.5f), vec3(1.0f, 1.0f, 0.0f),
-	vec3(-0.5f, 0.5f,-0.5f), vec3(1.0f, 1.0f, 0.0f),
-	vec3(-0.5f, 0.5f, 0.5f), vec3(1.0f, 1.0f, 0.0f)
+vec3(0.5f, 0.5f, 0.5f), vec3(1.0f, 1.0f, 0.0f),
+vec3(-0.5f, 0.5f,-0.5f), vec3(1.0f, 1.0f, 0.0f),
+vec3(-0.5f, 0.5f, 0.5f), vec3(1.0f, 1.0f, 0.0f)
 };
 
 vec3 gridVertexArray[] = {
@@ -410,7 +417,7 @@ void drawModel(int shaderProgram, GLuint vao[], vec3 position, vec3 rotation, ve
 	glDrawArrays(mode, 0, 36);
 
 
-	
+
 	//NUMBER 0
 	//Bottom
 	translationMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(2.5f, 0.0f, 0.0f));
@@ -419,7 +426,7 @@ void drawModel(int shaderProgram, GLuint vao[], vec3 position, vec3 rotation, ve
 
 	glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &worldMatrix[0][0]);
 	glDrawArrays(mode, 0, 36);
-	
+
 	//Left
 	translationMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(2.0f, 1.0f, 0.0f));
 	rotationMatrix = rotate(glm::mat4(1.0f), glm::radians(90.0f), glm::vec3(0.0f, 0.0f, 1.0f));
@@ -504,13 +511,13 @@ void updateInput(GLFWwindow* window, vec3& position, vec3& rotation, vec3& scale
 		renderMode = "GL_TRIANGLES";
 	}
 
-	
+
 
 }
 //For mouse input
-void cursorMovement(GLFWwindow* window, double position_x, double position_y)
+/*void cursorMovement(GLFWwindow* window, double position_x, double position_y)
 {
-	int pan = glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT);
+	int pan = glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_RIGHT);
 
 
 	if (pan == GLFW_PRESS)
@@ -524,10 +531,10 @@ void cursorMovement(GLFWwindow* window, double position_x, double position_y)
 		glm::vec3 mod_v = glm::vec3(xdiff*0.5, 0, 0);
 		glm::vec4 mod_v4 = glm::vec4(mod_v, 1);
 		centerO = glm::normalize(centerO + glm::vec3(mod_v4*0.5f));
-		glfwSetCursorPos(window, width / 0.5, height / 0.5);
+		glfwSetCursorPos(window, width * 0.5, height * 0.5);
 
 	}
-}
+}*/
 /*
 const glm::vec3 initEye(0.0f, 0.0f, -1.0f);
 bool mouseButtonLeft = false;
@@ -589,7 +596,7 @@ int main(int argc, char* argv[])
 	}
 	glfwMakeContextCurrent(window);
 	glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
-	glfwSetCursorPosCallback(window, cursorMovement);
+	//glfwSetCursorPosCallback(window, cursorMovement);
 
 
 	// Initialize GLEW
@@ -601,7 +608,7 @@ int main(int argc, char* argv[])
 	}
 	int width, height;
 	glfwGetFramebufferSize(window, &width, &height);
-	//glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+	glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 
 	glViewport(0, 0, width, height);
 	// Black background
@@ -617,10 +624,10 @@ int main(int argc, char* argv[])
 	vec3 cameraUp(0.0f, 1.0f, 0.0f);
 
 	// Other camera parameters
-	/*float cameraSpeed = 1.0f;
+	float cameraSpeed = 1.0f;
 	float cameraFastSpeed = 2 * cameraSpeed;
 	float cameraHorizontalAngle = 90.0f;
-	float cameraVerticalAngle = 0.0f;*/
+	float cameraVerticalAngle = 0.0f;
 
 	projection_matrix = glm::perspective(70.0f, 1024.0f / 768.0f, 0.01f, 100.0f);
 
@@ -710,8 +717,7 @@ int main(int argc, char* argv[])
 
 	string* renderMode = new string("GL_TRIANGLES"); //Render mode initially in triangles
 
-	glm::mat4 view_matrix;
-	view_matrix = glm::lookAt(eye, center, up);
+	
 	//float pointDisplacementUnit = 0.1f;
 	glEnable(GL_CULL_FACE);
 	//glEnable(GL_DEPTH_TEST);
@@ -726,44 +732,51 @@ int main(int argc, char* argv[])
 		//Get user inputs
 		updateInput(window, position, rotation, scaling, *renderMode);
 
-		view_matrix = glm::lookAt(cameraEye, cameraEye + centerO, up);
-
-		view_matrix = glm::rotate(view_matrix, glm::radians(x_rotate), glm::vec3(0.0f, 0.0f, -1.0f));
-		view_matrix = glm::rotate(view_matrix, glm::radians(x_rotate), glm::vec3(-1.0f, 0.0f, 0.0f));
-		//MOUSE MOTION
-		/*double mousePosX, mousePosY;
-		glfwGetCursorPos(window, &mousePosX, &mousePosY);
-
-		double dx = mousePosX - lastMousePosX;
-		double dy = mousePosY - lastMousePosY;
-
-		lastMousePosX = mousePosX;
-		lastMousePosY = mousePosY;
-
-		//Convert to spherical coords
-		const float cameraAngularSpeed = 60.0f;
-		cameraHorizontalAngle -= dx * cameraAngularSpeed * dt;
-		cameraVerticalAngle -= dy * cameraAngularSpeed * dt;
-
+	
 		
 
-		//Clamp vertical angle to [-85,85] degrees
-		cameraVerticalAngle = std::max(-85.0f, std::min(85.0f, cameraVerticalAngle));
-
-		float theta = radians(cameraHorizontalAngle);
-		float phi = radians(cameraVerticalAngle);
-
-		cameraLookAt = vec3(cosf(phi)*cosf(theta), sinf(phi), -cosf(phi)*sinf(theta));
-		vec3 cameraSideVector = glm::cross(cameraLookAt, vec3(0.0, 1.0f, 0.0f));
-
-		glm::normalize(cameraSideVector);*/
-
 		
-
-		glm::mat4 viewMatrix = glm::mat4(1.0f);
+		mat4 viewMatrix = glm::mat4(1.0f);
 		// Each frame, reset color of each pixel to glClearColor
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		int pan = glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_RIGHT);
+		if (pan== GLFW_PRESS)
+		{
+			double mouseposX, mouseposY;
+			glfwGetCursorPos(window, &mouseposX, &mouseposY);
+			double dx = mouseposX - lastMousePosX;
+			double dy = mouseposY - lastMousePosY;
+			lastMousePosX = mouseposX;
+			lastMousePosY = mouseposY;
+			const float cameraAngularSpeed = 60.0f;
+			cameraHorizontalAngle -= dx * cameraAngularSpeed * dt;
+			vec3 eyeHorizon (cameraHorizontalAngle, 0.0f, 0.0f);
+			//MOUSE MOTION
+			/*double mousePosX, mousePosY;
+			glfwGetCursorPos(window, &mousePosX, &mousePosY);
+			double dx = mousePosX - lastMousePosX;
+			double dy = mousePosY - lastMousePosY;
+			lastMousePosX = mousePosX;
+			lastMousePosY = mousePosY;
+			//Convert to spherical coords
+			const float cameraAngularSpeed = 60.0f;
+			cameraHorizontalAngle -= dx * cameraAngularSpeed * dt;
+			cameraVerticalAngle -= dy * cameraAngularSpeed * dt;
 
+			//Clamp vertical angle to [-85,85] degrees
+			cameraVerticalAngle = std::max(-85.0f, std::min(85.0f, cameraVerticalAngle));
+			float theta = radians(cameraHorizontalAngle);
+			float phi = radians(cameraVerticalAngle);
+			cameraLookAt = vec3(cosf(phi)*cosf(theta), sinf(phi), -cosf(phi)*sinf(theta));
+			vec3 cameraSideVector = glm::cross(cameraLookAt, vec3(0.0, 1.0f, 0.0f));
+			glm::normalize(cameraSideVector);*/
+
+			//viewMatrix = lookAt(cameraPosition, cameraPosition + cameraLookAt, cameraUp );
+			viewMatrix = lookAt(eye +eyeHorizon, center, up);
+			setViewMatrix(shaderProgram, viewMatrix);
+		}
+		
+		
 		// Draw geometry
 		//glUseProgram(shaderProgram);
 		//glBindVertexArray(vaoArray[0]);
