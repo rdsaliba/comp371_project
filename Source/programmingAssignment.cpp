@@ -35,21 +35,6 @@ Model models[] = {
         
 };
 
-void setViewMatrix(int shaderProgram, mat4 viewMatrix)
-{
-    glUseProgram(shaderProgram);
-    GLuint viewMatrixLocation = glGetUniformLocation(shaderProgram, "viewMatrix");
-    glUniformMatrix4fv(viewMatrixLocation, 1, GL_FALSE, &viewMatrix[0][0]);
-}
-
-void setWorldMatrix(int shaderProgram, mat4 worldMatrix)
-{
-    glUseProgram(shaderProgram);
-    GLuint worldMatrixLocation = glGetUniformLocation(shaderProgram, "worldMatrix");
-    glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &worldMatrix[0][0]);
-}
-
-
 const char* getVertexShaderSource()
 {
     return
@@ -296,7 +281,7 @@ GLuint createVertexArrayObject(vec3* vertexArray)
 /// <param name="zDisplacement"></param>
 void drawGridSquare(GLuint worldMatrixLocation, float xDisplacement, float yDisplacement, float zDisplacement, float gridUnit, mat4 worldRotationUpdate) {
 
-    glm::mat4 translationMatrix = worldRotationUpdate * glm::translate(glm::mat4(1.0f), glm::vec3(xDisplacement, yDisplacement, zDisplacement)); //Note: Multiplying worldRotationUpdate causes lag
+    glm::mat4 translationMatrix = worldRotationUpdate * glm::translate(glm::mat4(1.0f), glm::vec3(xDisplacement, yDisplacement, zDisplacement)); //Note: Multiplying with worldRotationUpdate causes lag
     glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &translationMatrix[0][0]);
     glDrawArrays(GL_LINE_LOOP, 0, 4);
 }
@@ -318,6 +303,7 @@ void drawGroundGrid(int shader, GLuint vao[], float pointDisplacementUnit, mat4 
     }
 }
 
+//Grid axis lines
 void drawAxisLines(int shader, GLuint vao[], float gridUnit, mat4 worldRotationUpdate) {
 
     glBindVertexArray(vao[1]);
@@ -440,13 +426,9 @@ void drawTaqiModel(int shaderProgram, GLuint vao[], mat4 worldRotationUpdate)
 {
     glBindVertexArray(vao[4]);
     GLuint worldMatrixLocation = glGetUniformLocation(shaderProgram, "worldMatrix");
-
-    //User update for scale
-
     Model model = models[1];
-    //mat4 rotationUpdate = rotate(glm::mat4(1.0f), radians(model.getRotation().y), vec3(0.0f, 1.0f, 0.0f));
-    //mat4 scaleUpdate = scale(glm::mat4(1.0f), glm::vec3(model.getScaling(), model.getScaling(), model.getScaling()));
 
+    //User update for rotationg and scale
     mat4 rotationUpdate = rotate(glm::mat4(1.0f), radians(model.getRotation().y), vec3(0.0f, 1.0f, 0.0f));
     mat4 scaleUpdate = scale(glm::mat4(1.0f), glm::vec3(1.0f + model.getScaling(), 1.0f + model.getScaling(), 1.0f + model.getScaling()));
 
@@ -566,7 +548,7 @@ void updateInput(GLFWwindow* window, float dt, vec3& worldRotation)
         (*focusedModel).y(-0.1f);
     }
 
-    //rotation (r and t)
+    //rotation
     if (glfwGetKey(window, GLFW_KEY_Z) == GLFW_PRESS)
     {
         (*focusedModel).updateRotationY(-5.0f);
@@ -590,7 +572,7 @@ void updateInput(GLFWwindow* window, float dt, vec3& worldRotation)
         (*focusedModel).setRenderMode(GL_TRIANGLES);
     }
 
-    //Focused model
+    //Focused model selection
     if (glfwGetKey(window, GLFW_KEY_1) == GLFW_PRESS)
     {
         modelFocusSwitch(1);
@@ -777,7 +759,7 @@ int main(int argc, char* argv[])
     //World Orientation
     vec3 worldRotation(1.f);
 
-
+    //Cursor position
     double lastMousePosX, lastMousePosY;
     glfwGetCursorPos(window, &lastMousePosX, &lastMousePosY);
 
@@ -848,7 +830,7 @@ int main(int argc, char* argv[])
 
         glm::normalize(cameraSideVector);
 
-        // Use camera lookat and side vectors to update positions with ASDW
+        // Use camera lookat and side vectors to update positions with CVBG
         if (glfwGetKey(window, GLFW_KEY_G) == GLFW_PRESS)
         {
             cameraPosition += cameraLookAt * dt * currentCameraSpeed;
@@ -873,7 +855,8 @@ int main(int argc, char* argv[])
         // - In first person, camera lookat is set like below
         mat4 viewMatrix(1.0f);
         viewMatrix = lookAt(cameraPosition, cameraPosition + cameraLookAt, cameraUp);
-        setViewMatrix(shaderProgram, viewMatrix);
+        GLuint viewMatrixLocation = glGetUniformLocation(shaderProgram, "viewMatrix");
+        glUniformMatrix4fv(viewMatrixLocation, 1, GL_FALSE, &viewMatrix[0][0]);
 
         //glBindVertexArray(0); 
         // End Frame
@@ -885,14 +868,14 @@ int main(int argc, char* argv[])
             glfwSetWindowShouldClose(window, true);
 
         // Projection Transform
-        if (glfwGetKey(window, GLFW_KEY_3) == GLFW_PRESS) {
+        if (glfwGetKey(window, GLFW_KEY_6) == GLFW_PRESS) {
             glm::mat4 projectionMatrix = glm::perspective(glm::radians(45.0f), 1024.0f / 768.0f, 0.10f, 100.0f);
 
             GLuint projectionMatrixLocation = glGetUniformLocation(shaderProgram, "projectionMatrix");
             glUniformMatrix4fv(projectionMatrixLocation, 1, GL_FALSE, &projectionMatrix[0][0]);
         }
 
-        if (glfwGetKey(window, GLFW_KEY_4) == GLFW_PRESS) {
+        if (glfwGetKey(window, GLFW_KEY_7) == GLFW_PRESS) {
             glm::mat4 projectionMatrix = glm::ortho(-4.0f, 4.0f, -3.0f, 3.0f, -100.0f, 100.0f);
 
             GLuint projectionMatrixLocation = glGetUniformLocation(shaderProgram, "projectionMatrix");
