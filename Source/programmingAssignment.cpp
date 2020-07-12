@@ -268,8 +268,9 @@ GLuint createVertexArrayObject(vec3* vertexArray)
 /// <param name="xDisplacement"></param>
 /// <param name="yDisplacement"></param>
 /// <param name="zDisplacement"></param>
-void drawGridSquare(GLuint worldMatrixLocation, float xDisplacement, float yDisplacement, float zDisplacement, float gridUnit) {
-    glm::mat4 translationMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(xDisplacement, yDisplacement, zDisplacement));
+void drawGridSquare(GLuint worldMatrixLocation, float xDisplacement, float yDisplacement, float zDisplacement, float gridUnit, mat4 worldRotationUpdate) {
+
+    glm::mat4 translationMatrix = worldRotationUpdate * glm::translate(glm::mat4(1.0f), glm::vec3(xDisplacement, yDisplacement, zDisplacement));
     glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &translationMatrix[0][0]);
     glDrawArrays(GL_LINE_LOOP, 0, 4);
 }
@@ -279,20 +280,22 @@ void drawGridSquare(GLuint worldMatrixLocation, float xDisplacement, float yDisp
 /// </summary>
 /// <param name="worldMatrixLocation"></param>
 /// <param name="pointDisplacementUnit">Length of vertex</param>
-void drawGroundGrid(int shader, GLuint vao[], float pointDisplacementUnit) {
+void drawGroundGrid(int shader, GLuint vao[], float pointDisplacementUnit, mat4 worldRotationUpdate) {    
+
     glBindVertexArray(vao[0]);
-    mat4 worldMatrix = mat4(1.0f);
+    mat4 worldMatrix = worldRotationUpdate * mat4(1.0f);
     GLuint worldMatrixLocation = glGetUniformLocation(shader, "worldMatrix");
     for (int row = -50; row < 50; row++) {
         for (int col = -50; col < 50; col++) {
-            drawGridSquare(worldMatrixLocation, col * pointDisplacementUnit, 0.0f, row * pointDisplacementUnit, pointDisplacementUnit);
+            drawGridSquare(worldMatrixLocation, col * pointDisplacementUnit, 0.0f, row * pointDisplacementUnit, pointDisplacementUnit, worldRotationUpdate);
         }
     }
 }
 
-void drawAxisLines(int shader, GLuint vao[], float gridUnit) {
+void drawAxisLines(int shader, GLuint vao[], float gridUnit, mat4 worldRotationUpdate) {
+
     glBindVertexArray(vao[1]);
-    mat4 axisMatrix = mat4(1.0f);//scale(mat4(1.0f)//, vec3(5 * gridUnit, 0.1f, 0.1f)) * translate(mat4(1.0f), vec3(0.5f, 0.0f, 0.0f)) * rotate(mat4(1.0f), radians(90.0f), vec3(0.0f, 1.0f, 0.0f));
+    mat4 axisMatrix = worldRotationUpdate * mat4(1.0f);//scale(mat4(1.0f)//, vec3(5 * gridUnit, 0.1f, 0.1f)) * translate(mat4(1.0f), vec3(0.5f, 0.0f, 0.0f)) * rotate(mat4(1.0f), radians(90.0f), vec3(0.0f, 1.0f, 0.0f));
     //axisMatrix = rotate(axisMatrix, radians(270.0f), vec3(1.0f, 0.0f, 0.0f));
     GLuint worldMatrixLocation = glGetUniformLocation(shader, "worldMatrix");
     //X-axis
@@ -303,56 +306,36 @@ void drawAxisLines(int shader, GLuint vao[], float gridUnit) {
 
     //Y-axis
     glBindVertexArray(vao[2]);
-    axisMatrix = glm::mat4(1.0f);
+    axisMatrix = worldRotationUpdate * glm::mat4(1.0f);
     //axisMatrix = scale(axisMatrix, vec3(0.03f, 0.0f, 0.0f));
     glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &axisMatrix[0][0]);
     glDrawArrays(GL_LINES, 0, 2);
 
     //Z-axis
     glBindVertexArray(vao[3]);
-    axisMatrix = glm::mat4(1.0f);
+    axisMatrix = worldRotationUpdate * glm::mat4(1.0f);
     //axisMatrix = scale(axisMatrix, vec3(0.03f, 0.0f, 0.0f));
     glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &axisMatrix[0][0]);
     glDrawArrays(GL_LINES, 0, 2);
 }
 
-void modelTransformations()
-{
-    
-}
-
 //TAQI'S MODEL ("Q4")
-void drawTaqiModel(int shaderProgram, GLuint vao[], vec3 position, vec3 rotation, vec3 scaling, string renderMode)
+void drawTaqiModel(int shaderProgram, GLuint vao[], vec3 position, vec3 rotation, vec3 scaling, GLenum mode, mat4 worldRotationUpdate)
 {
-    GLenum mode;
-    if (renderMode == "GL_POINTS")
-    {
-        mode = GL_POINTS;
-    }
-    if (renderMode == "GL_LINES")
-    {
-        mode = GL_LINES;
-    }
-    if (renderMode == "GL_TRIANGLES")
-    {
-        mode = GL_TRIANGLES;
-    }
-
-
     glBindVertexArray(vao[4]);
     GLuint worldMatrixLocation = glGetUniformLocation(shaderProgram, "worldMatrix");
 
 
     //User update for scale
-    mat4 scaleUpdate = scale(glm::mat4(1.0f), glm::vec3(1.0f + scaling.x, 1.0f + scaling.y, 1.0f + scaling.z));
-    mat4 rotationUpdate = rotate(glm::mat4(1.0f), glm::radians(1.0f + rotation.y), glm::vec3(0.0f, 1.0f, 0.0f));
+    mat4 scaleUpdate = scale(glm::mat4(1.0f), glm::vec3(scaling.x, scaling.y, scaling.z));
+    mat4 rotationUpdate = rotate(glm::mat4(1.0f), glm::radians(rotation.y), glm::vec3(0.0f, 1.0f, 0.0f));
 
     //Taqi's Model
     //Cube scale (for most of the cubes)
     mat4 scaleMatrix = scale(glm::mat4(1.0f), glm::vec3(1.5f, 0.5f, 1.0f));
 
     //groupMatrix will be applied to all of the cubes for this model (will translate the complete model)
-    mat4 groupMatrix = translate(glm::mat4(1.0f), glm::vec3(-6.0f + position.x, 2.5f + position.y, 0.0f)) * rotationUpdate * scaleUpdate; //Translate model to upper left corner
+    mat4 groupMatrix = worldRotationUpdate * translate(glm::mat4(1.0f), glm::vec3(-6.0f + position.x, 2.5f + position.y, 0.0f)) * rotationUpdate * scaleUpdate; //Translate model to upper left corner
 
     //LETTER Q (bottom)
     mat4 translationMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, 0.0f));
@@ -432,9 +415,8 @@ void drawTaqiModel(int shaderProgram, GLuint vao[], vec3 position, vec3 rotation
 
 
 //Update through user input
-void updateInput(GLFWwindow* window, vec3& position, vec3& rotation, vec3& scale, string& renderMode, float dt, int lastMouseLeftState)
+void updateInput(GLFWwindow* window, vec3& position, vec3& rotation, vec3& scale, GLenum& renderMode, float dt, vec3& worldRotation)
 {
-
     //Scale
     if (glfwGetKey(window, GLFW_KEY_U) == GLFW_PRESS)
     {
@@ -448,19 +430,19 @@ void updateInput(GLFWwindow* window, vec3& position, vec3& rotation, vec3& scale
     //Position
     if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
     {
-        position.x -= 1.5f * dt;
+        position.x -= 2.0f * dt;
     }
     if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
     {
-        position.x += 1.5f * dt;
+        position.x += 2.0f * dt;
     }
     if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
     {
-        position.y += 1.5f * dt;
+        position.y += 2.0f * dt;
     }
     if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
     {
-        position.y -= 1.5f * dt;
+        position.y -= 2.0f * dt;
     }
 
     //rotation (r and t)
@@ -476,31 +458,53 @@ void updateInput(GLFWwindow* window, vec3& position, vec3& rotation, vec3& scale
     //Rendering mode
     if (glfwGetKey(window, GLFW_KEY_P) == GLFW_PRESS)
     {
-        renderMode = "GL_POINTS";
+        renderMode = GL_POINTS;
     }
     if (glfwGetKey(window, GLFW_KEY_L) == GLFW_PRESS)
     {
-        renderMode = "GL_LINES";
+        renderMode = GL_LINES;
     }
     if (glfwGetKey(window, GLFW_KEY_T) == GLFW_PRESS)
     {
-        renderMode = "GL_TRIANGLES";
+        renderMode = GL_TRIANGLES;
     }
 
     //World orientation
-    if (lastMouseLeftState == GLFW_RELEASE && glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS)
+    if (glfwGetKey(window, GLFW_KEY_LEFT) == GLFW_PRESS)
     {
-
+        worldRotation.x += 5.0f * dt;
+    }
+    if (glfwGetKey(window, GLFW_KEY_RIGHT) == GLFW_PRESS)
+    {
+        worldRotation.x -= 5.0f * dt;
+    }
+    if (glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS)
+    {
+        worldRotation.y += 5.0f * dt;
+    }
+    if (glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS)
+    {
+        worldRotation.y -= 5.0f * dt;
+    }
+    //Home button resets world orientation
+    if (glfwGetKey(window, GLFW_KEY_H) == GLFW_PRESS) 
+    {
+        worldRotation.x = 0;
+        worldRotation.y = 0;
     }
 
-    lastMouseLeftState = glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT);
-    
+}
+
+//Changes worldOrientationFromInput
+void worldOrientationChange()
+{
+    //Ground
+    //Models
+    //Axis
 }
 
 int main(int argc, char* argv[])
 {
-
-
 
     // Initialize GLFW and OpenGL version
     glfwInit();
@@ -637,23 +641,32 @@ int main(int argc, char* argv[])
 
     //transformations
     vec3 position(0.f);
-    vec3 rotation(0.f);
-    vec3 scaling(0.f);
+    vec3 rotation(1.f);
+    vec3 scaling(1.f);
 
-    string* renderMode = new string("GL_TRIANGLES"); //Render mode initially in triangles
+    //World Orientation
+    vec3 worldRotation(1.f);
+
+
+    GLenum renderMode = GL_TRIANGLES; //Render mode initially in triangles
 
     //float pointDisplacementUnit = 0.1f;
     glEnable(GL_CULL_FACE);
     //glEnable(GL_DEPTH_TEST);
+
      // Entering Main Loop
     while (!glfwWindowShouldClose(window))
     {
+        mat4 worldRotationX = rotate(glm::mat4(1.0f), glm::radians(worldRotation.x), glm::vec3(1.0f, 0.0f, 0.0f));
+        mat4 worldRotationY = rotate(glm::mat4(1.0f), glm::radians(worldRotation.y), glm::vec3(0.0f, 1.0f, 0.0f));
+        mat4 worldRotationUpdate = worldRotationX * worldRotationY;
+
         //Frame time calculation
         float dt = glfwGetTime() - lastFrameTime;
         lastFrameTime += dt;
 
         //Get user inputs
-        updateInput(window, position, rotation, scaling, *renderMode, dt, lastMouseLeftState);
+        updateInput(window, position, rotation, scaling, renderMode, dt, worldRotation);
 
         glm::mat4 viewMatrix = glm::mat4(1.0f);
         // Each frame, reset color of each pixel to glClearColor
@@ -665,12 +678,12 @@ int main(int argc, char* argv[])
         //glBindVertexArray(vaoArray[0]);
 
        // GLuint worldMatrixLocation = glGetUniformLocation(shaderProgram, "worldMatrix");
-        drawGroundGrid(shaderProgram, vaoArray, gridUnit);
-        drawAxisLines(shaderProgram, vaoArray, gridUnit);
+        drawGroundGrid(shaderProgram, vaoArray, gridUnit, worldRotationUpdate);
+        drawAxisLines(shaderProgram, vaoArray, gridUnit, worldRotationUpdate);
 
         //MODELS
-        drawTaqiModel(shaderProgram, vaoArray, position, rotation, scaling, *renderMode);
-
+        drawTaqiModel(shaderProgram, vaoArray, position, rotation, scaling, renderMode, worldRotationUpdate);
+        
         //glBindVertexArray(0); 
         // End Frame
         glfwSwapBuffers(window);
