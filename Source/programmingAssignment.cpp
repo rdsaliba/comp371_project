@@ -732,15 +732,10 @@ int main(int argc, char* argv[])
 		//Get user inputs
 		updateInput(window, position, rotation, scaling, *renderMode);
 
-	
-		
-
-		
-		mat4 viewMatrix = glm::mat4(1.0f);
-		// Each frame, reset color of each pixel to glClearColor
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		//Mouse Panning and Tilting
 		int pan = glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_RIGHT);
-		if (pan== GLFW_PRESS)
+		int tilt = glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_MIDDLE);
+		if (pan == GLFW_PRESS)
 		{
 			double mouseposX, mouseposY;
 			glfwGetCursorPos(window, &mouseposX, &mouseposY);
@@ -750,31 +745,32 @@ int main(int argc, char* argv[])
 			lastMousePosY = mouseposY;
 			const float cameraAngularSpeed = 60.0f;
 			cameraHorizontalAngle -= dx * cameraAngularSpeed * dt;
-			vec3 eyeHorizon (cameraHorizontalAngle, 0.0f, 0.0f);
-			//MOUSE MOTION
-			/*double mousePosX, mousePosY;
-			glfwGetCursorPos(window, &mousePosX, &mousePosY);
-			double dx = mousePosX - lastMousePosX;
-			double dy = mousePosY - lastMousePosY;
-			lastMousePosX = mousePosX;
-			lastMousePosY = mousePosY;
-			//Convert to spherical coords
-			const float cameraAngularSpeed = 60.0f;
-			cameraHorizontalAngle -= dx * cameraAngularSpeed * dt;
-			cameraVerticalAngle -= dy * cameraAngularSpeed * dt;
+			vec3 eyeHorizon(cameraHorizontalAngle, 0.0f, 0.0f);
 
-			//Clamp vertical angle to [-85,85] degrees
-			cameraVerticalAngle = std::max(-85.0f, std::min(85.0f, cameraVerticalAngle));
-			float theta = radians(cameraHorizontalAngle);
-			float phi = radians(cameraVerticalAngle);
-			cameraLookAt = vec3(cosf(phi)*cosf(theta), sinf(phi), -cosf(phi)*sinf(theta));
-			vec3 cameraSideVector = glm::cross(cameraLookAt, vec3(0.0, 1.0f, 0.0f));
-			glm::normalize(cameraSideVector);*/
-
-			//viewMatrix = lookAt(cameraPosition, cameraPosition + cameraLookAt, cameraUp );
-			viewMatrix = lookAt(eye +eyeHorizon, center, up);
+			viewMatrix = lookAt(eye + eyeHorizon, center + eyeHorizon, up);
 			setViewMatrix(shaderProgram, viewMatrix);
 		}
+		if (tilt == GLFW_PRESS)
+		{
+			double mouseposX, mouseposY;
+			glfwGetCursorPos(window, &mouseposX, &mouseposY);
+			double dx = mouseposX - lastMousePosX;
+			double dy = mouseposY - lastMousePosY;
+			lastMousePosX = mouseposX;
+			lastMousePosY = mouseposY;
+			const float cameraAngularSpeed = 60.0f;
+			cameraVerticalAngle -= dy * cameraAngularSpeed * dt;
+			vec3 eyeVertical(0.0f, cameraVerticalAngle, 0.0f);
+			viewMatrix = lookAt(eye + eyeVertical, center, up);
+			setViewMatrix(shaderProgram, viewMatrix);
+		}
+		
+
+		
+		//mat4 viewMatrix = glm::mat4(1.0f);
+		// Each frame, reset color of each pixel to glClearColor
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		
 		
 		
 		// Draw geometry
