@@ -413,6 +413,76 @@ void drawHauModel(int shader, GLuint vao[]) {
 }
 
 
+//WILLIAM'S MODEL ("L9")
+void drawWilliamModel(int shaderProgram, GLuint vao[])
+{
+	glBindVertexArray(vao[4]);
+	GLuint worldMatrixLocation = glGetUniformLocation(shaderProgram, "worldMatrix");
+
+	Model model = models[3];
+	mat4 rotationUpdate = rotate(glm::mat4(1.0f), radians(1.0f + model.getRotation().y), vec3(0.0f, 1.0f, 0.0f));
+	mat4 scaleUpdate = scale(glm::mat4(1.0f), glm::vec3(1.0f + model.getScaling(), 1.0f + model.getScaling(), 1.0f + model.getScaling()));
+
+	
+	//groupMatrix will be applied to all of the cubes for this model (will translate the complete model)
+	mat4 groupMatrix = translate(glm::mat4(1.0f), model.getPosition()) * rotationUpdate * scaleUpdate; //Translate model to upper left corner
+
+	//Letter L (verticle line)
+	mat4 scaleMatrix = glm::scale(glm::mat4(1.0f), glm::vec3(2.1f, 0.5f, 1.0f));
+	mat4 translationMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.5f, 0.0f));
+	mat4 rotationMatrix = rotate(glm::mat4(1.0f), glm::radians(90.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+	mat4 partMatrix = translationMatrix * rotationMatrix * scaleMatrix;
+	mat4 worldMatrix = groupMatrix * partMatrix;
+
+	glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &worldMatrix[0][0]);
+	glDrawArrays(GL_TRIANGLES, 0, 36);
+	//Letter L (bottom)
+	scaleMatrix = scale(glm::mat4(1.0f), glm::vec3(1.5f, 0.5f, 1.0f));
+	translationMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(0.5f, -0.5f, 0.0f));
+	partMatrix = translationMatrix * scaleMatrix;
+	worldMatrix = groupMatrix * partMatrix;
+
+	glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &worldMatrix[0][0]);
+	glDrawArrays(GL_TRIANGLES, 0, 36);
+
+	//NUMBER 9 (bottom)
+
+	translationMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(2.5f, 0.5f, 0.0f));
+	partMatrix = translationMatrix * scaleMatrix;
+	worldMatrix = groupMatrix * partMatrix;
+
+	glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &worldMatrix[0][0]);
+	glDrawArrays(GL_TRIANGLES, 0, 36);
+
+	//NUMBER 9 (top)
+	translationMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(2.5f, 1.5f, 0.0f));
+	partMatrix = translationMatrix * scaleMatrix;
+	worldMatrix = groupMatrix * partMatrix;
+
+	glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &worldMatrix[0][0]);
+	glDrawArrays(GL_TRIANGLES, 0, 36);
+
+
+	//Left side of 9
+	translationMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(2.0f, 1.0f, 0.0f));
+	rotationMatrix = rotate(glm::mat4(1.0f), glm::radians(90.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+	partMatrix = translationMatrix * rotationMatrix * scaleMatrix;
+	worldMatrix = groupMatrix * partMatrix;
+
+	glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &worldMatrix[0][0]);
+	glDrawArrays(GL_TRIANGLES, 0, 36);
+
+
+	//Right side of 9
+	scaleMatrix = glm::scale(glm::mat4(1.0f), glm::vec3(2.2f, 0.5f, 1.0f));
+	translationMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(3.2f, 0.6f, 0.0f));
+	partMatrix = translationMatrix * rotationMatrix * scaleMatrix;
+	worldMatrix = groupMatrix * partMatrix;
+
+	glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &worldMatrix[0][0]);
+	glDrawArrays(GL_TRIANGLES, 0, 36);
+}
+
 //TAQI'S MODEL ("Q4")
 void drawTaqiModel(int shaderProgram, GLuint vao[])
 {
@@ -571,6 +641,10 @@ void updateInput(GLFWwindow* window)
     {
         modelFocusSwitch(2);
     }
+	if (glfwGetKey(window, GLFW_KEY_5) == GLFW_PRESS)
+	{
+		modelFocusSwitch(3);
+	}
 }
 
 /// <summary>
@@ -736,6 +810,7 @@ int main(int argc, char* argv[])
         //MODELS
         drawTaqiModel(shaderProgram, vaoArray);
         drawHauModel(shaderProgram, vaoArray);
+		drawWilliamModel(shaderProgram, vaoArray);
 
         //glBindVertexArray(0); 
         // End Frame
