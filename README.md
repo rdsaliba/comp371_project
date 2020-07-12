@@ -13,7 +13,7 @@ ESC: close window
 
 1-5: select model (NOT DONE)
 
-H: home button (NOT DONE)
+H: home button
 
 
 ### **Model Controls:**
@@ -60,7 +60,7 @@ Middle_mouse_button: tilt camera in y direction
 Left_mouse_button: Zoom in/out
 
 
-### **World orientation: (NOT DONE)**
+### **World orientation:
 
 Left_arrow: rotation (CCW) about positive x axis
 
