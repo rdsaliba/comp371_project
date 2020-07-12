@@ -2,9 +2,14 @@
 
 Section: CC
 
-Team:
-
-Taqi Haque - 40043834
+## Team members
+| Name          | ID        | 
+| ------------- |:-------------:|
+| Taqi Haque |40043834 |
+|  |  | 
+|  |  | 
+|  |  | 
+|  |  | 
 
 
 ### **General controls:**
