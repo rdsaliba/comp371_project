@@ -47,7 +47,7 @@ L: lines rendering mode
 T: triangles rendering mode
 
 
-### **Camera Controls: (NOT DONE)**
+### **Camera Controls:**
 
 Mouse_Cursor: FPS camera
 
