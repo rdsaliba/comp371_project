@@ -25,13 +25,12 @@ using namespace glm;
 using namespace std;
 
 void modelFocusSwitch(int nextModel);
-GLenum renderMode = GL_TRIANGLES;
 int SELECTEDMODELINDEX = 1;
 Model* focusedModel = NULL;
 Model models[] = {
     Model(vec3(0.0f, 0.0f, 0.0f), 0.0f), //axis lines
-    Model(vec3(-0.6f, 2.5f, 0.0f), 0.0f), //Taqi (Q4)
-    Model(vec3(2.0f, 2.0f, -2.0f), 0.0f) //Hau (U6)
+    Model(vec3(-10.0f, 0.0f, -10.0f), 0.0f), //Taqi (Q4)
+    Model(vec3(10.0f, 0.0f, -10.0f), 0.0f) //Hau (U6)
         
 };
 
@@ -351,7 +350,7 @@ void drawHauModel(int shader, GLuint vao[]) {
     mat4 uMatrix = groupMatrix * partMatrix;
 
     glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &uMatrix[0][0]);
-    glDrawArrays(renderMode, 0, 36);
+    glDrawArrays(model.getRenderMode(), 0, 36);
 
 
     //U-Left
@@ -362,7 +361,7 @@ void drawHauModel(int shader, GLuint vao[]) {
     uMatrix = groupMatrix * partMatrix;
 
     glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &uMatrix[0][0]);
-    glDrawArrays(renderMode, 0, 36);
+    glDrawArrays(model.getRenderMode(), 0, 36);
     
     //U-Right
     translationMatrix = translate(mat4(1.0f), vec3(1.0f, 2.0f, 0.0f));
@@ -370,7 +369,7 @@ void drawHauModel(int shader, GLuint vao[]) {
     uMatrix = groupMatrix * partMatrix;
 
     glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &uMatrix[0][0]);
-    glDrawArrays(renderMode, 0, 36);
+    glDrawArrays(model.getRenderMode(), 0, 36);
 
     //6-bottom
     translationMatrix = translate(mat4(1.0f), vec3(4.5f, 0.0f, 0.0f));
@@ -378,7 +377,7 @@ void drawHauModel(int shader, GLuint vao[]) {
     uMatrix = groupMatrix * partMatrix;
 
     glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &uMatrix[0][0]);
-    glDrawArrays(renderMode, 0, 36);
+    glDrawArrays(model.getRenderMode(), 0, 36);
 
     //6-left
     translationMatrix = translate(mat4(1.0f), vec3(3.0f, 2.0f, 0.0f));
@@ -386,7 +385,7 @@ void drawHauModel(int shader, GLuint vao[]) {
     uMatrix = groupMatrix * partMatrix;
 
     glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &uMatrix[0][0]);
-    glDrawArrays(renderMode, 0, 36);
+    glDrawArrays(model.getRenderMode(), 0, 36);
 
     //6-right
     translationMatrix = translate(mat4(1.0f), vec3(5.5f, 1.0f, 0.0f));
@@ -394,7 +393,7 @@ void drawHauModel(int shader, GLuint vao[]) {
     uMatrix = groupMatrix * partMatrix;
 
     glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &uMatrix[0][0]);
-    glDrawArrays(renderMode, 0, 36);
+    glDrawArrays(model.getRenderMode(), 0, 36);
 
     //6-top loop
     translationMatrix = translate(mat4(1.0f), vec3(4.5f, 2.0f, 0.0f));
@@ -402,7 +401,7 @@ void drawHauModel(int shader, GLuint vao[]) {
     uMatrix = groupMatrix * partMatrix;
 
     glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &uMatrix[0][0]);
-    glDrawArrays(renderMode, 0, 36);
+    glDrawArrays(model.getRenderMode(), 0, 36);
 
     //6-top branch
     translationMatrix = translate(mat4(1.0f), vec3(4.5f, 4.0f, 0.0f));
@@ -410,7 +409,7 @@ void drawHauModel(int shader, GLuint vao[]) {
     uMatrix = groupMatrix * partMatrix;
 
     glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &uMatrix[0][0]);
-    glDrawArrays(renderMode, 0, 36);
+    glDrawArrays(model.getRenderMode(), 0, 36);
 }
 
 
@@ -437,7 +436,7 @@ void drawTaqiModel(int shaderProgram, GLuint vao[])
     mat4 worldMatrix = groupMatrix * partMatrix;
 
     glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &worldMatrix[0][0]);
-    glDrawArrays(renderMode, 0, 36);
+    glDrawArrays(model.getRenderMode(), 0, 36);
 
     
     //Left side of Q
@@ -447,7 +446,7 @@ void drawTaqiModel(int shaderProgram, GLuint vao[])
     worldMatrix = groupMatrix * partMatrix;
 
     glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &worldMatrix[0][0]);
-    glDrawArrays(renderMode, 0, 36);
+    glDrawArrays(model.getRenderMode(), 0, 36);
 
 
 
@@ -457,7 +456,7 @@ void drawTaqiModel(int shaderProgram, GLuint vao[])
     worldMatrix = groupMatrix * partMatrix;
 
     glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &worldMatrix[0][0]);
-    glDrawArrays(renderMode, 0, 36);
+    glDrawArrays(model.getRenderMode(), 0, 36);
 
 
     //Right side of Q
@@ -466,7 +465,7 @@ void drawTaqiModel(int shaderProgram, GLuint vao[])
     worldMatrix = groupMatrix * partMatrix;
 
     glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &worldMatrix[0][0]);
-    glDrawArrays(renderMode, 0, 36);
+    glDrawArrays(model.getRenderMode(), 0, 36);
 
 
     //Q tail
@@ -476,7 +475,7 @@ void drawTaqiModel(int shaderProgram, GLuint vao[])
     worldMatrix = groupMatrix * partMatrix;
 
     glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &worldMatrix[0][0]);
-    glDrawArrays(renderMode, 0, 36);
+    glDrawArrays(model.getRenderMode(), 0, 36);
 
 
     //NUMBER 4 (bottom)
@@ -485,7 +484,7 @@ void drawTaqiModel(int shaderProgram, GLuint vao[])
     worldMatrix = groupMatrix * partMatrix;
 
     glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &worldMatrix[0][0]);
-    glDrawArrays(renderMode, 0, 36);
+    glDrawArrays(model.getRenderMode(), 0, 36);
 
 
     //Left side of 4
@@ -495,7 +494,7 @@ void drawTaqiModel(int shaderProgram, GLuint vao[])
     worldMatrix = groupMatrix * partMatrix;
 
     glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &worldMatrix[0][0]);
-    glDrawArrays(renderMode, 0, 36);
+    glDrawArrays(model.getRenderMode(), 0, 36);
 
 
     //Right side of 4
@@ -505,7 +504,7 @@ void drawTaqiModel(int shaderProgram, GLuint vao[])
     worldMatrix = groupMatrix * partMatrix;
 
     glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &worldMatrix[0][0]);
-    glDrawArrays(renderMode, 0, 36);
+    glDrawArrays(model.getRenderMode(), 0, 36);
 }
 
 //Update through user input
@@ -552,15 +551,15 @@ void updateInput(GLFWwindow* window)
     //Rendering mode
     if (glfwGetKey(window, GLFW_KEY_P) == GLFW_PRESS)
     {
-        renderMode = GL_POINTS;
+        (*focusedModel).setRenderMode(GL_POINTS);
     }
     if (glfwGetKey(window, GLFW_KEY_L) == GLFW_PRESS)
     {
-        renderMode = GL_LINES;
+        (*focusedModel).setRenderMode(GL_LINES);
     }
     if (glfwGetKey(window, GLFW_KEY_T) == GLFW_PRESS)
     {
-        renderMode = GL_TRIANGLES;
+        (*focusedModel).setRenderMode(GL_TRIANGLES);
     }
 
     //Focused model
@@ -632,7 +631,7 @@ int main(int argc, char* argv[])
     glUseProgram(shaderProgram);
 
     // Camera parameters for view transform
-    vec3 cameraPosition(0.0f, 5.0f, 20.0f);
+    vec3 cameraPosition(0.0f, 5.0f, 10.0f);
     vec3 cameraLookAt(0.0f, 0.0f, 0.0f);
     vec3 cameraUp(0.0f, 1.0f, 0.0f);
 
@@ -721,7 +720,7 @@ int main(int argc, char* argv[])
 
     focusedModel = &models[1];
     glEnable(GL_CULL_FACE);
-    glEnable(GL_DEPTH_TEST);
+    //glEnable(GL_DEPTH_TEST);
      // Entering Main Loop
     while (!glfwWindowShouldClose(window))
     {

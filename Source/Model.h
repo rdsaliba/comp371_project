@@ -1,6 +1,7 @@
 #ifndef MODEL_H
 #define MODEL_H
 #include <glm/glm.hpp>
+#include <GL/glew.h> 
 using namespace glm;
 /// <summary>
 /// Movable 3D model location/transformation information
@@ -14,6 +15,8 @@ private:
 	float scaling;
 	//Orientation of model in 3D world
 	vec3 rotation;
+	
+	GLenum renderMode;
 
 public:
 	Model();
@@ -22,10 +25,12 @@ public:
 	vec3 getPosition() { return position; }
 	float getScaling() { return scaling; }
 	vec3 getRotation() { return rotation; }
+	GLenum getRenderMode() { return renderMode; }
 
 	void setPosition(vec3 position) { this->position = position; }
 	void setSize(float scaling) { this->scaling = scaling; }
 	void setRotation(vec3 rotation) { this->rotation = rotation; }
+	void setRenderMode(GLenum renderMode) { this->renderMode = renderMode; }
 
 	void updatePosition(vec3 moveVector);
 	void updateScaling(float value) { this->scaling += value; }
