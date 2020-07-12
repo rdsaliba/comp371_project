@@ -49,6 +49,8 @@ T: triangles rendering mode
 
 ### **Camera Controls: (NOT DONE)**
 
+Mouse_Cursor: FPS camera
+
 G: move forward
 
 V: move back
@@ -56,6 +58,8 @@ V: move back
 C: move left
 
 B: move right
+
+shift: move faster
 
 
 Right_mouse_button: pan camera in x direction
