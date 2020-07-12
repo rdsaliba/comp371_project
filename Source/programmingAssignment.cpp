@@ -270,7 +270,7 @@ GLuint createVertexArrayObject(vec3* vertexArray)
 /// <param name="zDisplacement"></param>
 void drawGridSquare(GLuint worldMatrixLocation, float xDisplacement, float yDisplacement, float zDisplacement, float gridUnit, mat4 worldRotationUpdate) {
 
-    glm::mat4 translationMatrix = worldRotationUpdate * glm::translate(glm::mat4(1.0f), glm::vec3(xDisplacement, yDisplacement, zDisplacement));
+    glm::mat4 translationMatrix = worldRotationUpdate * glm::translate(glm::mat4(1.0f), glm::vec3(xDisplacement, yDisplacement, zDisplacement)); //Note: Multiplying worldRotationUpdate causes lag
     glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &translationMatrix[0][0]);
     glDrawArrays(GL_LINE_LOOP, 0, 4);
 }
@@ -495,13 +495,6 @@ void updateInput(GLFWwindow* window, vec3& position, vec3& rotation, vec3& scale
 
 }
 
-//Changes worldOrientationFromInput
-void worldOrientationChange()
-{
-    //Ground
-    //Models
-    //Axis
-}
 
 int main(int argc, char* argv[])
 {
