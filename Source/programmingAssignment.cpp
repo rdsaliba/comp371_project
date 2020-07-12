@@ -1,12 +1,3 @@
-//
-// COMP 371 Labs Framework
-//
-// Created by Nicolas Bergeron on 20/06/2019.
-//
-// Inspired by the following tutorials:
-// - https://learnopengl.com/Getting-started/Hello-Window
-// - https://learnopengl.com/Getting-started/Hello-Triangle
-
 #include <iostream>
 #include <list>
 #include <algorithm>
@@ -903,7 +894,7 @@ int main(int argc, char* argv[])
 
 
         //FPS camera
-        bool fastCam = glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS || glfwGetKey(window, GLFW_KEY_RIGHT_SHIFT) == GLFW_PRESS;
+        bool fastCam = glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS || glfwGetKey(window, GLFW_KEY_RIGHT_SHIFT) == GLFW_PRESS; //Press shift to go faster
         float currentCameraSpeed = (fastCam) ? cameraFastSpeed : cameraSpeed;
 
         // - Calculate mouse motion dx and dy
@@ -931,7 +922,7 @@ int main(int argc, char* argv[])
         cameraLookAt = vec3(cosf(phi) * cosf(theta), sinf(phi), -cosf(phi) * sinf(theta));
         vec3 cameraSideVector = glm::cross(cameraLookAt, vec3(0.0f, 1.0f, 0.0f));
 
-        glm::normalize(cameraSideVector);
+        glm::normalize(cameraSideVector); //vector to be normalized
 
         // Use camera lookat and side vectors to update positions with CVBG
         if (glfwGetKey(window, GLFW_KEY_G) == GLFW_PRESS)
