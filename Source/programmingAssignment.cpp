@@ -9,6 +9,8 @@
 
 
 #include <iostream>
+#include <list>
+#include <algorithm>
 #define GLFW_PRESS 1
 #define GLFW_MOUSE_PRESS_BUTTON_RIGHT GLFW_MOUSE_BUTTON_2
 #define GLFW_MOUSE_PRESS_BUTTON_LEFT GLFW_MOUSE_BUTTON_1
@@ -25,6 +27,7 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/common.hpp>
 
+const GLuint WIDTH = 1024, HEIGHT = 768;
 glm::mat4 projection_matrix;
 
 
@@ -69,7 +72,15 @@ const char* getFragmentShaderSource()
 		"   FragColor = vec4(vertexColor.r, vertexColor.g, vertexColor.b, 1.0f);"
 		"}";
 }
-
+//Default
+const glm::vec3 eye(0.0f, 7.0f, 20.0f);
+const glm::vec3 up(0.0f, 1.0f, 0.0f);
+glm::vec3 center(0.0f, 0.0f, 0.0f);
+//Camera settings
+glm::vec3 centerO = center;
+glm::vec3 cameraEye = eye;
+float x_rotate = 0;
+float y_rotate = 0;
 
 int compileAndLinkShaders()
 {
@@ -305,6 +316,7 @@ void drawGroundGrid(int shader, GLuint vao[], float pointDisplacementUnit) {
 	}
 }
 
+
 void drawAxisLines(int shader, GLuint vao[], float gridUnit) {
 	glBindVertexArray(vao[1]);
 	mat4 axisMatrix = mat4(1.0f);//scale(mat4(1.0f)//, vec3(5 * gridUnit, 0.1f, 0.1f)) * translate(mat4(1.0f), vec3(0.5f, 0.0f, 0.0f)) * rotate(mat4(1.0f), radians(90.0f), vec3(0.0f, 1.0f, 0.0f));
@@ -437,7 +449,6 @@ void drawModel(int shaderProgram, GLuint vao[], vec3 position, vec3 rotation, ve
 }
 
 
-
 //Update through user input
 void updateInput(GLFWwindow* window, vec3& position, vec3& rotation, vec3& scale, string& renderMode)
 {
@@ -493,8 +504,64 @@ void updateInput(GLFWwindow* window, vec3& position, vec3& rotation, vec3& scale
 		renderMode = "GL_TRIANGLES";
 	}
 
-}
+	
 
+}
+//For mouse input
+void cursorMovement(GLFWwindow* window, double position_x, double position_y)
+{
+	int pan = glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT);
+
+
+	if (pan == GLFW_PRESS)
+	{
+		int width, height;
+		glfwGetFramebufferSize(window, &width, &height);
+
+		double xdiff = position_x - (width * 0.5);
+		double ydiff = position_y - (height * 0.5);
+
+		glm::vec3 mod_v = glm::vec3(xdiff*0.5, 0, 0);
+		glm::vec4 mod_v4 = glm::vec4(mod_v, 1);
+		centerO = glm::normalize(centerO + glm::vec3(mod_v4*0.5f));
+		glfwSetCursorPos(window, width / 0.5, height / 0.5);
+
+	}
+}
+/*
+const glm::vec3 initEye(0.0f, 0.0f, -1.0f);
+bool mouseButtonLeft = false;
+double mouseposY = 0;
+double mouseposYdown = 0;
+double mouseposX = 0;
+double mouseposXdown = 0;
+glm::vec3 eyeMouseDown;
+glm::vec3 eye = initEye;
+void callCursorPos(GLFWwindow* window, double position_x, double position_y)
+{
+	if (mouseButtonLeft)
+	{
+		eye = (float)((mouseposY - mouseposYdown) / (768 / 2) + 1) * eyeMouseDown;
+	}
+}
+void mouseButtonCallback(GLFWwindow* window, int button, int action, int mods)
+{
+	switch (button)
+	{
+	case GLFW_MOUSE_BUTTON_LEFT:
+		if (action == GLFW_PRESS)
+		{
+			mouseButtonLeft = true;
+			mouseposYdown = mouseposY;
+			mouseposXdown = mouseposX;
+			eyeMouseDown = eye;
+		}
+		else if (action == GLFW_RELEASE)
+		{
+			mouseButtonLeft = false;
+		}
+	}
+}*/
 
 int main(int argc, char* argv[])
 {
@@ -513,7 +580,7 @@ int main(int argc, char* argv[])
 #endif
 
 	// Create Window and rendering context using GLFW, resolution is 1024x768
-	GLFWwindow* window = glfwCreateWindow(1024, 768, "Comp371 - Project", NULL, NULL);
+	GLFWwindow* window = glfwCreateWindow(WIDTH, HEIGHT, "Comp371 - Project", NULL, NULL);
 	if (window == NULL)
 	{
 		std::cerr << "Failed to create GLFW window" << std::endl;
@@ -521,6 +588,8 @@ int main(int argc, char* argv[])
 		return -1;
 	}
 	glfwMakeContextCurrent(window);
+	glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
+	glfwSetCursorPosCallback(window, cursorMovement);
 
 
 	// Initialize GLEW
@@ -530,9 +599,11 @@ int main(int argc, char* argv[])
 		glfwTerminate();
 		return -1;
 	}
+	int width, height;
+	glfwGetFramebufferSize(window, &width, &height);
+	//glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 
-	glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
-
+	glViewport(0, 0, width, height);
 	// Black background
 	glClearColor(0.1f, 0.2f, 0.2f, 1.0f);
 
@@ -546,20 +617,20 @@ int main(int argc, char* argv[])
 	vec3 cameraUp(0.0f, 1.0f, 0.0f);
 
 	// Other camera parameters
-	float cameraSpeed = 1.0f;
+	/*float cameraSpeed = 1.0f;
 	float cameraFastSpeed = 2 * cameraSpeed;
 	float cameraHorizontalAngle = 90.0f;
-	float cameraVerticalAngle = 0.0f;
+	float cameraVerticalAngle = 0.0f;*/
 
-	glm::mat4 projectionMatrix = glm::perspective(70.0f, 1024.0f / 768.0f, 0.01f, 100.0f);
+	projection_matrix = glm::perspective(70.0f, 1024.0f / 768.0f, 0.01f, 100.0f);
 
 	GLuint projectionMatrixLocation = glGetUniformLocation(shaderProgram, "projectionMatrix");
-	glUniformMatrix4fv(projectionMatrixLocation, 1, GL_FALSE, &projectionMatrix[0][0]);
+	glUniformMatrix4fv(projectionMatrixLocation, 1, GL_FALSE, &projection_matrix[0][0]);
 
 	// Set initial view matrix
-	mat4 viewMatrix = lookAt(cameraPosition,  // eye
-		vec3(0.0f, 0.0f, 0.0f),  // center
-		cameraUp); // up
+	mat4 viewMatrix = lookAt(eye,  // eye
+		center,  // center
+		up); // up
 
 	GLuint viewMatrixLocation = glGetUniformLocation(shaderProgram, "viewMatrix");
 	glUniformMatrix4fv(viewMatrixLocation, 1, GL_FALSE, &viewMatrix[0][0]);
@@ -628,6 +699,9 @@ int main(int argc, char* argv[])
 	float angle = 0;
 	float rotationSpeed = 180.0f;  // 180 degrees per second
 	float lastFrameTime = glfwGetTime();
+	int lastMouseLeftState = GLFW_RELEASE;
+	double lastMousePosX, lastMousePosY;
+	glfwGetCursorPos(window, &lastMousePosX, &lastMousePosY);
 
 	//transformations
 	vec3 position(0.f);
@@ -636,19 +710,59 @@ int main(int argc, char* argv[])
 
 	string* renderMode = new string("GL_TRIANGLES"); //Render mode initially in triangles
 
+	glm::mat4 view_matrix;
+	view_matrix = glm::lookAt(eye, center, up);
 	//float pointDisplacementUnit = 0.1f;
 	glEnable(GL_CULL_FACE);
 	//glEnable(GL_DEPTH_TEST);
 	 // Entering Main Loop
 	while (!glfwWindowShouldClose(window))
 	{
+		glfwPollEvents();
+		//Frame time calculation
+		float dt = glfwGetTime() - lastFrameTime;
+		lastFrameTime += dt;
+
 		//Get user inputs
 		updateInput(window, position, rotation, scaling, *renderMode);
+
+		view_matrix = glm::lookAt(cameraEye, cameraEye + centerO, up);
+
+		view_matrix = glm::rotate(view_matrix, glm::radians(x_rotate), glm::vec3(0.0f, 0.0f, -1.0f));
+		view_matrix = glm::rotate(view_matrix, glm::radians(x_rotate), glm::vec3(-1.0f, 0.0f, 0.0f));
+		//MOUSE MOTION
+		/*double mousePosX, mousePosY;
+		glfwGetCursorPos(window, &mousePosX, &mousePosY);
+
+		double dx = mousePosX - lastMousePosX;
+		double dy = mousePosY - lastMousePosY;
+
+		lastMousePosX = mousePosX;
+		lastMousePosY = mousePosY;
+
+		//Convert to spherical coords
+		const float cameraAngularSpeed = 60.0f;
+		cameraHorizontalAngle -= dx * cameraAngularSpeed * dt;
+		cameraVerticalAngle -= dy * cameraAngularSpeed * dt;
+
+		
+
+		//Clamp vertical angle to [-85,85] degrees
+		cameraVerticalAngle = std::max(-85.0f, std::min(85.0f, cameraVerticalAngle));
+
+		float theta = radians(cameraHorizontalAngle);
+		float phi = radians(cameraVerticalAngle);
+
+		cameraLookAt = vec3(cosf(phi)*cosf(theta), sinf(phi), -cosf(phi)*sinf(theta));
+		vec3 cameraSideVector = glm::cross(cameraLookAt, vec3(0.0, 1.0f, 0.0f));
+
+		glm::normalize(cameraSideVector);*/
+
+		
 
 		glm::mat4 viewMatrix = glm::mat4(1.0f);
 		// Each frame, reset color of each pixel to glClearColor
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
 
 		// Draw geometry
 		//glUseProgram(shaderProgram);
