@@ -46,7 +46,8 @@ Model models[] = {
     Model(vec3(-8.0f, 0.0f, -20.0f), 0.0f), //Taqi (Q4)
     Model(vec3(8.0f, 0.0f, -20.0f), 0.0f), //Hau (U6)
     Model(vec3(-8.0f, 0.0f, -5.0f), 0.0f), //Roy (Y8)    
-    Model(vec3(0.0f, 0.0f, -10.0f), 0.0f) //Swetang (E0) 
+    Model(vec3(0.0f, 0.0f, -10.0f), 0.0f), //Swetang (E0) 
+    Model(vec3(8.0f, 0.0f, -5.0f), 0.0f) //William (L9) 
 };
 
 using namespace std; 
@@ -460,6 +461,77 @@ void drawHauModel(int shader, GLuint vao[], mat4 worldRotationUpdate) {
 
     glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &uMatrix[0][0]);
     glDrawArrays(model.getRenderMode(), 0, 36);
+}
+
+//WILLIAM'S MODEL ("L9")
+void drawWilliamModel(int shaderProgram, GLuint vao[], mat4 worldRotationUpdate)
+{
+	glBindVertexArray(vao[4]);
+	GLuint worldMatrixLocation = glGetUniformLocation(shaderProgram, "worldMatrix");
+
+	Model model = models[5];
+	mat4 rotationUpdate = rotate(glm::mat4(1.0f), radians(model.getRotation().y), vec3(0.0f, 1.0f, 0.0f));
+	mat4 scaleUpdate = scale(glm::mat4(1.0f), glm::vec3(1.0f + model.getScaling(), 1.0f + model.getScaling(), 1.0f + model.getScaling()));
+
+	
+	//groupMatrix will be applied to all of the cubes for this model (will translate the complete model)
+	mat4 groupMatrix = worldRotationUpdate * translate(glm::mat4(1.0f), model.getPosition()) * rotationUpdate * scaleUpdate; //Translate model to upper left corner
+
+	//Letter L (verticle line)
+	mat4 scaleMatrix = glm::scale(glm::mat4(1.0f), glm::vec3(2.1f, 0.5f, 1.0f));
+	mat4 translationMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.5f, 0.0f));
+	mat4 rotationMatrix = rotate(glm::mat4(1.0f), glm::radians(90.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+	mat4 partMatrix = translationMatrix * rotationMatrix * scaleMatrix;
+	mat4 worldMatrix = groupMatrix * partMatrix;
+
+	glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &worldMatrix[0][0]);
+	glDrawArrays(model.getRenderMode(), 0, 36);
+
+	//Letter L (bottom)
+	scaleMatrix = scale(glm::mat4(1.0f), glm::vec3(1.5f, 0.5f, 1.0f));
+	translationMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(0.5f, -0.5f, 0.0f));
+	partMatrix = translationMatrix * scaleMatrix;
+	worldMatrix = groupMatrix * partMatrix;
+
+	glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &worldMatrix[0][0]);
+	glDrawArrays(model.getRenderMode(), 0, 36);
+
+	//NUMBER 9 (bottom)
+
+	translationMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(2.5f, 0.5f, 0.0f));
+	partMatrix = translationMatrix * scaleMatrix;
+	worldMatrix = groupMatrix * partMatrix;
+
+	glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &worldMatrix[0][0]);
+	glDrawArrays(model.getRenderMode(), 0, 36);
+
+	//NUMBER 9 (top)
+	translationMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(2.5f, 1.5f, 0.0f));
+	partMatrix = translationMatrix * scaleMatrix;
+	worldMatrix = groupMatrix * partMatrix;
+
+	glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &worldMatrix[0][0]);
+	glDrawArrays(model.getRenderMode(), 0, 36);
+
+
+	//Left side of 9
+	translationMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(2.0f, 1.0f, 0.0f));
+	rotationMatrix = rotate(glm::mat4(1.0f), glm::radians(90.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+	partMatrix = translationMatrix * rotationMatrix * scaleMatrix;
+	worldMatrix = groupMatrix * partMatrix;
+
+	glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &worldMatrix[0][0]);
+	glDrawArrays(model.getRenderMode(), 0, 36);
+
+
+	//Right side of 9
+	scaleMatrix = glm::scale(glm::mat4(1.0f), glm::vec3(2.2f, 0.5f, 1.0f));
+	translationMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(3.2f, 0.6f, 0.0f));
+	partMatrix = translationMatrix * rotationMatrix * scaleMatrix;
+	worldMatrix = groupMatrix * partMatrix;
+
+	glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &worldMatrix[0][0]);
+	glDrawArrays(model.getRenderMode(), 0, 36);
 }
 
 //TAQI'S MODEL ("Q4")
@@ -1030,6 +1102,7 @@ int main(int argc, char* argv[])
         drawHauModel(shaderProgram, vaoArray, worldRotationUpdate);
         drawRoyModel(shaderProgram, vaoArray, worldRotationUpdate);
         drawSwetangModel(shaderProgram, vaoArray, worldRotationUpdate);
+        drawWilliamModel(shaderProgram, vaoArray, worldRotationUpdate);
 
         //FPS camera
         bool fastCam = glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS || glfwGetKey(window, GLFW_KEY_RIGHT_SHIFT) == GLFW_PRESS; //Press shift to go faster
@@ -1091,20 +1164,13 @@ int main(int argc, char* argv[])
         glUniformMatrix4fv(viewMatrixLocation, 1, GL_FALSE, &viewMatrix[0][0]);
 
 
-
         //Mouse Panning, Tilting and Zooming
         int pan = glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_RIGHT);
         int tilt = glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_MIDDLE);
         int zoom = glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT);
+
         if (pan == GLFW_PRESS)
         {
-            double mouseposX, mouseposY;
-            glfwGetCursorPos(window, &mouseposX, &mouseposY);
-            double dx = mouseposX - lastMousePosX;
-            double dy = mouseposY - lastMousePosY;
-            lastMousePosX = mouseposX;
-            lastMousePosY = mouseposY;
-            const float cameraAngularSpeed = 15.0f;
             cameraHorizontalAngle -= dx * cameraAngularSpeed * dt;
             vec3 eyeHorizon(cameraHorizontalAngle, 0.0f, 0.0f);
 
@@ -1113,13 +1179,6 @@ int main(int argc, char* argv[])
         }
         if (tilt == GLFW_PRESS)
         {
-            double mouseposX, mouseposY;
-            glfwGetCursorPos(window, &mouseposX, &mouseposY);
-            double dx = mouseposX - lastMousePosX;
-            double dy = mouseposY - lastMousePosY;
-            lastMousePosX = mouseposX;
-            lastMousePosY = mouseposY;
-            const float cameraAngularSpeed = 15.0f;
             cameraVerticalAngle -= dy * cameraAngularSpeed * dt;
             vec3 eyeVertical(0.0f, cameraVerticalAngle, 0.0f);
             viewMatrix = lookAt(eye + eyeVertical, center, up);
@@ -1127,13 +1186,6 @@ int main(int argc, char* argv[])
         }
         if (zoom == GLFW_PRESS)
         {
-            double mouseposX, mouseposY;
-            glfwGetCursorPos(window, &mouseposX, &mouseposY);
-            double dx = mouseposX - lastMousePosX;
-            double dy = mouseposY - lastMousePosY;
-            lastMousePosX = mouseposX;
-            lastMousePosY = mouseposY;
-            const float cameraAngularSpeed = 15.0f;
             cameraVerticalAngle -= dy * cameraAngularSpeed * dt;
             vec3 eyeVertical(0.0f, 0.0f, cameraVerticalAngle);
             viewMatrix = lookAt(eye + eyeVertical, center, up);
