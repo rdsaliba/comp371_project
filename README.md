@@ -9,8 +9,8 @@ Section: CC
 | Taqi Haque | 40043834 |
 | Roy Saliba | 27381751 | 
 | Hau Gilles Che | 40063554 | 
-|  |  | 
-|  |  | 
+| William Kang | 40099021 | 
+| Swetang Patel | 27205813 | 
 
 ## How To Run
 1. Clone this repo. "git clone <url>"
