@@ -1,4 +1,5 @@
 # comp371_project 
+Semester: S20
 
 Section: CC
 
@@ -7,12 +8,16 @@ Section: CC
 | ------------- |:-------------:|
 | Taqi Haque | 40043834 |
 | Roy Saliba | 27381751 | 
-|  |  | 
+| Hau Gilles Che | 40063554 | 
 |  |  | 
 |  |  | 
 
+## Features and Functionalities
+This OpenGL application contains a simple virtual scene consisting of 5 models. The 5 models are placed on a 100x100 square grid. Each model consists of the 3rd letter of the name and 4th digit of the student ID of the team member who created it. Each model were transformed using scaling, rotation, and translation. The user can select any of the models using the keys 1-5, and apply transformations using the controls listed below.
 
-### **General controls:**
+## Controls
+
+### General Controls:
 
 ESC: close window
 
@@ -21,7 +26,7 @@ ESC: close window
 H: home button
 
 
-### **Model Controls:**
+### Model Controls:
 
 U: scale up
 
@@ -47,7 +52,7 @@ L: lines rendering mode
 T: triangles rendering mode
 
 
-### **Camera Controls:**
+### Camera Controls:
 
 Mouse_Cursor: FPS camera
 
@@ -69,7 +74,7 @@ Middle_mouse_button: tilt camera in y direction
 Left_mouse_button: Zoom in/out
 
 
-### **World orientation:**
+### World Orientation Controls:
 
 Left_arrow: rotation (CCW) about positive x axis
 
@@ -78,3 +83,17 @@ Right_arrow: rotation (CCW) about negative x axis
 Up_arrow: rotation (CCW) about positive y axis 
 
 Down_arrow: rotation (CCW) about negative y axis 
+
+## How To Run
+1. Clone this repo. "git clone <url>"
+
+2. Set the project directory as your working directory. "cd comp371_project"
+
+3. Run the application (preferably with Visual Studio or Xcode)
+
+# Learn OpenGL
+http://docs.gl/
+
+http://www.opengl-tutorial.org/
+
+https://learnopengl.com/Getting-started/OpenGL
