@@ -12,6 +12,13 @@ Section: CC
 |  |  | 
 |  |  | 
 
+## How To Run
+1. Clone this repo. "git clone <url>"
+
+2. Set the project directory as your working directory. "cd comp371_project"
+
+3. Run the application (preferably with Visual Studio or Xcode)
+
 ## Features and Functionalities
 This OpenGL application contains a simple virtual scene consisting of 5 models. The 5 models are placed on a 100x100 square grid. Each model consists of the 3rd letter of the name and 4th digit of the student ID of the team member who created it. Each model were transformed using scaling, rotation, and translation. The user can select any of the models using the keys 1-5, and apply transformations using the controls listed below.
 
@@ -84,12 +91,6 @@ Up_arrow: rotation (CCW) about positive y axis
 
 Down_arrow: rotation (CCW) about negative y axis 
 
-## How To Run
-1. Clone this repo. "git clone <url>"
-
-2. Set the project directory as your working directory. "cd comp371_project"
-
-3. Run the application (preferably with Visual Studio or Xcode)
 
 # Learn OpenGL
 http://docs.gl/
