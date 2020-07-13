@@ -20,8 +20,11 @@ Section: CC
 3. Run the application (preferably with Visual Studio or Xcode)
 
 ## Environment used
+
 Visual Studio 2019 
+
 Windows SDK Version: 10.0
+
 Platform Toolset: Visual Studia 2019 (v142)
 
 ## Features and Functionalities
