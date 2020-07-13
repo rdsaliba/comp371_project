@@ -3,18 +3,40 @@
 #include <algorithm>
 
 #define GLEW_STATIC 1   // This allows linking with Static Library on Windows, without DLL
+
+//
+// COMP 371 Assignment Framework
+//
+// Created by Nicolas Bergeron on 20/06/2019.
+//
+// Inspired by the following tutorials:
+// - https://learnopengl.com/Getting-started/Hello-Window
+// - https://learnopengl.com/Getting-started/Hello-Triangle
+
+
+#include <iostream>
+#include <list>
+#include <algorithm>
+#define GLFW_PRESS 1
+#define GLFW_MOUSE_PRESS_BUTTON_RIGHT GLFW_MOUSE_BUTTON_2
+#define GLFW_MOUSE_PRESS_BUTTON_LEFT GLFW_MOUSE_BUTTON_1
+#define GLFW_MOUSE_BUTTON_1
+#define GLFW_MOUSE_BUTTON_2
+#pragma comment (lib,"glew32s.lib")
+#define GLEW_STATIC // This allows linking with Static Library on Windows, without DLL
+
 #include <GL/glew.h>    // Include GLEW - OpenGL Extension Wrangler
 
 #include <GLFW/glfw3.h> // GLFW provides a cross-platform interface for creating a graphical context,
-                        // initializing OpenGL and binding inputs
+						// initializing OpenGL and binding inputs
 
 #include <glm/glm.hpp>  // GLM is an optimized math library with syntax to similar to OpenGL Shading Language
-#include <glm/gtc/matrix_transform.hpp> // include this to create transformation matrices
+#include <glm/gtc/matrix_transform.hpp>
 #include <glm/common.hpp>
 #include "Model.h"
 
-using namespace glm;
-using namespace std;
+const GLuint WIDTH = 1024, HEIGHT = 768;
+glm::mat4 projection_matrix;
 
 void modelFocusSwitch(int nextModel);
 int SELECTEDMODELINDEX = 1;
@@ -23,242 +45,271 @@ Model models[] = {
     Model(vec3(0.0f, 0.0f, 0.0f), 0.0f), //axis lines
     Model(vec3(-8.0f, 0.0f, -20.0f), 0.0f), //Taqi (Q4)
     Model(vec3(8.0f, 0.0f, -20.0f), 0.0f), //Hau (U6)
-    Model(vec3(-8.0f, 0.0f, -5.0f), 0.0f) //Roy (Y8)    
+    Model(vec3(-8.0f, 0.0f, -5.0f), 0.0f), //Roy (Y8)    
+    Model(vec3(0.0f, 0.0f, -10.0f), 0.0f) //Swetang (E0) 
 };
 
+using namespace std; 
+using namespace glm;
+
+void framebuffer_size_callback(GLFWwindow* window, int width, int height)
+{
+	glViewport(0, 0, width, height);
+	//update projection matrix to new width and height
+	projection_matrix = glm::perspective(45.0f, (GLfloat)width / (GLfloat)height, 0.0f, 100.0f);
+}
 const char* getVertexShaderSource()
 {
-    return
-        "#version 330 core\n"
-        "layout (location = 0) in vec3 aPos;"
-        "layout (location = 1) in vec3 aColor;"
-        ""
-        "uniform mat4 worldMatrix;"
-        "uniform mat4 viewMatrix = mat4(1.0);" //default value for view matrix (identity)
-        "uniform mat4 projectionMatrix = mat4(1.0);"
-        ""
-        "out vec3 vertexColor;"
-        "void main()"
-        "{"
-        "   vertexColor = aColor;"
-        "   mat4 modelViewProjection = projectionMatrix * viewMatrix * worldMatrix;"
-        "   gl_Position = modelViewProjection * vec4(aPos.x, aPos.y, aPos.z, 1.0);"
-        "}";
+	// TODO - Insert Vertex Shaders here ...
+	// For now, you use a string for your shader code, in the assignment, shaders will be stored in .glsl files
+	return
+		"#version 330 core\n"
+		"layout (location=0) in vec3 aPos;"
+		"layout (location=1) in vec3 aColor;"
+		""
+		"uniform mat4 worldMatrix;"
+		"uniform mat4 viewMatrix = mat4(1.0);" //default value for view matrix (identity)
+		"uniform mat4 projectionMatrix = mat4(1.0);"
+		""
+		"out vec3 vertexColor;"
+		"void main()"
+		"{"
+		"   vertexColor = aColor;"
+		"   mat4 modelViewProjection = projectionMatrix * viewMatrix * worldMatrix;"
+		"   gl_Position = modelViewProjection * vec4(aPos.x, aPos.y, aPos.z, 1.0);"
+		"}";
 }
-
 
 const char* getFragmentShaderSource()
 {
-    return
-        "#version 330 core\n"
-        "in vec3 vertexColor;"
-        "out vec4 FragColor;"
-        "void main()"
-        "{"
-        "   FragColor = vec4(vertexColor.r, vertexColor.g, vertexColor.b, 1.0f);"
-        "}";
+	// TODO - Insert Fragment Shaders here ...
+	return
+		"#version 330 core\n"
+		"in vec3 vertexColor;"
+		"out vec4 FragColor;"
+		"void main()"
+		"{"
+		"   FragColor = vec4(vertexColor.r, vertexColor.g, vertexColor.b, 1.0f);"
+		"}";
 }
-
+//Default
+const glm::vec3 eye(0.0f, 7.0f, 20.0f);
+const glm::vec3 up(0.0f, 1.0f, 0.0f);
+glm::vec3 center(0.0f, 0.0f, 0.0f);
+//Camera settings
+glm::vec3 centerO = center;
+glm::vec3 cameraEye = eye;
+float x_rotate = 0;
+float y_rotate = 0;
 
 int compileAndLinkShaders()
 {
-    // compile and link shader program
-    // return shader program id
-    // ------------------------------------
+	// TODO
+	// compile and link shader program
+	// return shader program id
+	// ------------------------------------
 
-    // vertex shader
-    int vertexShader = glCreateShader(GL_VERTEX_SHADER);
-    const char* vertexShaderSource = getVertexShaderSource();
-    glShaderSource(vertexShader, 1, &vertexShaderSource, NULL);
-    glCompileShader(vertexShader);
+	// vertex shader
+	int vertexShader = glCreateShader(GL_VERTEX_SHADER);
+	const char* vertexShaderSource = getVertexShaderSource();
+	glShaderSource(vertexShader, 1, &vertexShaderSource, NULL);
+	glCompileShader(vertexShader);
 
-    // check for shader compile errors
-    int success;
-    char infoLog[512];
-    glGetShaderiv(vertexShader, GL_COMPILE_STATUS, &success);
-    if (!success)
-    {
-        glGetShaderInfoLog(vertexShader, 512, NULL, infoLog);
-        std::cerr << "ERROR::SHADER::VERTEX::COMPILATION_FAILED\n" << infoLog << std::endl;
-    }
+	// check for shader compile errors
+	int success;
+	char infoLog[512];
+	glGetShaderiv(vertexShader, GL_COMPILE_STATUS, &success);
+	if (!success)
+	{
+		glGetShaderInfoLog(vertexShader, 512, NULL, infoLog);
+		std::cerr << "ERROR::SHADER::VERTEX::COMPILATION_FAILED\n" << infoLog << std::endl;
+	}
 
-    // fragment shader
-    int fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
-    const char* fragmentShaderSource = getFragmentShaderSource();
-    glShaderSource(fragmentShader, 1, &fragmentShaderSource, NULL);
-    glCompileShader(fragmentShader);
+	// fragment shader
+	int fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
+	const char* fragmentShaderSource = getFragmentShaderSource();
+	glShaderSource(fragmentShader, 1, &fragmentShaderSource, NULL);
+	glCompileShader(fragmentShader);
 
-    // check for shader compile errors
-    glGetShaderiv(fragmentShader, GL_COMPILE_STATUS, &success);
-    if (!success)
-    {
-        glGetShaderInfoLog(fragmentShader, 512, NULL, infoLog);
-        std::cerr << "ERROR::SHADER::FRAGMENT::COMPILATION_FAILED\n" << infoLog << std::endl;
-    }
+	// check for shader compile errors
+	glGetShaderiv(fragmentShader, GL_COMPILE_STATUS, &success);
+	if (!success)
+	{
+		glGetShaderInfoLog(fragmentShader, 512, NULL, infoLog);
+		std::cerr << "ERROR::SHADER::FRAGMENT::COMPILATION_FAILED\n" << infoLog << std::endl;
+	}
 
-    // link shaders
-    int shaderProgram = glCreateProgram();
-    glAttachShader(shaderProgram, vertexShader);
-    glAttachShader(shaderProgram, fragmentShader);
-    glLinkProgram(shaderProgram);
+	// link shaders
+	int shaderProgram = glCreateProgram();
+	glAttachShader(shaderProgram, vertexShader);
+	glAttachShader(shaderProgram, fragmentShader);
+	glLinkProgram(shaderProgram);
 
-    // check for linking errors
-    glGetProgramiv(shaderProgram, GL_LINK_STATUS, &success);
-    if (!success) {
-        glGetProgramInfoLog(shaderProgram, 512, NULL, infoLog);
-        std::cerr << "ERROR::SHADER::PROGRAM::LINKING_FAILED\n" << infoLog << std::endl;
-    }
+	// check for linking errors
+	glGetProgramiv(shaderProgram, GL_LINK_STATUS, &success);
+	if (!success) {
+		glGetProgramInfoLog(shaderProgram, 512, NULL, infoLog);
+		std::cerr << "ERROR::SHADER::PROGRAM::LINKING_FAILED\n" << infoLog << std::endl;
+	}
 
-    glDeleteShader(vertexShader);
-    glDeleteShader(fragmentShader);
+	glDeleteShader(vertexShader);
+	glDeleteShader(fragmentShader);
 
-    return shaderProgram;
+	return shaderProgram;
+
 }
-
 float gridUnit = 1.0f;
+
+void setViewMatrix(int shaderProgram, mat4 viewMatrix)
+{
+	glUseProgram(shaderProgram);
+	GLuint viewMatrixLocation = glGetUniformLocation(shaderProgram, "viewMatrix");
+	glUniformMatrix4fv(viewMatrixLocation, 1, GL_FALSE, &viewMatrix[0][0]);
+}
 
 // Cube model
 vec3 cubeVertexArray[] = {  // position,                            color
-    vec3(-0.5f,-0.5f,-0.5f), vec3(1.0f, 0.0f, 0.0f), //left - red
-    vec3(-0.5f,-0.5f, 0.5f), vec3(1.0f, 0.0f, 0.0f),
-    vec3(-0.5f, 0.5f, 0.5f), vec3(1.0f, 0.0f, 0.0f),
+vec3(-0.5f,-0.5f,-0.5f), vec3(1.0f, 0.0f, 0.0f), //left - red
+vec3(-0.5f,-0.5f, 0.5f), vec3(1.0f, 0.0f, 0.0f),
+vec3(-0.5f, 0.5f, 0.5f), vec3(1.0f, 0.0f, 0.0f),
 
-    vec3(-0.5f,-0.5f,-0.5f), vec3(1.0f, 0.0f, 0.0f),
-    vec3(-0.5f, 0.5f, 0.5f), vec3(1.0f, 0.0f, 0.0f),
-    vec3(-0.5f, 0.5f,-0.5f), vec3(1.0f, 0.0f, 0.0f),
+vec3(-0.5f,-0.5f,-0.5f), vec3(1.0f, 0.0f, 0.0f),
+vec3(-0.5f, 0.5f, 0.5f), vec3(1.0f, 0.0f, 0.0f),
+vec3(-0.5f, 0.5f,-0.5f), vec3(1.0f, 0.0f, 0.0f),
 
-    vec3(0.5f, 0.5f,-0.5f), vec3(0.0f, 0.0f, 1.0f), // far - blue
-    vec3(-0.5f,-0.5f,-0.5f), vec3(0.0f, 0.0f, 1.0f),
-    vec3(-0.5f, 0.5f,-0.5f), vec3(0.0f, 0.0f, 1.0f),
+vec3(0.5f, 0.5f,-0.5f), vec3(0.0f, 0.0f, 1.0f), // far - blue
+vec3(-0.5f,-0.5f,-0.5f), vec3(0.0f, 0.0f, 1.0f),
+vec3(-0.5f, 0.5f,-0.5f), vec3(0.0f, 0.0f, 1.0f),
 
-    vec3(0.5f, 0.5f,-0.5f), vec3(0.0f, 0.0f, 1.0f),
-    vec3(0.5f,-0.5f,-0.5f), vec3(0.0f, 0.0f, 1.0f),
-    vec3(-0.5f,-0.5f,-0.5f), vec3(0.0f, 0.0f, 1.0f),
+vec3(0.5f, 0.5f,-0.5f), vec3(0.0f, 0.0f, 1.0f),
+vec3(0.5f,-0.5f,-0.5f), vec3(0.0f, 0.0f, 1.0f),
+vec3(-0.5f,-0.5f,-0.5f), vec3(0.0f, 0.0f, 1.0f),
 
-    vec3(0.5f,-0.5f, 0.5f), vec3(0.0f, 1.0f, 1.0f), // bottom - turquoise
-    vec3(-0.5f,-0.5f,-0.5f), vec3(0.0f, 1.0f, 1.0f),
-    vec3(0.5f,-0.5f,-0.5f), vec3(0.0f, 1.0f, 1.0f),
+vec3(0.5f,-0.5f, 0.5f), vec3(0.0f, 1.0f, 1.0f), // bottom - turquoise
+vec3(-0.5f,-0.5f,-0.5f), vec3(0.0f, 1.0f, 1.0f),
+vec3(0.5f,-0.5f,-0.5f), vec3(0.0f, 1.0f, 1.0f),
 
-    vec3(0.5f,-0.5f, 0.5f), vec3(0.0f, 1.0f, 1.0f),
-    vec3(-0.5f,-0.5f, 0.5f), vec3(0.0f, 1.0f, 1.0f),
-    vec3(-0.5f,-0.5f,-0.5f), vec3(0.0f, 1.0f, 1.0f),
+vec3(0.5f,-0.5f, 0.5f), vec3(0.0f, 1.0f, 1.0f),
+vec3(-0.5f,-0.5f, 0.5f), vec3(0.0f, 1.0f, 1.0f),
+vec3(-0.5f,-0.5f,-0.5f), vec3(0.0f, 1.0f, 1.0f),
 
-    vec3(-0.5f, 0.5f, 0.5f), vec3(0.0f, 1.0f, 0.0f), // near - green
-    vec3(-0.5f,-0.5f, 0.5f), vec3(0.0f, 1.0f, 0.0f),
-    vec3(0.5f,-0.5f, 0.5f), vec3(0.0f, 1.0f, 0.0f),
+vec3(-0.5f, 0.5f, 0.5f), vec3(0.0f, 1.0f, 0.0f), // near - green
+vec3(-0.5f,-0.5f, 0.5f), vec3(0.0f, 1.0f, 0.0f),
+vec3(0.5f,-0.5f, 0.5f), vec3(0.0f, 1.0f, 0.0f),
 
-    vec3(0.5f, 0.5f, 0.5f), vec3(0.0f, 1.0f, 0.0f),
-    vec3(-0.5f, 0.5f, 0.5f), vec3(0.0f, 1.0f, 0.0f),
-    vec3(0.5f,-0.5f, 0.5f), vec3(0.0f, 1.0f, 0.0f),
+vec3(0.5f, 0.5f, 0.5f), vec3(0.0f, 1.0f, 0.0f),
+vec3(-0.5f, 0.5f, 0.5f), vec3(0.0f, 1.0f, 0.0f),
+vec3(0.5f,-0.5f, 0.5f), vec3(0.0f, 1.0f, 0.0f),
 
-    vec3(0.5f, 0.5f, 0.5f), vec3(1.0f, 0.0f, 1.0f), // right - purple
-    vec3(0.5f,-0.5f,-0.5f), vec3(1.0f, 0.0f, 1.0f),
-    vec3(0.5f, 0.5f,-0.5f), vec3(1.0f, 0.0f, 1.0f),
+vec3(0.5f, 0.5f, 0.5f), vec3(1.0f, 0.0f, 1.0f), // right - purple
+vec3(0.5f,-0.5f,-0.5f), vec3(1.0f, 0.0f, 1.0f),
+vec3(0.5f, 0.5f,-0.5f), vec3(1.0f, 0.0f, 1.0f),
 
-    vec3(0.5f,-0.5f,-0.5f), vec3(1.0f, 0.0f, 1.0f),
-    vec3(0.5f, 0.5f, 0.5f), vec3(1.0f, 0.0f, 1.0f),
-    vec3(0.5f,-0.5f, 0.5f), vec3(1.0f, 0.0f, 1.0f),
+vec3(0.5f,-0.5f,-0.5f), vec3(1.0f, 0.0f, 1.0f),
+vec3(0.5f, 0.5f, 0.5f), vec3(1.0f, 0.0f, 1.0f),
+vec3(0.5f,-0.5f, 0.5f), vec3(1.0f, 0.0f, 1.0f),
 
-    vec3(0.5f, 0.5f, 0.5f), vec3(1.0f, 1.0f, 0.0f), // top - yellow
-    vec3(0.5f, 0.5f,-0.5f), vec3(1.0f, 1.0f, 0.0f),
-    vec3(-0.5f, 0.5f,-0.5f), vec3(1.0f, 1.0f, 0.0f),
+vec3(0.5f, 0.5f, 0.5f), vec3(1.0f, 1.0f, 0.0f), // top - yellow
+vec3(0.5f, 0.5f,-0.5f), vec3(1.0f, 1.0f, 0.0f),
+vec3(-0.5f, 0.5f,-0.5f), vec3(1.0f, 1.0f, 0.0f),
 
-    vec3(0.5f, 0.5f, 0.5f), vec3(1.0f, 1.0f, 0.0f),
-    vec3(-0.5f, 0.5f,-0.5f), vec3(1.0f, 1.0f, 0.0f),
-    vec3(-0.5f, 0.5f, 0.5f), vec3(1.0f, 1.0f, 0.0f)
+vec3(0.5f, 0.5f, 0.5f), vec3(1.0f, 1.0f, 0.0f),
+vec3(-0.5f, 0.5f,-0.5f), vec3(1.0f, 1.0f, 0.0f),
+vec3(-0.5f, 0.5f, 0.5f), vec3(1.0f, 1.0f, 0.0f)
 };
 
 vec3 gridVertexArray[] = {
-    //ground unit square vertices
-    glm::vec3(0.0f, 0.0f, 0.0f),
-    glm::vec3(0.0f, 1.0f, 0.0f),
-    glm::vec3(gridUnit, 0.0f, 0.0f),
-    glm::vec3(0.0f, 1.0f, 0.0f),
-    glm::vec3(gridUnit, 0.0f, gridUnit),
-    glm::vec3(0.0f, 1.0f, 0.0f),
-    glm::vec3(0.0f, 0.0f, gridUnit),
-    glm::vec3(0.0f, 1.0f, 0.0f),
+	//ground unit square vertices
+	glm::vec3(0.0f, 0.0f, 0.0f),
+	glm::vec3(0.0f, 1.0f, 0.0f),
+	glm::vec3(gridUnit, 0.0f, 0.0f),
+	glm::vec3(0.0f, 1.0f, 0.0f),
+	glm::vec3(gridUnit, 0.0f, gridUnit),
+	glm::vec3(0.0f, 1.0f, 0.0f),
+	glm::vec3(0.0f, 0.0f, gridUnit),
+	glm::vec3(0.0f, 1.0f, 0.0f),
 
-    glm::vec3(0.0f, 0.0f, 0.0f),
-    glm::vec3(0.0f, 0.0f, 0.0f),
-    glm::vec3(5 * gridUnit, 0.0f, 0.0f),
-    glm::vec3(1.0f, 0.0f, 0.0f),
+	glm::vec3(0.0f, 0.0f, 0.0f),
+	glm::vec3(0.0f, 0.0f, 0.0f),
+	glm::vec3(5 * gridUnit, 0.0f, 0.0f),
+	glm::vec3(1.0f, 0.0f, 0.0f),
 
 
-    glm::vec3(0.0f, 0.0f, 0.0f),
-    glm::vec3(0.0f, 0.0f, 0.0f),
-    glm::vec3(0.0f, 5 * gridUnit,0.0f),
-    glm::vec3(0.0f, 1.0f, 0.0f),
+	glm::vec3(0.0f, 0.0f, 0.0f),
+	glm::vec3(0.0f, 0.0f, 0.0f),
+	glm::vec3(0.0f, 5 * gridUnit,0.0f),
+	glm::vec3(0.0f, 1.0f, 0.0f),
 
-    glm::vec3(0.0f, 0.0f, 0.0f),
-    glm::vec3(0.0f, 0.0f, 0.0f),
-    glm::vec3(0.0f, 0.0f, 5 * gridUnit),
-    glm::vec3(0.0f, 0.0f, 1.0f)
+	glm::vec3(0.0f, 0.0f, 0.0f),
+	glm::vec3(0.0f, 0.0f, 0.0f),
+	glm::vec3(0.0f, 0.0f, 5 * gridUnit),
+	glm::vec3(0.0f, 0.0f, 1.0f)
 };
 
 vec3 xAxisVertexArray[] = {
-    glm::vec3(0.0f, 0.0f, 0.0f),
-    glm::vec3(1.0f, 0.0f, 0.0f),
-    glm::vec3(5 * gridUnit, 0.0f, 0.0f),
-    glm::vec3(1.0f, 0.0f, 0.0f)
+	glm::vec3(0.0f, 0.0f, 0.0f),
+	glm::vec3(1.0f, 0.0f, 0.0f),
+	glm::vec3(5 * gridUnit, 0.0f, 0.0f),
+	glm::vec3(1.0f, 0.0f, 0.0f)
 };
 
 vec3 yAxisVertexArray[] = {
-    glm::vec3(0.0f, 0.0f, 0.0f),
-    glm::vec3(0.0f, 1.0f, 1.0f),
-    glm::vec3(0.0f, 5 * gridUnit,0.0f),
-    glm::vec3(0.0f, 1.0f, 1.0f)
+	glm::vec3(0.0f, 0.0f, 0.0f),
+	glm::vec3(0.0f, 1.0f, 1.0f),
+	glm::vec3(0.0f, 5 * gridUnit,0.0f),
+	glm::vec3(0.0f, 1.0f, 1.0f)
 };
 
 vec3 zAxisVertexArray[] = {
-     glm::vec3(0.0f, 0.0f, 0.0f),
-     glm::vec3(0.0f, 0.0f, 1.0f),
-     glm::vec3(0.0f, 0.0f, 5 * gridUnit),
-     glm::vec3(0.0f, 0.0f, 1.0f)
+	 glm::vec3(0.0f, 0.0f, 0.0f),
+	 glm::vec3(0.0f, 0.0f, 1.0f),
+	 glm::vec3(0.0f, 0.0f, 5 * gridUnit),
+	 glm::vec3(0.0f, 0.0f, 1.0f)
 };
+
 
 GLuint createVertexArrayObject(vec3* vertexArray)
 {
-    // Create a vertex array
-    GLuint vertexArrayObject;
-    glGenVertexArrays(1, &vertexArrayObject);
-    glBindVertexArray(vertexArrayObject);
+	// Create a vertex array
+	GLuint vertexArrayObject;
+	glGenVertexArrays(1, &vertexArrayObject);
+	glBindVertexArray(vertexArrayObject);
 
-    //glBindVertexArray(vao);
+	//glBindVertexArray(vao);
 
-    // Upload Vertex Buffer to the GPU, keep a reference to it (vertexBufferObject)
-    //glBindBuffer(GL_ARRAY_BUFFER, vbo);
-    //glBufferData(GL_ARRAY_BUFFER, sizeof(vertexArray), vertexArray, GL_STATIC_DRAW);
+	// Upload Vertex Buffer to the GPU, keep a reference to it (vertexBufferObject)
+	//glBindBuffer(GL_ARRAY_BUFFER, vbo);
+	//glBufferData(GL_ARRAY_BUFFER, sizeof(vertexArray), vertexArray, GL_STATIC_DRAW);
 
-    // Upload Vertex Buffer to the GPU, keep a reference to it (vertexBufferObject)
-    GLuint vertexBufferObject;
-    glGenBuffers(1, &vertexBufferObject);
-    glBindBuffer(GL_ARRAY_BUFFER, vertexBufferObject);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(vertexArray), vertexArray, GL_STATIC_DRAW);
+	// Upload Vertex Buffer to the GPU, keep a reference to it (vertexBufferObject)
+	GLuint vertexBufferObject;
+	glGenBuffers(1, &vertexBufferObject);
+	glBindBuffer(GL_ARRAY_BUFFER, vertexBufferObject);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(vertexArray), vertexArray, GL_STATIC_DRAW);
 
-    glVertexAttribPointer(0,                   // attribute 0 matches aPos in Vertex Shader
-        3,                   // size
-        GL_FLOAT,            // type
-        GL_FALSE,            // normalized?
-        2 * sizeof(glm::vec3), // stride - each vertex contain 2 vec3 (position, color)
-        (void*)0             // array buffer offset
-    );
-    glEnableVertexAttribArray(0);
+	glVertexAttribPointer(0,                   // attribute 0 matches aPos in Vertex Shader
+		3,                   // size
+		GL_FLOAT,            // type
+		GL_FALSE,            // normalized?
+		2 * sizeof(glm::vec3), // stride - each vertex contain 2 vec3 (position, color)
+		(void*)0             // array buffer offset
+	);
+	glEnableVertexAttribArray(0);
 
 
-    glVertexAttribPointer(1,                            // attribute 1 matches aColor in Vertex Shader
-        3,
-        GL_FLOAT,
-        GL_FALSE,
-        2 * sizeof(glm::vec3),
-        (void*)sizeof(glm::vec3)      // color is offseted a vec3 (comes after position)
-    );
-    glEnableVertexAttribArray(1);
+	glVertexAttribPointer(1,                            // attribute 1 matches aColor in Vertex Shader
+		3,
+		GL_FLOAT,
+		GL_FALSE,
+		2 * sizeof(glm::vec3),
+		(void*)sizeof(glm::vec3)      // color is offseted a vec3 (comes after position)
+	);
+	glEnableVertexAttribArray(1);
 
-    glBindBuffer(GL_ARRAY_BUFFER, 0);
-    glBindVertexArray(0);
+	glBindBuffer(GL_ARRAY_BUFFER, 0);
+	glBindVertexArray(0);
 
-    return vertexArrayObject;
+	return vertexArrayObject;
 }
 
 
@@ -411,7 +462,6 @@ void drawHauModel(int shader, GLuint vao[], mat4 worldRotationUpdate) {
     glDrawArrays(model.getRenderMode(), 0, 36);
 }
 
-
 //TAQI'S MODEL ("Q4")
 void drawTaqiModel(int shaderProgram, GLuint vao[], mat4 worldRotationUpdate)
 {
@@ -438,7 +488,7 @@ void drawTaqiModel(int shaderProgram, GLuint vao[], mat4 worldRotationUpdate)
     glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &worldMatrix[0][0]);
     glDrawArrays(model.getRenderMode(), 0, 36);
 
-    
+
     //Left side of Q
     translationMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(-0.5f, 1.0f, 0.0f));
     mat4 rotationMatrix = rotate(glm::mat4(1.0f), glm::radians(90.0f), glm::vec3(0.0f, 0.0f, 1.0f));
@@ -596,6 +646,96 @@ void drawRoyModel(int shaderProgram, GLuint vao[], mat4 worldRotationUpdate)
 
 }
 
+//Swetang Model "E0"
+void drawSwetangModel(int shaderProgram, GLuint vao[], mat4 worldRotationUpdate)
+{
+	glBindVertexArray(vao[4]);
+	GLuint worldMatrixLocation = glGetUniformLocation(shaderProgram, "worldMatrix");
+
+    Model model = models[4];
+
+    //User update for rotationg and scale
+    mat4 rotationUpdate = rotate(glm::mat4(1.0f), radians(model.getRotation().y), vec3(0.0f, 1.0f, 0.0f));
+    mat4 scaleUpdate = scale(glm::mat4(1.0f), glm::vec3(1.0f + model.getScaling(), 1.0f + model.getScaling(), 1.0f + model.getScaling()));
+
+	//Swetang
+	//Cube scale (for most of the cubes)
+	mat4 scaleMatrix = scale(glm::mat4(1.0f), glm::vec3(1.5f, 0.5f, 1.0f));
+
+    //groupMatrix will be applied to all of the cubes for this model (will translate the complete model)
+    mat4 groupMatrix = worldRotationUpdate * translate(glm::mat4(1.0f), model.getPosition()) * rotationUpdate * scaleUpdate; //Translate model to middle of screen
+
+	//LETTER E
+	//Bottom
+	mat4 translationMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, 0.0f));
+	mat4 partMatrix = translationMatrix * scaleMatrix;
+	mat4 worldMatrix = groupMatrix * partMatrix;
+
+    glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &worldMatrix[0][0]);
+    glDrawArrays(model.getRenderMode(), 0, 36);
+
+	//Left
+	translationMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(-0.5f, 1.0f, 0.0f));
+	mat4 rotationMatrix = rotate(glm::mat4(1.0f), glm::radians(90.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+	partMatrix = translationMatrix * rotationMatrix * scaleMatrix;
+	worldMatrix = groupMatrix * partMatrix;
+
+	glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &worldMatrix[0][0]);
+	glDrawArrays(model.getRenderMode(), 0, 36);
+
+	//Top
+	translationMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 1.5f, 0.0f));
+	partMatrix = translationMatrix * scaleMatrix;
+	worldMatrix = groupMatrix * partMatrix;
+
+	glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &worldMatrix[0][0]);
+	glDrawArrays(model.getRenderMode(), 0, 36);
+
+	//Middle
+	translationMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.75f, 0.0f));
+	partMatrix = translationMatrix * scaleMatrix;
+	worldMatrix = groupMatrix * partMatrix;
+
+	glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &worldMatrix[0][0]);
+	glDrawArrays(model.getRenderMode(), 0, 36);
+
+	//NUMBER 0
+	//Bottom
+	translationMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(2.5f, 0.0f, 0.0f));
+	partMatrix = translationMatrix * scaleMatrix;
+	worldMatrix = groupMatrix * partMatrix;
+
+    glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &worldMatrix[0][0]);
+    glDrawArrays(model.getRenderMode(), 0, 36);
+
+	//Left
+	translationMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(2.0f, 1.0f, 0.0f));
+	rotationMatrix = rotate(glm::mat4(1.0f), glm::radians(90.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+	partMatrix = translationMatrix * rotationMatrix * scaleMatrix;
+	worldMatrix = groupMatrix * partMatrix;
+
+	glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &worldMatrix[0][0]);
+	glDrawArrays(model.getRenderMode(), 0, 36);
+
+	//Right
+	//scaleMatrix = glm::scale(glm::mat4(1.0f), glm::vec3(1.5f, 0.5f, 1.0f));
+	translationMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(3.0f, 1.0f, 0.0f));
+	partMatrix = translationMatrix * rotationMatrix * scaleMatrix;
+	worldMatrix = groupMatrix * partMatrix;
+
+	glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &worldMatrix[0][0]);
+	glDrawArrays(model.getRenderMode(), 0, 36);
+
+	//Top
+	translationMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(2.5f, 1.5f, 0.0f));
+	partMatrix = translationMatrix * scaleMatrix;
+	worldMatrix = groupMatrix * partMatrix;
+
+    glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &worldMatrix[0][0]);
+    glDrawArrays(model.getRenderMode(), 0, 36);
+}
+
+
 //Update through user input
 void updateInput(GLFWwindow* window, float dt, vec3& worldRotation)
 {
@@ -712,23 +852,24 @@ void modelFocusSwitch(int nextModel)
 
     focusedModel = &models[nextModel];
     SELECTEDMODELINDEX = nextModel;
+
 }
+
 
 int main(int argc, char* argv[])
 {
-
     // Initialize GLFW and OpenGL version
     glfwInit();
 
 #if defined(PLATFORM_OSX)
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 2);
-    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-    glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
+	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
+	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 2);
+	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+	glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
 #else
-    // On windows, we set OpenGL version to 2.1, to support more hardware
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 2);
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 1);
+	// On windows, we set OpenGL version to 2.1, to support more hardware
+	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 2);
+	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 1);
 #endif
 
     // Create Window and rendering context using GLFW, resolution is 1024x768
@@ -749,9 +890,6 @@ int main(int argc, char* argv[])
         glfwTerminate();
         return -1;
     }
-
-    //Disable mouse cursor
-    //glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 
     // Black background
     glClearColor(0.1f, 0.2f, 0.2f, 1.0f);
@@ -891,7 +1029,7 @@ int main(int argc, char* argv[])
         drawTaqiModel(shaderProgram, vaoArray, worldRotationUpdate);
         drawHauModel(shaderProgram, vaoArray, worldRotationUpdate);
         drawRoyModel(shaderProgram, vaoArray, worldRotationUpdate);
-
+        drawSwetangModel(shaderProgram, vaoArray, worldRotationUpdate);
 
         //FPS camera
         bool fastCam = glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS || glfwGetKey(window, GLFW_KEY_RIGHT_SHIFT) == GLFW_PRESS; //Press shift to go faster
@@ -951,6 +1089,56 @@ int main(int argc, char* argv[])
         viewMatrix = lookAt(cameraPosition, cameraPosition + cameraLookAt, cameraUp);
         GLuint viewMatrixLocation = glGetUniformLocation(shaderProgram, "viewMatrix");
         glUniformMatrix4fv(viewMatrixLocation, 1, GL_FALSE, &viewMatrix[0][0]);
+
+
+
+        //Mouse Panning, Tilting and Zooming
+        int pan = glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_RIGHT);
+        int tilt = glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_MIDDLE);
+        int zoom = glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT);
+        if (pan == GLFW_PRESS)
+        {
+            double mouseposX, mouseposY;
+            glfwGetCursorPos(window, &mouseposX, &mouseposY);
+            double dx = mouseposX - lastMousePosX;
+            double dy = mouseposY - lastMousePosY;
+            lastMousePosX = mouseposX;
+            lastMousePosY = mouseposY;
+            const float cameraAngularSpeed = 15.0f;
+            cameraHorizontalAngle -= dx * cameraAngularSpeed * dt;
+            vec3 eyeHorizon(cameraHorizontalAngle, 0.0f, 0.0f);
+
+            viewMatrix = lookAt(eye + eyeHorizon, center + eyeHorizon, up);
+            setViewMatrix(shaderProgram, viewMatrix);
+        }
+        if (tilt == GLFW_PRESS)
+        {
+            double mouseposX, mouseposY;
+            glfwGetCursorPos(window, &mouseposX, &mouseposY);
+            double dx = mouseposX - lastMousePosX;
+            double dy = mouseposY - lastMousePosY;
+            lastMousePosX = mouseposX;
+            lastMousePosY = mouseposY;
+            const float cameraAngularSpeed = 15.0f;
+            cameraVerticalAngle -= dy * cameraAngularSpeed * dt;
+            vec3 eyeVertical(0.0f, cameraVerticalAngle, 0.0f);
+            viewMatrix = lookAt(eye + eyeVertical, center, up);
+            setViewMatrix(shaderProgram, viewMatrix);
+        }
+        if (zoom == GLFW_PRESS)
+        {
+            double mouseposX, mouseposY;
+            glfwGetCursorPos(window, &mouseposX, &mouseposY);
+            double dx = mouseposX - lastMousePosX;
+            double dy = mouseposY - lastMousePosY;
+            lastMousePosX = mouseposX;
+            lastMousePosY = mouseposY;
+            const float cameraAngularSpeed = 15.0f;
+            cameraVerticalAngle -= dy * cameraAngularSpeed * dt;
+            vec3 eyeVertical(0.0f, 0.0f, cameraVerticalAngle);
+            viewMatrix = lookAt(eye + eyeVertical, center, up);
+            setViewMatrix(shaderProgram, viewMatrix);
+        }
 
         //glBindVertexArray(0); 
         // End Frame
