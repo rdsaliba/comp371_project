@@ -1,22 +1,6 @@
 #include <iostream>
 #include <list>
 #include <algorithm>
-
-#define GLEW_STATIC 1   // This allows linking with Static Library on Windows, without DLL
-
-//
-// COMP 371 Assignment Framework
-//
-// Created by Nicolas Bergeron on 20/06/2019.
-//
-// Inspired by the following tutorials:
-// - https://learnopengl.com/Getting-started/Hello-Window
-// - https://learnopengl.com/Getting-started/Hello-Triangle
-
-
-#include <iostream>
-#include <list>
-#include <algorithm>
 #define GLFW_PRESS 1
 #define GLFW_MOUSE_PRESS_BUTTON_RIGHT GLFW_MOUSE_BUTTON_2
 #define GLFW_MOUSE_PRESS_BUTTON_LEFT GLFW_MOUSE_BUTTON_1
@@ -35,9 +19,13 @@
 #include <glm/common.hpp>
 #include "Model.h"
 
+using namespace std; 
+using namespace glm;
+
 const GLuint WIDTH = 1024, HEIGHT = 768;
 glm::mat4 projection_matrix;
 
+float gridUnit = 1.0f;
 void modelFocusSwitch(int nextModel);
 int SELECTEDMODELINDEX = 1;
 Model* focusedModel = NULL;
@@ -50,8 +38,15 @@ Model models[] = {
     Model(vec3(8.0f, 0.0f, -5.0f), 0.0f) //William (L9) 
 };
 
-using namespace std; 
-using namespace glm;
+//Default
+const glm::vec3 eye(0.0f, 7.0f, 20.0f);
+const glm::vec3 up(0.0f, 1.0f, 0.0f);
+glm::vec3 center(0.0f, 0.0f, 0.0f);
+//Camera settings
+glm::vec3 centerO = center;
+glm::vec3 cameraEye = eye;
+float x_rotate = 0;
+float y_rotate = 0;
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height)
 {
@@ -93,15 +88,7 @@ const char* getFragmentShaderSource()
 		"   FragColor = vec4(vertexColor.r, vertexColor.g, vertexColor.b, 1.0f);"
 		"}";
 }
-//Default
-const glm::vec3 eye(0.0f, 7.0f, 20.0f);
-const glm::vec3 up(0.0f, 1.0f, 0.0f);
-glm::vec3 center(0.0f, 0.0f, 0.0f);
-//Camera settings
-glm::vec3 centerO = center;
-glm::vec3 cameraEye = eye;
-float x_rotate = 0;
-float y_rotate = 0;
+
 
 int compileAndLinkShaders()
 {
@@ -157,9 +144,7 @@ int compileAndLinkShaders()
 	glDeleteShader(fragmentShader);
 
 	return shaderProgram;
-
 }
-float gridUnit = 1.0f;
 
 void setViewMatrix(int shaderProgram, mat4 viewMatrix)
 {
@@ -168,55 +153,56 @@ void setViewMatrix(int shaderProgram, mat4 viewMatrix)
 	glUniformMatrix4fv(viewMatrixLocation, 1, GL_FALSE, &viewMatrix[0][0]);
 }
 
-// Cube model
-vec3 cubeVertexArray[] = {  // position,                            color
-vec3(-0.5f,-0.5f,-0.5f), vec3(1.0f, 0.0f, 0.0f), //left - red
-vec3(-0.5f,-0.5f, 0.5f), vec3(1.0f, 0.0f, 0.0f),
-vec3(-0.5f, 0.5f, 0.5f), vec3(1.0f, 0.0f, 0.0f),
 
-vec3(-0.5f,-0.5f,-0.5f), vec3(1.0f, 0.0f, 0.0f),
-vec3(-0.5f, 0.5f, 0.5f), vec3(1.0f, 0.0f, 0.0f),
-vec3(-0.5f, 0.5f,-0.5f), vec3(1.0f, 0.0f, 0.0f),
+vec3 cubeVertexArray[] = {  
+    // position,                      olor
+    vec3(-0.5f,-0.5f,-0.5f), vec3(1.0f, 0.0f, 0.0f), //left - red
+    vec3(-0.5f,-0.5f, 0.5f), vec3(1.0f, 0.0f, 0.0f),
+    vec3(-0.5f, 0.5f, 0.5f), vec3(1.0f, 0.0f, 0.0f),
 
-vec3(0.5f, 0.5f,-0.5f), vec3(0.0f, 0.0f, 1.0f), // far - blue
-vec3(-0.5f,-0.5f,-0.5f), vec3(0.0f, 0.0f, 1.0f),
-vec3(-0.5f, 0.5f,-0.5f), vec3(0.0f, 0.0f, 1.0f),
+    vec3(-0.5f,-0.5f,-0.5f), vec3(1.0f, 0.0f, 0.0f),
+    vec3(-0.5f, 0.5f, 0.5f), vec3(1.0f, 0.0f, 0.0f),
+    vec3(-0.5f, 0.5f,-0.5f), vec3(1.0f, 0.0f, 0.0f),
 
-vec3(0.5f, 0.5f,-0.5f), vec3(0.0f, 0.0f, 1.0f),
-vec3(0.5f,-0.5f,-0.5f), vec3(0.0f, 0.0f, 1.0f),
-vec3(-0.5f,-0.5f,-0.5f), vec3(0.0f, 0.0f, 1.0f),
+    vec3(0.5f, 0.5f,-0.5f), vec3(0.0f, 0.0f, 1.0f), // far - blue
+    vec3(-0.5f,-0.5f,-0.5f), vec3(0.0f, 0.0f, 1.0f),
+    vec3(-0.5f, 0.5f,-0.5f), vec3(0.0f, 0.0f, 1.0f),
 
-vec3(0.5f,-0.5f, 0.5f), vec3(0.0f, 1.0f, 1.0f), // bottom - turquoise
-vec3(-0.5f,-0.5f,-0.5f), vec3(0.0f, 1.0f, 1.0f),
-vec3(0.5f,-0.5f,-0.5f), vec3(0.0f, 1.0f, 1.0f),
+    vec3(0.5f, 0.5f,-0.5f), vec3(0.0f, 0.0f, 1.0f),
+    vec3(0.5f,-0.5f,-0.5f), vec3(0.0f, 0.0f, 1.0f),
+    vec3(-0.5f,-0.5f,-0.5f), vec3(0.0f, 0.0f, 1.0f),
 
-vec3(0.5f,-0.5f, 0.5f), vec3(0.0f, 1.0f, 1.0f),
-vec3(-0.5f,-0.5f, 0.5f), vec3(0.0f, 1.0f, 1.0f),
-vec3(-0.5f,-0.5f,-0.5f), vec3(0.0f, 1.0f, 1.0f),
+    vec3(0.5f,-0.5f, 0.5f), vec3(0.0f, 1.0f, 1.0f), // bottom - turquoise
+    vec3(-0.5f,-0.5f,-0.5f), vec3(0.0f, 1.0f, 1.0f),
+    vec3(0.5f,-0.5f,-0.5f), vec3(0.0f, 1.0f, 1.0f),
 
-vec3(-0.5f, 0.5f, 0.5f), vec3(0.0f, 1.0f, 0.0f), // near - green
-vec3(-0.5f,-0.5f, 0.5f), vec3(0.0f, 1.0f, 0.0f),
-vec3(0.5f,-0.5f, 0.5f), vec3(0.0f, 1.0f, 0.0f),
+    vec3(0.5f,-0.5f, 0.5f), vec3(0.0f, 1.0f, 1.0f),
+    vec3(-0.5f,-0.5f, 0.5f), vec3(0.0f, 1.0f, 1.0f),
+    vec3(-0.5f,-0.5f,-0.5f), vec3(0.0f, 1.0f, 1.0f),
 
-vec3(0.5f, 0.5f, 0.5f), vec3(0.0f, 1.0f, 0.0f),
-vec3(-0.5f, 0.5f, 0.5f), vec3(0.0f, 1.0f, 0.0f),
-vec3(0.5f,-0.5f, 0.5f), vec3(0.0f, 1.0f, 0.0f),
+    vec3(-0.5f, 0.5f, 0.5f), vec3(0.0f, 1.0f, 0.0f), // near - green
+    vec3(-0.5f,-0.5f, 0.5f), vec3(0.0f, 1.0f, 0.0f),
+    vec3(0.5f,-0.5f, 0.5f), vec3(0.0f, 1.0f, 0.0f),
 
-vec3(0.5f, 0.5f, 0.5f), vec3(1.0f, 0.0f, 1.0f), // right - purple
-vec3(0.5f,-0.5f,-0.5f), vec3(1.0f, 0.0f, 1.0f),
-vec3(0.5f, 0.5f,-0.5f), vec3(1.0f, 0.0f, 1.0f),
+    vec3(0.5f, 0.5f, 0.5f), vec3(0.0f, 1.0f, 0.0f),
+    vec3(-0.5f, 0.5f, 0.5f), vec3(0.0f, 1.0f, 0.0f),
+    vec3(0.5f,-0.5f, 0.5f), vec3(0.0f, 1.0f, 0.0f),
 
-vec3(0.5f,-0.5f,-0.5f), vec3(1.0f, 0.0f, 1.0f),
-vec3(0.5f, 0.5f, 0.5f), vec3(1.0f, 0.0f, 1.0f),
-vec3(0.5f,-0.5f, 0.5f), vec3(1.0f, 0.0f, 1.0f),
+    vec3(0.5f, 0.5f, 0.5f), vec3(1.0f, 0.0f, 1.0f), // right - purple
+    vec3(0.5f,-0.5f,-0.5f), vec3(1.0f, 0.0f, 1.0f),
+    vec3(0.5f, 0.5f,-0.5f), vec3(1.0f, 0.0f, 1.0f),
 
-vec3(0.5f, 0.5f, 0.5f), vec3(1.0f, 1.0f, 0.0f), // top - yellow
-vec3(0.5f, 0.5f,-0.5f), vec3(1.0f, 1.0f, 0.0f),
-vec3(-0.5f, 0.5f,-0.5f), vec3(1.0f, 1.0f, 0.0f),
+    vec3(0.5f,-0.5f,-0.5f), vec3(1.0f, 0.0f, 1.0f),
+    vec3(0.5f, 0.5f, 0.5f), vec3(1.0f, 0.0f, 1.0f),
+    vec3(0.5f,-0.5f, 0.5f), vec3(1.0f, 0.0f, 1.0f),
 
-vec3(0.5f, 0.5f, 0.5f), vec3(1.0f, 1.0f, 0.0f),
-vec3(-0.5f, 0.5f,-0.5f), vec3(1.0f, 1.0f, 0.0f),
-vec3(-0.5f, 0.5f, 0.5f), vec3(1.0f, 1.0f, 0.0f)
+    vec3(0.5f, 0.5f, 0.5f), vec3(1.0f, 1.0f, 0.0f), // top - yellow
+    vec3(0.5f, 0.5f,-0.5f), vec3(1.0f, 1.0f, 0.0f),
+    vec3(-0.5f, 0.5f,-0.5f), vec3(1.0f, 1.0f, 0.0f),
+
+    vec3(0.5f, 0.5f, 0.5f), vec3(1.0f, 1.0f, 0.0f),
+    vec3(-0.5f, 0.5f,-0.5f), vec3(1.0f, 1.0f, 0.0f),
+    vec3(-0.5f, 0.5f, 0.5f), vec3(1.0f, 1.0f, 0.0f)
 };
 
 vec3 gridVertexArray[] = {
@@ -268,53 +254,6 @@ vec3 zAxisVertexArray[] = {
 	 glm::vec3(0.0f, 0.0f, 1.0f)
 };
 
-
-GLuint createVertexArrayObject(vec3* vertexArray)
-{
-	// Create a vertex array
-	GLuint vertexArrayObject;
-	glGenVertexArrays(1, &vertexArrayObject);
-	glBindVertexArray(vertexArrayObject);
-
-	//glBindVertexArray(vao);
-
-	// Upload Vertex Buffer to the GPU, keep a reference to it (vertexBufferObject)
-	//glBindBuffer(GL_ARRAY_BUFFER, vbo);
-	//glBufferData(GL_ARRAY_BUFFER, sizeof(vertexArray), vertexArray, GL_STATIC_DRAW);
-
-	// Upload Vertex Buffer to the GPU, keep a reference to it (vertexBufferObject)
-	GLuint vertexBufferObject;
-	glGenBuffers(1, &vertexBufferObject);
-	glBindBuffer(GL_ARRAY_BUFFER, vertexBufferObject);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(vertexArray), vertexArray, GL_STATIC_DRAW);
-
-	glVertexAttribPointer(0,                   // attribute 0 matches aPos in Vertex Shader
-		3,                   // size
-		GL_FLOAT,            // type
-		GL_FALSE,            // normalized?
-		2 * sizeof(glm::vec3), // stride - each vertex contain 2 vec3 (position, color)
-		(void*)0             // array buffer offset
-	);
-	glEnableVertexAttribArray(0);
-
-
-	glVertexAttribPointer(1,                            // attribute 1 matches aColor in Vertex Shader
-		3,
-		GL_FLOAT,
-		GL_FALSE,
-		2 * sizeof(glm::vec3),
-		(void*)sizeof(glm::vec3)      // color is offseted a vec3 (comes after position)
-	);
-	glEnableVertexAttribArray(1);
-
-	glBindBuffer(GL_ARRAY_BUFFER, 0);
-	glBindVertexArray(0);
-
-	return vertexArrayObject;
-}
-
-
-
 /// <summary>
 /// draws 1 ground square
 /// </summary>
@@ -346,9 +285,13 @@ void drawGroundGrid(int shader, GLuint vao[], float pointDisplacementUnit, mat4 
     }
 }
 
-//Grid axis lines
+/// <summary>
+/// Draws Axis lines centered at the origin
+/// </summary>
+/// <param name="shader"></param>
+/// <param name="vao"></param>
+/// <param name="gridUnit"></param>
 void drawAxisLines(int shader, GLuint vao[], float gridUnit, mat4 worldRotationUpdate) {
-
     glBindVertexArray(vao[1]);
     mat4 axisMatrix = worldRotationUpdate * mat4(1.0f);//scale(mat4(1.0f)//, vec3(5 * gridUnit, 0.1f, 0.1f)) * translate(mat4(1.0f), vec3(0.5f, 0.0f, 0.0f)) * rotate(mat4(1.0f), radians(90.0f), vec3(0.0f, 1.0f, 0.0f));
     //axisMatrix = rotate(axisMatrix, radians(270.0f), vec3(1.0f, 0.0f, 0.0f));
@@ -921,7 +864,7 @@ void modelFocusSwitch(int nextModel)
     if (SELECTEDMODELINDEX == nextModel) {
         return;
     }
-
+    //Update pointer to the selected model 
     focusedModel = &models[nextModel];
     SELECTEDMODELINDEX = nextModel;
 
@@ -994,12 +937,12 @@ int main(int argc, char* argv[])
     GLuint viewMatrixLocation = glGetUniformLocation(shaderProgram, "viewMatrix");
     glUniformMatrix4fv(viewMatrixLocation, 1, GL_FALSE, &viewMatrix[0][0]);
 
-    const int modelCount = 5; //number of models to load
-    GLuint vaoArray[modelCount], vboArray[modelCount];
-    glGenVertexArrays(modelCount, &vaoArray[0]);
-    glGenBuffers(modelCount, &vboArray[0]);
+    const int geometryCount = 5; //number of models to load
+    GLuint vaoArray[geometryCount], vboArray[geometryCount];
+    glGenVertexArrays(geometryCount, &vaoArray[0]);
+    glGenBuffers(geometryCount, &vboArray[0]);
 
-    // Define and upload geometry to the GPU here ...
+    // Define and upload geometry for all our models to the GPU 
 
     //Ground Grid
     glBindVertexArray(vaoArray[0]);
@@ -1011,7 +954,7 @@ int main(int argc, char* argv[])
     glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 2 * sizeof(glm::vec3), (void*)sizeof(glm::vec3));
     glEnableVertexAttribArray(1);
 
-    //Axis
+    //Axis lines
     //X
     glBindVertexArray(vaoArray[1]);
     glBindBuffer(GL_ARRAY_BUFFER, vboArray[1]);
@@ -1042,7 +985,7 @@ int main(int argc, char* argv[])
     glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 2 * sizeof(glm::vec3), (void*)sizeof(glm::vec3));
     glEnableVertexAttribArray(1);
 
-    //Cube
+    //Cube (for individual models)
     glBindVertexArray(vaoArray[4]);
     glBindBuffer(GL_ARRAY_BUFFER, vboArray[4]);
     glBufferData(GL_ARRAY_BUFFER, sizeof(cubeVertexArray), cubeVertexArray, GL_STATIC_DRAW);
@@ -1051,7 +994,6 @@ int main(int argc, char* argv[])
 
     glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 2 * sizeof(glm::vec3), (void*)sizeof(glm::vec3));
     glEnableVertexAttribArray(1);
-
 
     // Variables to be used later in tutorial
     float angle = 0;
@@ -1065,17 +1007,21 @@ int main(int argc, char* argv[])
     double lastMousePosX, lastMousePosY;
     glfwGetCursorPos(window, &lastMousePosX, &lastMousePosY);
 
-    //float pointDisplacementUnit = 0.1f;
     focusedModel = &models[1];
+
+    //Enable hidden surface removal
     glEnable(GL_CULL_FACE);
-    //glEnable(GL_DEPTH_TEST);
+
+    mat4 worldRotationX;
+    mat4 worldRotationY;
+    mat4 worldRotationUpdate;
 
      // Entering Main Loop
     while (!glfwWindowShouldClose(window))
     {
-        mat4 worldRotationX = rotate(glm::mat4(1.0f), glm::radians(worldRotation.x), glm::vec3(1.0f, 0.0f, 0.0f));
-        mat4 worldRotationY = rotate(glm::mat4(1.0f), glm::radians(worldRotation.y), glm::vec3(0.0f, 1.0f, 0.0f));
-        mat4 worldRotationUpdate = worldRotationX * worldRotationY;
+        worldRotationX = rotate(glm::mat4(1.0f), glm::radians(worldRotation.x), glm::vec3(1.0f, 0.0f, 0.0f));
+        worldRotationY = rotate(glm::mat4(1.0f), glm::radians(worldRotation.y), glm::vec3(0.0f, 1.0f, 0.0f));
+        worldRotationUpdate = worldRotationX * worldRotationY;
 
         //Frame time calculation
         float dt = glfwGetTime() - lastFrameTime;
@@ -1086,13 +1032,6 @@ int main(int argc, char* argv[])
 
         // Each frame, reset color of each pixel to glClearColor
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-      
-        // Draw geometry
-        //glUseProgram(shaderProgram);
-        //glBindVertexArray(vaoArray[0]);
-
-       // GLuint worldMatrixLocation = glGetUniformLocation(shaderProgram, "worldMatrix");
 
         drawGroundGrid(shaderProgram, vaoArray, gridUnit, worldRotationUpdate);
         drawAxisLines(shaderProgram, vaoArray, gridUnit, worldRotationUpdate);
@@ -1160,9 +1099,7 @@ int main(int argc, char* argv[])
         // - In first person, camera lookat is set like below
         mat4 viewMatrix(1.0f);
         viewMatrix = lookAt(cameraPosition, cameraPosition + cameraLookAt, cameraUp);
-        GLuint viewMatrixLocation = glGetUniformLocation(shaderProgram, "viewMatrix");
-        glUniformMatrix4fv(viewMatrixLocation, 1, GL_FALSE, &viewMatrix[0][0]);
-
+        setViewMatrix(shaderProgram, viewMatrix);
 
         //Mouse Panning, Tilting and Zooming
         int pan = glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_RIGHT);
@@ -1192,7 +1129,6 @@ int main(int argc, char* argv[])
             setViewMatrix(shaderProgram, viewMatrix);
         }
 
-        //glBindVertexArray(0); 
         // End Frame
         glfwSwapBuffers(window);
         glfwPollEvents();
@@ -1201,20 +1137,6 @@ int main(int argc, char* argv[])
         if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
             glfwSetWindowShouldClose(window, true);
 
-        // Projection Transform
-        if (glfwGetKey(window, GLFW_KEY_6) == GLFW_PRESS) {
-            glm::mat4 projectionMatrix = glm::perspective(glm::radians(45.0f), 1024.0f / 768.0f, 0.10f, 100.0f);
-
-            GLuint projectionMatrixLocation = glGetUniformLocation(shaderProgram, "projectionMatrix");
-            glUniformMatrix4fv(projectionMatrixLocation, 1, GL_FALSE, &projectionMatrix[0][0]);
-        }
-
-        if (glfwGetKey(window, GLFW_KEY_7) == GLFW_PRESS) {
-            glm::mat4 projectionMatrix = glm::ortho(-4.0f, 4.0f, -3.0f, 3.0f, -100.0f, 100.0f);
-
-            GLuint projectionMatrixLocation = glGetUniformLocation(shaderProgram, "projectionMatrix");
-            glUniformMatrix4fv(projectionMatrixLocation, 1, GL_FALSE, &projectionMatrix[0][0]);
-        }
     }
 
     // Shutdown GLFW
