@@ -56,8 +56,7 @@ void framebuffer_size_callback(GLFWwindow* window, int width, int height)
 }
 const char* getVertexShaderSource()
 {
-	// TODO - Insert Vertex Shaders here ...
-	// For now, you use a string for your shader code, in the assignment, shaders will be stored in .glsl files
+	//Vertex Shader
 	return
 		"#version 330 core\n"
 		"layout (location=0) in vec3 aPos;"
@@ -78,7 +77,7 @@ const char* getVertexShaderSource()
 
 const char* getFragmentShaderSource()
 {
-	// TODO - Insert Fragment Shaders here ...
+	//Fragment Shaders here 
 	return
 		"#version 330 core\n"
 		"in vec3 vertexColor;"
@@ -92,7 +91,6 @@ const char* getFragmentShaderSource()
 
 int compileAndLinkShaders()
 {
-	// TODO
 	// compile and link shader program
 	// return shader program id
 	// ------------------------------------
@@ -155,7 +153,7 @@ void setViewMatrix(int shaderProgram, mat4 viewMatrix)
 
 
 vec3 cubeVertexArray[] = {  
-    // position,                      olor
+    // position,                   color
     vec3(-0.5f,-0.5f,-0.5f), vec3(1.0f, 0.0f, 0.0f), //left - red
     vec3(-0.5f,-0.5f, 0.5f), vec3(1.0f, 0.0f, 0.0f),
     vec3(-0.5f, 0.5f, 0.5f), vec3(1.0f, 0.0f, 0.0f),
@@ -293,8 +291,7 @@ void drawGroundGrid(int shader, GLuint vao[], float pointDisplacementUnit, mat4 
 /// <param name="gridUnit"></param>
 void drawAxisLines(int shader, GLuint vao[], float gridUnit, mat4 worldRotationUpdate) {
     glBindVertexArray(vao[1]);
-    mat4 axisMatrix = worldRotationUpdate * mat4(1.0f);//scale(mat4(1.0f)//, vec3(5 * gridUnit, 0.1f, 0.1f)) * translate(mat4(1.0f), vec3(0.5f, 0.0f, 0.0f)) * rotate(mat4(1.0f), radians(90.0f), vec3(0.0f, 1.0f, 0.0f));
-    //axisMatrix = rotate(axisMatrix, radians(270.0f), vec3(1.0f, 0.0f, 0.0f));
+    mat4 axisMatrix = worldRotationUpdate * mat4(1.0f);
 
     GLuint worldMatrixLocation = glGetUniformLocation(shader, "worldMatrix");
     //X-axis
@@ -304,14 +301,12 @@ void drawAxisLines(int shader, GLuint vao[], float gridUnit, mat4 worldRotationU
     //Y-axis
     glBindVertexArray(vao[2]);
     axisMatrix = worldRotationUpdate * glm::mat4(1.0f);
-    //axisMatrix = scale(axisMatrix, vec3(0.03f, 0.0f, 0.0f));
     glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &axisMatrix[0][0]);
     glDrawArrays(GL_LINES, 0, 2);
 
     //Z-axis
     glBindVertexArray(vao[3]);
     axisMatrix = worldRotationUpdate * glm::mat4(1.0f);
-    //axisMatrix = scale(axisMatrix, vec3(0.03f, 0.0f, 0.0f));
     glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &axisMatrix[0][0]);
     glDrawArrays(GL_LINES, 0, 2);
 }
@@ -323,6 +318,7 @@ void drawAxisLines(int shader, GLuint vao[], float gridUnit, mat4 worldRotationU
 /// <param name="shader"></param>
 /// <param name="vao"></param>
 void drawHauModel(int shader, GLuint vao[], mat4 worldRotationUpdate) {
+
     glBindVertexArray(vao[4]);
 
     Model model = models[2];
@@ -330,10 +326,6 @@ void drawHauModel(int shader, GLuint vao[], mat4 worldRotationUpdate) {
     mat4 scaleUpdate = scale(glm::mat4(1.0f), vec3(1.0f + model.getScaling(), 1.0f + model.getScaling(), 1.0f + model.getScaling()));
        
     GLuint worldMatrixLocation = glGetUniformLocation(shader, "worldMatrix");
-    mat4 projectionMatrix = perspective(70.0f, 1024.0f / 768.0f, 0.01f, 100.0f);
-
-    GLuint projectionMatrixLocation = glGetUniformLocation(shader, "projectionMatrix");
-    glUniformMatrix4fv(projectionMatrixLocation, 1, GL_FALSE, &projectionMatrix[0][0]);
 
     mat4 scaleMatrix = scale(mat4(1.0f), vec3(1.0f, 5.0f, 1.0f));
     mat4 groupMatrix = worldRotationUpdate * translate(mat4(1.0f), model.getPosition()) * rotationUpdate * scaleUpdate;
@@ -914,6 +906,7 @@ int main(int argc, char* argv[])
     glUseProgram(shaderProgram);
 
     // Camera parameters for view transform
+    //Initial view values
     vec3 cameraPosition(0.0f, 5.0f, 10.0f);
     vec3 cameraLookAt(0.0f, 0.0f, 0.0f);
     vec3 cameraUp(0.0f, 1.0f, 0.0f);
@@ -1007,7 +1000,7 @@ int main(int argc, char* argv[])
     double lastMousePosX, lastMousePosY;
     glfwGetCursorPos(window, &lastMousePosX, &lastMousePosY);
 
-    focusedModel = &models[1];
+    focusedModel = &models[4];
 
     //Enable hidden surface removal
     glEnable(GL_CULL_FACE);
@@ -1031,7 +1024,7 @@ int main(int argc, char* argv[])
         updateInput(window, dt, worldRotation);
 
         // Each frame, reset color of each pixel to glClearColor
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        glClear(GL_COLOR_BUFFER_BIT);
 
         drawGroundGrid(shaderProgram, vaoArray, gridUnit, worldRotationUpdate);
         drawAxisLines(shaderProgram, vaoArray, gridUnit, worldRotationUpdate);
@@ -1096,7 +1089,6 @@ int main(int argc, char* argv[])
         }
 
         // Set the view matrix for first person camera
-        // - In first person, camera lookat is set like below
         mat4 viewMatrix(1.0f);
         viewMatrix = lookAt(cameraPosition, cameraPosition + cameraLookAt, cameraUp);
         setViewMatrix(shaderProgram, viewMatrix);
