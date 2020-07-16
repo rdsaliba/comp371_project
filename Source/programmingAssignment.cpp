@@ -18,6 +18,7 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/common.hpp>
 #include "Model.h"
+#include "Axis.h"
 
 using namespace std; 
 using namespace glm;
@@ -282,35 +283,6 @@ void drawGroundGrid(int shader, GLuint vao[], float pointDisplacementUnit, mat4 
         }
     }
 }
-
-/// <summary>
-/// Draws Axis lines centered at the origin
-/// </summary>
-/// <param name="shader"></param>
-/// <param name="vao"></param>
-/// <param name="gridUnit"></param>
-void drawAxisLines(int shader, GLuint vao[], float gridUnit, mat4 worldRotationUpdate) {
-    glBindVertexArray(vao[1]);
-    mat4 axisMatrix = worldRotationUpdate * mat4(1.0f);
-
-    GLuint worldMatrixLocation = glGetUniformLocation(shader, "worldMatrix");
-    //X-axis
-    glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &axisMatrix[0][0]);
-    glDrawArrays(GL_LINES, 0, 2);
-
-    //Y-axis
-    glBindVertexArray(vao[2]);
-    axisMatrix = worldRotationUpdate * glm::mat4(1.0f);
-    glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &axisMatrix[0][0]);
-    glDrawArrays(GL_LINES, 0, 2);
-
-    //Z-axis
-    glBindVertexArray(vao[3]);
-    axisMatrix = worldRotationUpdate * glm::mat4(1.0f);
-    glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &axisMatrix[0][0]);
-    glDrawArrays(GL_LINES, 0, 2);
-}
-
 
 /// <summary>
 /// Draws Hau's model (U6)
@@ -880,7 +852,7 @@ int main(int argc, char* argv[])
 #endif
 
     // Create Window and rendering context using GLFW, resolution is 1024x768
-    GLFWwindow* window = glfwCreateWindow(1024, 768, "Comp371 - Project", NULL, NULL);
+    GLFWwindow* window = glfwCreateWindow(WIDTH, HEIGHT, "Comp371 - Project", NULL, NULL);
     if (window == NULL)
     {
         std::cerr << "Failed to create GLFW window" << std::endl;
@@ -935,43 +907,14 @@ int main(int argc, char* argv[])
     glGenVertexArrays(geometryCount, &vaoArray[0]);
     glGenBuffers(geometryCount, &vboArray[0]);
 
-    // Define and upload geometry for all our models to the GPU 
+    // Define and upload geometry for all our models to the GPU
+    Axis axis = Axis(0.0f, gridUnit, vaoArray, vboArray);
+    axis.bindAxis();
 
     //Ground Grid
     glBindVertexArray(vaoArray[0]);
     glBindBuffer(GL_ARRAY_BUFFER, vboArray[0]);
     glBufferData(GL_ARRAY_BUFFER, sizeof(gridVertexArray), gridVertexArray, GL_STATIC_DRAW);
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 2 * sizeof(glm::vec3), (void*)0);
-    glEnableVertexAttribArray(0);
-
-    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 2 * sizeof(glm::vec3), (void*)sizeof(glm::vec3));
-    glEnableVertexAttribArray(1);
-
-    //Axis lines
-    //X
-    glBindVertexArray(vaoArray[1]);
-    glBindBuffer(GL_ARRAY_BUFFER, vboArray[1]);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(xAxisVertexArray), xAxisVertexArray, GL_STATIC_DRAW);
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 2 * sizeof(glm::vec3), (void*)0);
-    glEnableVertexAttribArray(0);
-
-    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 2 * sizeof(glm::vec3), (void*)sizeof(glm::vec3));
-    glEnableVertexAttribArray(1);
-
-    //Y
-    glBindVertexArray(vaoArray[2]);
-    glBindBuffer(GL_ARRAY_BUFFER, vboArray[2]);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(yAxisVertexArray), yAxisVertexArray, GL_STATIC_DRAW);
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 2 * sizeof(glm::vec3), (void*)0);
-    glEnableVertexAttribArray(0);
-
-    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 2 * sizeof(glm::vec3), (void*)sizeof(glm::vec3));
-    glEnableVertexAttribArray(1);
-
-    //Z
-    glBindVertexArray(vaoArray[3]);
-    glBindBuffer(GL_ARRAY_BUFFER, vboArray[3]);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(zAxisVertexArray), zAxisVertexArray, GL_STATIC_DRAW);
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 2 * sizeof(glm::vec3), (void*)0);
     glEnableVertexAttribArray(0);
 
@@ -1027,7 +970,7 @@ int main(int argc, char* argv[])
         glClear(GL_COLOR_BUFFER_BIT);
 
         drawGroundGrid(shaderProgram, vaoArray, gridUnit, worldRotationUpdate);
-        drawAxisLines(shaderProgram, vaoArray, gridUnit, worldRotationUpdate);
+        axis.drawAxisLines(shaderProgram, vaoArray, gridUnit, worldRotationUpdate);
 
         //MODELS
         drawTaqiModel(shaderProgram, vaoArray, worldRotationUpdate);
