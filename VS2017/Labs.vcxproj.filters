@@ -72,15 +72,30 @@
     <ClCompile Include="..\Source\programmingAssignment.cpp">
       <Filter>Source Files\Class Files</Filter>
     </ClCompile>
-    <ClCompile Include="Model.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="..\Source\Model.cpp">
+      <Filter>Source Files\Class Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Source\ModelUtilities.cpp">
+      <Filter>Source Files\Class Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Source\HauModel.cpp">
+      <Filter>Source Files\Class Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Source\Axis.cpp">
       <Filter>Source Files\Class Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\Source\Model.h">
+      <Filter>Source Files\Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Source\ModelUtilities.h">
+      <Filter>Source Files\Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Source\HauModel.h">
+      <Filter>Source Files\Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Source\Axis.h">
       <Filter>Source Files\Header Files</Filter>
     </ClInclude>
   </ItemGroup>

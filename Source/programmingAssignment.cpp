@@ -19,6 +19,7 @@
 #include <glm/common.hpp>
 #include "Model.h"
 #include "Axis.h"
+#include "HauModel.h"
 
 using namespace std; 
 using namespace glm;
@@ -32,11 +33,11 @@ int SELECTEDMODELINDEX = 1;
 Model* focusedModel = NULL;
 Model models[] = {
     Model(vec3(0.0f, 0.0f, 0.0f), 0.0f), //axis lines
-    Model(vec3(-8.0f, 0.0f, -20.0f), 0.0f), //Taqi (Q4)
-    Model(vec3(8.0f, 0.0f, -20.0f), 0.0f), //Hau (U6)
-    Model(vec3(-8.0f, 0.0f, -5.0f), 0.0f), //Roy (Y8)    
-    Model(vec3(0.0f, 0.0f, -10.0f), 0.0f), //Swetang (E0) 
-    Model(vec3(8.0f, 0.0f, -5.0f), 0.0f) //William (L9) 
+    Model(vec3(-45.0f, 0.0f, -45.0f), 0.0f), //Taqi (Q4)
+    Model(vec3(45.0f, 0.0f, -45.0f), 0.0f), //Hau (U6)
+    Model(vec3(-45.0f, 0.0f, 45.0f), 0.0f), //Roy (Y8)    
+    Model(vec3(0.0f, 0.0f, 0.0f), 0.0f), //Swetang (E0) 
+    Model(vec3(45.0f, 0.0f, 45.0f), 0.0f) //William (L9) 
 };
 
 //Default
@@ -285,6 +286,35 @@ void drawGroundGrid(int shader, GLuint vao[], float pointDisplacementUnit, mat4 
 }
 
 /// <summary>
+/// Draws Axis lines centered at the origin
+/// </summary>
+/// <param name="shader"></param>
+/// <param name="vao"></param>
+/// <param name="gridUnit"></param>
+void drawAxisLines(int shader, GLuint vao[], float gridUnit, mat4 worldRotationUpdate) {
+    glBindVertexArray(vao[1]);
+    mat4 axisMatrix = worldRotationUpdate * mat4(1.0f);
+
+    GLuint worldMatrixLocation = glGetUniformLocation(shader, "worldMatrix");
+    //X-axis
+    glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &axisMatrix[0][0]);
+    glDrawArrays(GL_LINES, 0, 2);
+
+    //Y-axis
+    glBindVertexArray(vao[2]);
+    axisMatrix = worldRotationUpdate * glm::mat4(1.0f);
+    glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &axisMatrix[0][0]);
+    glDrawArrays(GL_LINES, 0, 2);
+
+    //Z-axis
+    glBindVertexArray(vao[3]);
+    axisMatrix = worldRotationUpdate * glm::mat4(1.0f);
+    glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &axisMatrix[0][0]);
+    glDrawArrays(GL_LINES, 0, 2);
+}
+
+
+/// <summary>
 /// Draws Hau's model (U6)
 /// </summary>
 /// <param name="shader"></param>
@@ -294,8 +324,8 @@ void drawHauModel(int shader, GLuint vao[], mat4 worldRotationUpdate) {
     glBindVertexArray(vao[4]);
 
     Model model = models[2];
-    mat4 rotationUpdate = rotate(glm::mat4(1.0f), radians(model.getRotation().y), vec3(0.0f, 1.0f, 0.0f));
-    mat4 scaleUpdate = scale(glm::mat4(1.0f), vec3(1.0f + model.getScaling(), 1.0f + model.getScaling(), 1.0f + model.getScaling()));
+    mat4 rotationUpdate = rotate(mat4(1.0f), radians(model.getRotation().y), vec3(0.0f, 1.0f, 0.0f));
+    mat4 scaleUpdate = scale(mat4(1.0f), vec3(1.0f + model.getScaling(), 1.0f + model.getScaling(), 1.0f + model.getScaling()));
        
     GLuint worldMatrixLocation = glGetUniformLocation(shader, "worldMatrix");
 
@@ -921,6 +951,37 @@ int main(int argc, char* argv[])
     glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 2 * sizeof(glm::vec3), (void*)sizeof(glm::vec3));
     glEnableVertexAttribArray(1);
 
+    //Axis lines
+    //X
+    glBindVertexArray(vaoArray[1]);
+    glBindBuffer(GL_ARRAY_BUFFER, vboArray[1]);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(xAxisVertexArray), xAxisVertexArray, GL_STATIC_DRAW);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 2 * sizeof(glm::vec3), (void*)0);
+    glEnableVertexAttribArray(0);
+
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 2 * sizeof(glm::vec3), (void*)sizeof(glm::vec3));
+    glEnableVertexAttribArray(1);
+
+    //Y
+    glBindVertexArray(vaoArray[2]);
+    glBindBuffer(GL_ARRAY_BUFFER, vboArray[2]);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(yAxisVertexArray), yAxisVertexArray, GL_STATIC_DRAW);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 2 * sizeof(glm::vec3), (void*)0);
+    glEnableVertexAttribArray(0);
+
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 2 * sizeof(glm::vec3), (void*)sizeof(glm::vec3));
+    glEnableVertexAttribArray(1);
+
+    //Z
+    glBindVertexArray(vaoArray[3]);
+    glBindBuffer(GL_ARRAY_BUFFER, vboArray[3]);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(zAxisVertexArray), zAxisVertexArray, GL_STATIC_DRAW);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 2 * sizeof(glm::vec3), (void*)0);
+    glEnableVertexAttribArray(0);
+
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 2 * sizeof(glm::vec3), (void*)sizeof(glm::vec3));
+    glEnableVertexAttribArray(1);
+
     //Cube (for individual models)
     glBindVertexArray(vaoArray[4]);
     glBindBuffer(GL_ARRAY_BUFFER, vboArray[4]);
@@ -944,9 +1005,14 @@ int main(int argc, char* argv[])
     glfwGetCursorPos(window, &lastMousePosX, &lastMousePosY);
 
     focusedModel = &models[4];
-
+    HauModel hau(vec3(5.0f, 0.0f, -5.0f), 0.0f);
+    hau.setShaderProgram(shaderProgram);
+    hau.setVao(vaoArray[4]);
+    hau.setVbo(vboArray[4]);
+    models[4] = hau;
     //Enable hidden surface removal
     glEnable(GL_CULL_FACE);
+    //glEnable(GL_DEPTH_TEST);
 
     mat4 worldRotationX;
     mat4 worldRotationY;
@@ -973,11 +1039,12 @@ int main(int argc, char* argv[])
         axis.drawAxisLines(shaderProgram, vaoArray, gridUnit, worldRotationUpdate);
 
         //MODELS
-        drawTaqiModel(shaderProgram, vaoArray, worldRotationUpdate);
+        hau.draw(worldRotationUpdate);
+        /*drawTaqiModel(shaderProgram, vaoArray, worldRotationUpdate);
         drawHauModel(shaderProgram, vaoArray, worldRotationUpdate);
         drawRoyModel(shaderProgram, vaoArray, worldRotationUpdate);
         drawSwetangModel(shaderProgram, vaoArray, worldRotationUpdate);
-        drawWilliamModel(shaderProgram, vaoArray, worldRotationUpdate);
+        drawWilliamModel(shaderProgram, vaoArray, worldRotationUpdate);*/
 
         //FPS camera
         bool fastCam = glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS || glfwGetKey(window, GLFW_KEY_RIGHT_SHIFT) == GLFW_PRESS; //Press shift to go faster
