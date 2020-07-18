@@ -34,7 +34,7 @@ Model* focusedModel = NULL;
 Model models[] = {
     Model(vec3(0.0f, 0.0f, 0.0f), 0.0f), //axis lines
     Model(vec3(-45.0f, 0.0f, -45.0f), 0.0f), //Taqi (Q4)
-    Model(vec3(45.0f, 0.0f, -45.0f), 0.0f), //Hau (U6)
+    HauModel (vec3(5.0f, 0.0f, -5.0f), 0.0f), //Hau (U6)
     Model(vec3(-45.0f, 0.0f, 45.0f), 0.0f), //Roy (Y8)    
     Model(vec3(0.0f, 0.0f, 0.0f), 0.0f), //Swetang (E0) 
     Model(vec3(45.0f, 0.0f, 45.0f), 0.0f) //William (L9) 
@@ -320,84 +320,13 @@ void drawAxisLines(int shader, GLuint vao[], float gridUnit, mat4 worldRotationU
 /// <param name="shader"></param>
 /// <param name="vao"></param>
 void drawHauModel(int shader, GLuint vao[], mat4 worldRotationUpdate) {
-
-    glBindVertexArray(vao[4]);
-
     Model model = models[2];
-    mat4 rotationUpdate = rotate(mat4(1.0f), radians(model.getRotation().y), vec3(0.0f, 1.0f, 0.0f));
-    mat4 scaleUpdate = scale(mat4(1.0f), vec3(1.0f + model.getScaling(), 1.0f + model.getScaling(), 1.0f + model.getScaling()));
-       
-    GLuint worldMatrixLocation = glGetUniformLocation(shader, "worldMatrix");
-
-    mat4 scaleMatrix = scale(mat4(1.0f), vec3(1.0f, 5.0f, 1.0f));
-    mat4 groupMatrix = worldRotationUpdate * translate(mat4(1.0f), model.getPosition()) * rotationUpdate * scaleUpdate;
-
-    //U-Bottom 
-    mat4 translationMatrix = translate(mat4(1.0f), vec3(0.0f, 0.0f, 0.0f));
-    mat4 partMatrix = translationMatrix * scale(mat4(1.0f), vec3(2.0f, 1.0f, 1.0f));
-    mat4 uMatrix = groupMatrix * partMatrix;
-
-    glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &uMatrix[0][0]);
-    glDrawArrays(model.getRenderMode(), 0, 36);
-
-
-    //U-Left
-    translationMatrix = translate(mat4(1.0f), vec3(-1.0f, 2.0f, 0.0f));
-    mat4 rotationMatrix = rotate(mat4(1.0f), radians(90.0f), vec3(0.0f, 0.0f, 1.0f));
-    partMatrix = translationMatrix * scaleMatrix * rotationMatrix;
-    uMatrix = partMatrix;
-    uMatrix = groupMatrix * partMatrix;
-
-    glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &uMatrix[0][0]);
-    glDrawArrays(model.getRenderMode(), 0, 36);
-    
-    //U-Right
-    translationMatrix = translate(mat4(1.0f), vec3(1.0f, 2.0f, 0.0f));
-    partMatrix = translationMatrix * scaleMatrix * rotationMatrix;
-    uMatrix = groupMatrix * partMatrix;
-
-    glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &uMatrix[0][0]);
-    glDrawArrays(model.getRenderMode(), 0, 36);
-
-    //6-bottom
-    translationMatrix = translate(mat4(1.0f), vec3(4.5f, 0.0f, 0.0f));
-    partMatrix = translationMatrix * scale(mat4(1.0f), vec3(2.0f, 1.0f, 1.0f));
-    uMatrix = groupMatrix * partMatrix;
-
-    glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &uMatrix[0][0]);
-    glDrawArrays(model.getRenderMode(), 0, 36);
-
-    //6-left
-    translationMatrix = translate(mat4(1.0f), vec3(3.0f, 2.0f, 0.0f));
-    partMatrix = translationMatrix * scaleMatrix * rotationMatrix;
-    uMatrix = groupMatrix * partMatrix;
-
-    glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &uMatrix[0][0]);
-    glDrawArrays(model.getRenderMode(), 0, 36);
-
-    //6-right
-    translationMatrix = translate(mat4(1.0f), vec3(5.5f, 1.0f, 0.0f));
-    partMatrix = translationMatrix * scale(mat4(1.0f), vec3(1.0f, 3.0f, 1.0f)) * rotationMatrix;
-    uMatrix = groupMatrix * partMatrix;
-
-    glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &uMatrix[0][0]);
-    glDrawArrays(model.getRenderMode(), 0, 36);
-
-    //6-top loop
-    translationMatrix = translate(mat4(1.0f), vec3(4.5f, 2.0f, 0.0f));
-    partMatrix = translationMatrix * scale(mat4(1.0f), vec3(2.0f, 1.0f, 1.0f)) * rotationMatrix;
-    uMatrix = groupMatrix * partMatrix;
-
-    glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &uMatrix[0][0]);
-    glDrawArrays(model.getRenderMode(), 0, 36);
-
-    //6-top branch
-    translationMatrix = translate(mat4(1.0f), vec3(4.5f, 4.0f, 0.0f));
-    partMatrix = translationMatrix * scale(mat4(1.0f), vec3(3.0f, 1.0f, 1.0f)) * rotationMatrix;
-    uMatrix = groupMatrix * partMatrix;
-
-    glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &uMatrix[0][0]);
-    glDrawArrays(model.getRenderMode(), 0, 36);
+    HauModel hau(model.getPosition(), model.getScaling());
+    hau.setShaderProgram(shader);
+    hau.setVao(vao[4]);
+    hau.setRotation(model.getRotation());
+    hau.setRenderMode(model.getRenderMode());
+    hau.draw(worldRotationUpdate);
 }
 
 //WILLIAM'S MODEL ("L9")
@@ -779,25 +708,25 @@ void updateInput(GLFWwindow* window, float dt, vec3& worldRotation)
     //rotation
     if (glfwGetKey(window, GLFW_KEY_Z) == GLFW_PRESS)
     {
-        (*focusedModel).updateRotationY(-5.0f);
+        focusedModel->updateRotationY(-5.0f);
     }
     if (glfwGetKey(window, GLFW_KEY_X) == GLFW_PRESS)
     {
-        (*focusedModel).updateRotationY(5.0f);
+        focusedModel->updateRotationY(5.0f);
     }
 
     //Rendering mode
     if (glfwGetKey(window, GLFW_KEY_P) == GLFW_PRESS)
     {
-        (*focusedModel).setRenderMode(GL_POINTS);
+        focusedModel->setRenderMode(GL_POINTS);
     }
     if (glfwGetKey(window, GLFW_KEY_L) == GLFW_PRESS)
     {
-        (*focusedModel).setRenderMode(GL_LINES);
+        focusedModel->setRenderMode(GL_LINES);
     }
     if (glfwGetKey(window, GLFW_KEY_T) == GLFW_PRESS)
     {
-        (*focusedModel).setRenderMode(GL_TRIANGLES);
+        focusedModel->setRenderMode(GL_TRIANGLES);
     }
 
     //Focused model selection
@@ -1004,12 +933,7 @@ int main(int argc, char* argv[])
     double lastMousePosX, lastMousePosY;
     glfwGetCursorPos(window, &lastMousePosX, &lastMousePosY);
 
-    focusedModel = &models[4];
-    HauModel hau(vec3(5.0f, 0.0f, -5.0f), 0.0f);
-    hau.setShaderProgram(shaderProgram);
-    hau.setVao(vaoArray[4]);
-    hau.setVbo(vboArray[4]);
-    models[4] = hau;
+    focusedModel = &models[2];
     //Enable hidden surface removal
     glEnable(GL_CULL_FACE);
     //glEnable(GL_DEPTH_TEST);
@@ -1039,12 +963,11 @@ int main(int argc, char* argv[])
         axis.drawAxisLines(shaderProgram, vaoArray, gridUnit, worldRotationUpdate);
 
         //MODELS
-        hau.draw(worldRotationUpdate);
-        /*drawTaqiModel(shaderProgram, vaoArray, worldRotationUpdate);
+        drawTaqiModel(shaderProgram, vaoArray, worldRotationUpdate);
         drawHauModel(shaderProgram, vaoArray, worldRotationUpdate);
         drawRoyModel(shaderProgram, vaoArray, worldRotationUpdate);
         drawSwetangModel(shaderProgram, vaoArray, worldRotationUpdate);
-        drawWilliamModel(shaderProgram, vaoArray, worldRotationUpdate);*/
+        drawWilliamModel(shaderProgram, vaoArray, worldRotationUpdate);
 
         //FPS camera
         bool fastCam = glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS || glfwGetKey(window, GLFW_KEY_RIGHT_SHIFT) == GLFW_PRESS; //Press shift to go faster
