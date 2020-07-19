@@ -32,8 +32,6 @@ void SwetangModel::drawLetter(mat4 worldRotationUpdate) {
 }
 
 void SwetangModel::drawDigit(mat4 worldRotationUpdate) {
-	
-
 	//Bottom
 	mat4 component = createComponent(ComponentSize::SHORT, ComponentOrientation::HORIZONTAL);
 	vec3 componentPosition = getComponentPosition(component, ComponentType::BOTTOM, ComponentSize::SHORT, ModelType::DIGIT, ComponentOrientation::HORIZONTAL);

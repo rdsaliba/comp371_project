@@ -124,6 +124,7 @@
     <ClCompile Include="..\Source\RoyModel.cpp" />
     <ClCompile Include="..\Source\TaqiModel.cpp" />
     <ClCompile Include="..\Source\SwetangModel.cpp" />
+    <ClCompile Include="..\Source\WilliamModel.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\Source\Axis.h" />
@@ -133,6 +134,7 @@
     <ClInclude Include="..\Source\RoyModel.h" />
     <ClInclude Include="..\Source\SwetangModel.h" />
     <ClInclude Include="..\Source\TaqiModel.h" />
+    <ClInclude Include="..\Source\WilliamModel.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

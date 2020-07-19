@@ -23,7 +23,7 @@
 #include "RoyModel.h"
 #include "TaqiModel.h"
 #include "SwetangModel.h"
-
+#include "WilliamModel.h"
 using namespace std; 
 using namespace glm;
 
@@ -40,7 +40,7 @@ Model models[] = {
     HauModel(vec3(45.0f, 0.0f, -45.0f), 0.0f), //Hau (U6)
     RoyModel(vec3(-45.0f, 0.0f, 45.0f), 0.0f), //Roy (Y8)    
     SwetangModel(vec3(0.0f, 0.0f, 0.0f), 0.0f), //Swetang (E0) 
-    Model(vec3(45.0f, 0.0f, 45.0f), 0.0f) //William (L9) 
+    WilliamModel(vec3(45.0f, 0.0f, 45.0f), 0.0f) //William (L9) 
 };
 
 //Default
@@ -338,72 +338,13 @@ void drawHauModel(int shader, GLuint vao[], mat4 worldRotationUpdate) {
 //WILLIAM'S MODEL ("L9")
 void drawWilliamModel(int shaderProgram, GLuint vao[], mat4 worldRotationUpdate)
 {
-	glBindVertexArray(vao[4]);
-	GLuint worldMatrixLocation = glGetUniformLocation(shaderProgram, "worldMatrix");
-
-	Model model = models[5];
-	mat4 rotationUpdate = rotate(glm::mat4(1.0f), radians(model.getRotation().y), vec3(0.0f, 1.0f, 0.0f));
-	mat4 scaleUpdate = scale(glm::mat4(1.0f), glm::vec3(1.0f + model.getScaling(), 1.0f + model.getScaling(), 1.0f + model.getScaling()));
-
-	
-	//groupMatrix will be applied to all of the cubes for this model (will translate the complete model)
-	mat4 groupMatrix = worldRotationUpdate * translate(glm::mat4(1.0f), model.getPosition()) * rotationUpdate * scaleUpdate; //Translate model to upper left corner
-
-	//Letter L (verticle line)
-	mat4 scaleMatrix = glm::scale(glm::mat4(1.0f), glm::vec3(2.1f, 0.5f, 1.0f));
-	mat4 translationMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.5f, 0.0f));
-	mat4 rotationMatrix = rotate(glm::mat4(1.0f), glm::radians(90.0f), glm::vec3(0.0f, 0.0f, 1.0f));
-	mat4 partMatrix = translationMatrix * rotationMatrix * scaleMatrix;
-	mat4 worldMatrix = groupMatrix * partMatrix;
-
-	glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &worldMatrix[0][0]);
-	glDrawArrays(model.getRenderMode(), 0, 36);
-
-	//Letter L (bottom)
-	scaleMatrix = scale(glm::mat4(1.0f), glm::vec3(1.5f, 0.5f, 1.0f));
-	translationMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(0.5f, -0.5f, 0.0f));
-	partMatrix = translationMatrix * scaleMatrix;
-	worldMatrix = groupMatrix * partMatrix;
-
-	glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &worldMatrix[0][0]);
-	glDrawArrays(model.getRenderMode(), 0, 36);
-
-	//NUMBER 9 (bottom)
-
-	translationMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(2.5f, 0.5f, 0.0f));
-	partMatrix = translationMatrix * scaleMatrix;
-	worldMatrix = groupMatrix * partMatrix;
-
-	glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &worldMatrix[0][0]);
-	glDrawArrays(model.getRenderMode(), 0, 36);
-
-	//NUMBER 9 (top)
-	translationMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(2.5f, 1.5f, 0.0f));
-	partMatrix = translationMatrix * scaleMatrix;
-	worldMatrix = groupMatrix * partMatrix;
-
-	glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &worldMatrix[0][0]);
-	glDrawArrays(model.getRenderMode(), 0, 36);
-
-
-	//Left side of 9
-	translationMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(2.0f, 1.0f, 0.0f));
-	rotationMatrix = rotate(glm::mat4(1.0f), glm::radians(90.0f), glm::vec3(0.0f, 0.0f, 1.0f));
-	partMatrix = translationMatrix * rotationMatrix * scaleMatrix;
-	worldMatrix = groupMatrix * partMatrix;
-
-	glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &worldMatrix[0][0]);
-	glDrawArrays(model.getRenderMode(), 0, 36);
-
-
-	//Right side of 9
-	scaleMatrix = glm::scale(glm::mat4(1.0f), glm::vec3(2.2f, 0.5f, 1.0f));
-	translationMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(3.2f, 0.6f, 0.0f));
-	partMatrix = translationMatrix * rotationMatrix * scaleMatrix;
-	worldMatrix = groupMatrix * partMatrix;
-
-	glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &worldMatrix[0][0]);
-	glDrawArrays(model.getRenderMode(), 0, 36);
+    Model model = models[5];
+    WilliamModel william(model.getPosition(), model.getScaling());
+    william.setShaderProgram(shaderProgram);
+    william.setVao(vao[4]);
+    william.setRotation(model.getRotation());
+    william.setRenderMode(model.getRenderMode());
+    william.draw(worldRotationUpdate);
 }
 
 //TAQI'S MODEL ("Q4")
@@ -694,6 +635,8 @@ int main(int argc, char* argv[])
     models[2].setVbo(vboArray[4]);
     models[3].setVbo(vboArray[4]);
     models[4].setVbo(vboArray[4]);
+    models[5].setVbo(vboArray[4]);
+
     // Variables to be used later in tutorial
     float angle = 0;
     float rotationSpeed = 180.0f;  // 180 degrees per second
@@ -740,7 +683,7 @@ int main(int argc, char* argv[])
         drawHauModel(shaderProgram, vaoArray, worldRotationUpdate);
         drawRoyModel(shaderProgram, vaoArray, worldRotationUpdate);
         drawSwetangModel(shaderProgram, vaoArray, worldRotationUpdate);
-        //drawWilliamModel(shaderProgram, vaoArray, worldRotationUpdate);
+        drawWilliamModel(shaderProgram, vaoArray, worldRotationUpdate);
 
         //FPS camera
         bool fastCam = glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS || glfwGetKey(window, GLFW_KEY_RIGHT_SHIFT) == GLFW_PRESS; //Press shift to go faster
