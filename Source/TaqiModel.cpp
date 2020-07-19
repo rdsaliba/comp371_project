@@ -38,5 +38,19 @@ void TaqiModel::drawLetter(mat4 worldRotationUpdate) {
 }
 
 void TaqiModel::drawDigit(mat4 worldRotationUpdate) {
-	//TO DO
+
+	//Right side of 4
+	mat4 component = createComponent(ComponentSize::LONG, ComponentOrientation::VERTICAL);
+	vec3 componentPosition = getComponentPosition(component, ComponentType::RIGHT, ComponentSize::LONG, ModelType::DIGIT, ComponentOrientation::VERTICAL);
+	this->drawPart(worldRotationUpdate, component, componentPosition);
+
+	//Center
+	component = createComponent(ComponentSize::SHORT, ComponentOrientation::HORIZONTAL);
+	componentPosition = getComponentPosition(component, ComponentType::CENTER, ComponentSize::SHORT, ModelType::DIGIT, ComponentOrientation::HORIZONTAL);
+	this->drawPart(worldRotationUpdate, component, componentPosition);
+
+	//Left side of 4
+	component = createComponent(ComponentSize::SHORT, ComponentOrientation::VERTICAL);
+	componentPosition = getComponentPosition(component, ComponentType::TOP_LEFT, ComponentSize::SHORT, ModelType::DIGIT, ComponentOrientation::VERTICAL);
+	this->drawPart(worldRotationUpdate, component, componentPosition);
 }

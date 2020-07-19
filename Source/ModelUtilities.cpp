@@ -90,32 +90,59 @@ namespace ModelUtilities {
 	/// <returns></returns>
 	vec3 getComponentPosition(mat4 component, ComponentType type, ComponentSize size, ModelType modelType, ComponentOrientation orientation) {
 		vec3 position(0.0f, 0.5f, 0.0f);
+
+		if (orientation == ComponentOrientation::VERTICAL) {
+			switch (size) {
+			case ComponentSize::LONG:
+				position.y = 2.5f;
+				break;
+			case ComponentSize::SHORT:
+				position.y = 1.5f;
+				break;
+			case ComponentSize::MED:
+				position.y = 2.0f;
+				break;
+			}
+		}
+
 		switch (type) {
 		case ComponentType::TOP:
-			position.y = 4.5f;
+			position.y += 4.0f;
 			break;
 		case ComponentType::LEFT:
-			position.x = -1.0f;
+			position.x += -1.0f;
 			break;
 		case ComponentType::BOTTOM:
-			position.x = 0.5f;
+			position.x += 0.5f;
 			break;
 		case ComponentType::RIGHT:
-			position.x = 2.0f;
+			position.x += 2.0f;
 			break;
 		case ComponentType::CENTER:
-			position.y = 2.5f;
+			position.y += 2.0f;
 			break;
 		case ComponentType::TOP_LEFT:
-			position.y = 3.5f;
-			position.x = -0.5f;
+			if (orientation == ComponentOrientation::VERTICAL) {
+				position.y += 2.0f;
+				position.x += -1.0f;
+			}
+			else {
+				position.y += 3.0f;
+				position.x += -0.5f;
+			}
 			break;
 		case ComponentType::TOP_RIGHT:
-			position.y = 3.5f;
-			position.x = 1.5f;
+			if (orientation == ComponentOrientation::VERTICAL) {
+				position.y += 2.0f;
+				position.x += 1.0f;
+			}
+			else {
+				position.y += 3.0f;
+				position.x += 1.5f;
+			}
 			break;
 		case ComponentType::BOTTOM_RIGHT:
-			position.x = 2.0f;
+			position.x += 2.0f;
 			break;
 		}
 
@@ -131,20 +158,6 @@ namespace ModelUtilities {
 				position.x += 2.5f;
 			}
 			break;
-		}
-
-		if (orientation == ComponentOrientation::VERTICAL) {
-			switch (size) {
-			case ComponentSize::LONG:
-				position.y = 2.5f;
-				break;
-			case ComponentSize::SHORT:
-				position.y = 1.5f;
-				break;
-			case ComponentSize::MED:
-				position.y = 2.0f;
-				break;
-			}
 		}
 
 		return position;

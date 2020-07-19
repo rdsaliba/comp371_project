@@ -25,10 +25,6 @@ void HauModel::drawLetter(mat4 worldRotationUpdate) {
 	component = createComponent(ComponentSize::LONG, ComponentOrientation::VERTICAL);
 	componentPosition = getComponentPosition(component, ComponentType::RIGHT, ComponentSize::LONG, ModelType::LETTER, ComponentOrientation::VERTICAL);
 	this->drawPart(worldRotationUpdate, component, componentPosition);
-
-	component = createComponent(ComponentSize::SHORT, ComponentOrientation::ANGLED_RIGHT);
-	componentPosition = getComponentPosition(component, ComponentType::BOTTOM_RIGHT, ComponentSize::SHORT, ModelType::LETTER, ComponentOrientation::ANGLED_RIGHT);
-	this->drawPart(worldRotationUpdate, component, componentPosition);
 }
 
 void HauModel::drawDigit(mat4 worldRotationUpdate){
