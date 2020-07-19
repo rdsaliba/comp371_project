@@ -121,12 +121,14 @@
     <ClCompile Include="..\Source\programmingAssignment.cpp" />
     <ClCompile Include="..\Source\ModelUtilities.cpp" />
     <ClCompile Include="..\Source\HauModel.cpp" />
+    <ClCompile Include="..\Source\RoyModel.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\Source\Axis.h" />
     <ClInclude Include="..\Source\Model.h" />
     <ClInclude Include="..\Source\ModelUtilities.h" />
     <ClInclude Include="..\Source\HauModel.h" />
+    <ClInclude Include="..\Source\RoyModel.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

@@ -30,6 +30,11 @@ Model::Model(const Model& model) {
 	this->vbo = model.vbo;
 }
 
+Model::~Model() {
+	/*glDeleteBuffers(1, &vbo);
+	glDeleteVertexArrays(1, &vao);*/
+}
+
 void Model::updatePosition(vec3 moveVector) {
 	this->position.x += moveVector.x;
 	this->position.y += moveVector.y;
@@ -39,6 +44,8 @@ void Model::updatePosition(vec3 moveVector) {
 void Model::draw(mat4 worldRotationUpdate) {}
 
 void Model::drawPart(mat4 worldRotationUpdate,mat4 part, vec3 componentPosition) {
+	glBindVertexArray(this->vao);
+	glBindBuffer(GL_ARRAY_BUFFER, vbo);
 	GLuint worldMatrixLocation = glGetUniformLocation(this->shaderProgram, "worldMatrix");
 	mat4 rotationUpdate = rotate(mat4(1.0f), radians(this->rotation.y), vec3(0.0f, 1.0f, 0.0f));
 	mat4 scaleUpdate = scale(mat4(1.0f), vec3(1.0f + this->scaling));

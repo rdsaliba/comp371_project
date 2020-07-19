@@ -84,6 +84,9 @@
     <ClCompile Include="..\Source\Axis.cpp">
       <Filter>Source Files\Class Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\Source\RoyModel.cpp">
+      <Filter>Source Files\Class Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\Source\Model.h">
@@ -96,6 +99,9 @@
       <Filter>Source Files\Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\Source\Axis.h">
+      <Filter>Source Files\Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Source\RoyModel.h">
       <Filter>Source Files\Header Files</Filter>
     </ClInclude>
   </ItemGroup>
