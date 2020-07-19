@@ -90,6 +90,9 @@
     <ClCompile Include="..\Source\TaqiModel.cpp">
       <Filter>Source Files\Class Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\Source\SwetangModel.cpp">
+      <Filter>Source Files\Class Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\Source\Model.h">
@@ -108,6 +111,9 @@
       <Filter>Source Files\Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\Source\TaqiModel.h">
+      <Filter>Source Files\Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Source\SwetangModel.h">
       <Filter>Source Files\Header Files</Filter>
     </ClInclude>
   </ItemGroup>

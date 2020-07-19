@@ -107,18 +107,36 @@ namespace ModelUtilities {
 
 		switch (type) {
 		case ComponentType::TOP:
+			if (size == ComponentSize::SHORT) {
+				position.x += 0.5f;
+			}
+			else if (size == ComponentSize::MED) {
+				position.x += 1.0f;
+			}
+
 			position.y += 4.0f;
 			break;
 		case ComponentType::LEFT:
 			position.x += -1.0f;
 			break;
 		case ComponentType::BOTTOM:
-			position.x += 0.5f;
+			if (size == ComponentSize::SHORT) {
+				position.x += 0.5f;
+			}
+			else if (size == ComponentSize::MED) {
+				position.x += 1.0f;
+			}
 			break;
 		case ComponentType::RIGHT:
 			position.x += 2.0f;
 			break;
 		case ComponentType::CENTER:
+			if (size == ComponentSize::SHORT) {
+				position.x += 0.5f;
+			}
+			else if (size == ComponentSize::MED) {
+				position.x += 1.0f;
+			}
 			position.y += 2.0f;
 			break;
 		case ComponentType::TOP_LEFT:
@@ -151,7 +169,7 @@ namespace ModelUtilities {
 			position.x -= 3.5f;
 			break;
 		case ModelType::DIGIT:
-			if (size == ComponentSize::MED) {
+			if (size == ComponentSize::MED ) {
 				position.x += 3.0f;
 			}
 			else {
