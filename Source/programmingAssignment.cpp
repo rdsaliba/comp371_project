@@ -21,6 +21,7 @@
 #include "Axis.h"
 #include "HauModel.h"
 #include "RoyModel.h"
+#include "TaqiModel.h"
 
 using namespace std; 
 using namespace glm;
@@ -34,7 +35,7 @@ int SELECTEDMODELINDEX = 1;
 Model* focusedModel = NULL;
 Model models[] = {
     Model(vec3(0.0f, 0.0f, 0.0f), 0.0f), //axis lines
-    Model(vec3(-45.0f, 0.0f, -45.0f), 0.0f), //Taqi (Q4)
+    TaqiModel(vec3(-15.0f, 0.0f, -15.0f), 0.0f), //Taqi (Q4)
     HauModel(vec3(5.0f, 0.0f, -5.0f), 0.0f), //Hau (U6)
     RoyModel(vec3(-5.0f, 0.0f, -5.0f), 0.0f), //Roy (Y8)    
     Model(vec3(0.0f, 0.0f, 0.0f), 0.0f), //Swetang (E0) 
@@ -407,96 +408,104 @@ void drawWilliamModel(int shaderProgram, GLuint vao[], mat4 worldRotationUpdate)
 //TAQI'S MODEL ("Q4")
 void drawTaqiModel(int shaderProgram, GLuint vao[], mat4 worldRotationUpdate)
 {
-    glBindVertexArray(vao[4]);
-    GLuint worldMatrixLocation = glGetUniformLocation(shaderProgram, "worldMatrix");
     Model model = models[1];
+    TaqiModel taqi(model.getPosition(), model.getScaling());
+    taqi.setShaderProgram(shaderProgram);
+    taqi.setVao(vao[4]);
+    taqi.setRotation(model.getRotation());
+    taqi.setRenderMode(model.getRenderMode());
+    taqi.draw(worldRotationUpdate);
 
-    //User update for rotationg and scale
-    mat4 rotationUpdate = rotate(glm::mat4(1.0f), radians(model.getRotation().y), vec3(0.0f, 1.0f, 0.0f));
-    mat4 scaleUpdate = scale(glm::mat4(1.0f), glm::vec3(1.0f + model.getScaling(), 1.0f + model.getScaling(), 1.0f + model.getScaling()));
+    //glBindVertexArray(vao[4]);
+    //GLuint worldMatrixLocation = glGetUniformLocation(shaderProgram, "worldMatrix");
+    //Model model = models[1];
 
-    //Taqi's Model
-    //Cube scale (for most of the cubes)
-    mat4 scaleMatrix = scale(glm::mat4(1.0f), glm::vec3(1.5f, 0.5f, 1.0f));
+    ////User update for rotationg and scale
+    //mat4 rotationUpdate = rotate(glm::mat4(1.0f), radians(model.getRotation().y), vec3(0.0f, 1.0f, 0.0f));
+    //mat4 scaleUpdate = scale(glm::mat4(1.0f), glm::vec3(1.0f + model.getScaling(), 1.0f + model.getScaling(), 1.0f + model.getScaling()));
 
-    //groupMatrix will be applied to all of the cubes for this model (will translate the complete model)
-    mat4 groupMatrix = worldRotationUpdate * translate(glm::mat4(1.0f), model.getPosition()) * rotationUpdate * scaleUpdate; //Translate model to upper left corner
+    ////Taqi's Model
+    ////Cube scale (for most of the cubes)
+    //mat4 scaleMatrix = scale(glm::mat4(1.0f), glm::vec3(1.5f, 0.5f, 1.0f));
 
-    //LETTER Q (bottom)
-    mat4 translationMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, 0.0f));
-    mat4 partMatrix = translationMatrix * scaleMatrix;
-    mat4 worldMatrix = groupMatrix * partMatrix;
+    ////groupMatrix will be applied to all of the cubes for this model (will translate the complete model)
+    //mat4 groupMatrix = worldRotationUpdate * translate(glm::mat4(1.0f), model.getPosition()) * rotationUpdate * scaleUpdate; //Translate model to upper left corner
 
-    glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &worldMatrix[0][0]);
-    glDrawArrays(model.getRenderMode(), 0, 36);
+    ////LETTER Q (bottom)
+    //mat4 translationMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, 0.0f));
+    //mat4 partMatrix = translationMatrix * scaleMatrix;
+    //mat4 worldMatrix = groupMatrix * partMatrix;
 
-
-    //Left side of Q
-    translationMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(-0.5f, 1.0f, 0.0f));
-    mat4 rotationMatrix = rotate(glm::mat4(1.0f), glm::radians(90.0f), glm::vec3(0.0f, 0.0f, 1.0f));
-    partMatrix = translationMatrix * rotationMatrix * scaleMatrix;
-    worldMatrix = groupMatrix * partMatrix;
-
-    glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &worldMatrix[0][0]);
-    glDrawArrays(model.getRenderMode(), 0, 36);
-
-
-
-    //Top of Q
-    translationMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 1.5f, 0.0f));
-    partMatrix = translationMatrix * scaleMatrix;
-    worldMatrix = groupMatrix * partMatrix;
-
-    glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &worldMatrix[0][0]);
-    glDrawArrays(model.getRenderMode(), 0, 36);
+    //glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &worldMatrix[0][0]);
+    //glDrawArrays(model.getRenderMode(), 0, 36);
 
 
-    //Right side of Q
-    translationMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(0.5f, 1.0f, 0.0f));
-    partMatrix = translationMatrix * rotationMatrix * scaleMatrix;
-    worldMatrix = groupMatrix * partMatrix;
+    ////Left side of Q
+    //translationMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(-0.5f, 1.0f, 0.0f));
+    //mat4 rotationMatrix = rotate(glm::mat4(1.0f), glm::radians(90.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+    //partMatrix = translationMatrix * rotationMatrix * scaleMatrix;
+    //worldMatrix = groupMatrix * partMatrix;
 
-    glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &worldMatrix[0][0]);
-    glDrawArrays(model.getRenderMode(), 0, 36);
-
-
-    //Q tail
-    translationMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(0.5f, 0.0f, 0.0f));
-    rotationMatrix = rotate(glm::mat4(1.0f), glm::radians(135.0f), glm::vec3(0.0f, 0.0f, 1.0f));
-    partMatrix = translationMatrix * rotationMatrix * scaleMatrix;
-    worldMatrix = groupMatrix * partMatrix;
-
-    glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &worldMatrix[0][0]);
-    glDrawArrays(model.getRenderMode(), 0, 36);
+    //glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &worldMatrix[0][0]);
+    //glDrawArrays(model.getRenderMode(), 0, 36);
 
 
-    //NUMBER 4 (bottom)
-    translationMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(2.5f, 0.5f, 0.0f));
-    partMatrix = translationMatrix * scaleMatrix;
-    worldMatrix = groupMatrix * partMatrix;
 
-    glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &worldMatrix[0][0]);
-    glDrawArrays(model.getRenderMode(), 0, 36);
+    ////Top of Q
+    //translationMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 1.5f, 0.0f));
+    //partMatrix = translationMatrix * scaleMatrix;
+    //worldMatrix = groupMatrix * partMatrix;
 
-
-    //Left side of 4
-    translationMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(2.0f, 1.0f, 0.0f));
-    rotationMatrix = rotate(glm::mat4(1.0f), glm::radians(90.0f), glm::vec3(0.0f, 0.0f, 1.0f));
-    partMatrix = translationMatrix * rotationMatrix * scaleMatrix;
-    worldMatrix = groupMatrix * partMatrix;
-
-    glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &worldMatrix[0][0]);
-    glDrawArrays(model.getRenderMode(), 0, 36);
+    //glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &worldMatrix[0][0]);
+    //glDrawArrays(model.getRenderMode(), 0, 36);
 
 
-    //Right side of 4
-    scaleMatrix = glm::scale(glm::mat4(1.0f), glm::vec3(2.2f, 0.5f, 1.0f));
-    translationMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(3.2f, 0.7f, 0.0f));
-    partMatrix = translationMatrix * rotationMatrix * scaleMatrix;
-    worldMatrix = groupMatrix * partMatrix;
+    ////Right side of Q
+    //translationMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(0.5f, 1.0f, 0.0f));
+    //partMatrix = translationMatrix * rotationMatrix * scaleMatrix;
+    //worldMatrix = groupMatrix * partMatrix;
 
-    glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &worldMatrix[0][0]);
-    glDrawArrays(model.getRenderMode(), 0, 36);
+    //glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &worldMatrix[0][0]);
+    //glDrawArrays(model.getRenderMode(), 0, 36);
+
+
+    ////Q tail
+    //translationMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(0.5f, 0.0f, 0.0f));
+    //rotationMatrix = rotate(glm::mat4(1.0f), glm::radians(135.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+    //partMatrix = translationMatrix * rotationMatrix * scaleMatrix;
+    //worldMatrix = groupMatrix * partMatrix;
+
+    //glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &worldMatrix[0][0]);
+    //glDrawArrays(model.getRenderMode(), 0, 36);
+
+
+    ////NUMBER 4 (bottom)
+    //translationMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(2.5f, 0.5f, 0.0f));
+    //partMatrix = translationMatrix * scaleMatrix;
+    //worldMatrix = groupMatrix * partMatrix;
+
+    //glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &worldMatrix[0][0]);
+    //glDrawArrays(model.getRenderMode(), 0, 36);
+
+
+    ////Left side of 4
+    //translationMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(2.0f, 1.0f, 0.0f));
+    //rotationMatrix = rotate(glm::mat4(1.0f), glm::radians(90.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+    //partMatrix = translationMatrix * rotationMatrix * scaleMatrix;
+    //worldMatrix = groupMatrix * partMatrix;
+
+    //glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &worldMatrix[0][0]);
+    //glDrawArrays(model.getRenderMode(), 0, 36);
+
+
+    ////Right side of 4
+    //scaleMatrix = glm::scale(glm::mat4(1.0f), glm::vec3(2.2f, 0.5f, 1.0f));
+    //translationMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(3.2f, 0.7f, 0.0f));
+    //partMatrix = translationMatrix * rotationMatrix * scaleMatrix;
+    //worldMatrix = groupMatrix * partMatrix;
+
+    //glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &worldMatrix[0][0]);
+    //glDrawArrays(model.getRenderMode(), 0, 36);
 }
 
 //ROY'S MODEL ("Y8")
@@ -931,6 +940,7 @@ int main(int argc, char* argv[])
     glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 2 * sizeof(glm::vec3), (void*)sizeof(glm::vec3));
     glEnableVertexAttribArray(1);
 
+    models[1].setVbo(vboArray[4]);
     models[2].setVbo(vboArray[4]);
     models[3].setVbo(vboArray[4]);
     // Variables to be used later in tutorial
@@ -975,7 +985,7 @@ int main(int argc, char* argv[])
         axis.drawAxisLines(shaderProgram, vaoArray, gridUnit, worldRotationUpdate);
 
         //MODELS
-       // drawTaqiModel(shaderProgram, vaoArray, worldRotationUpdate);
+        drawTaqiModel(shaderProgram, vaoArray, worldRotationUpdate);
         drawHauModel(shaderProgram, vaoArray, worldRotationUpdate);
         drawRoyModel(shaderProgram, vaoArray, worldRotationUpdate);
         //drawSwetangModel(shaderProgram, vaoArray, worldRotationUpdate);

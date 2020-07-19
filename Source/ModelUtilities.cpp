@@ -1,4 +1,3 @@
-//#include "ModelUtilities.h"
 #include <list>
 #include <algorithm>
 #include <glm/gtc/matrix_transform.hpp>
@@ -114,6 +113,9 @@ namespace ModelUtilities {
 		case ComponentType::TOP_RIGHT:
 			position.y = 3.5f;
 			position.x = 1.5f;
+			break;
+		case ComponentType::BOTTOM_RIGHT:
+			position.x = 2.0f;
 			break;
 		}
 

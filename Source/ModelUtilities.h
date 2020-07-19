@@ -18,7 +18,8 @@ namespace ModelUtilities{
 		RIGHT,
 		CENTER,
 		TOP_LEFT,
-		TOP_RIGHT
+		TOP_RIGHT,
+		BOTTOM_RIGHT
 	};
 
 	enum class ComponentOrientation {
