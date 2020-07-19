@@ -12,6 +12,7 @@ class Model {
 public:
 	Model();
 	Model(vec3 position, float size);
+	Model(const Model &model);
 
 	vec3 getPosition() { return position; }
 	float getScaling() { return scaling; }

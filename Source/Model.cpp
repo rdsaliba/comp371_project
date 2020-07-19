@@ -20,6 +20,16 @@ Model::Model(vec3 position, float scaling) {
 	this->vbo = -1;
 }
 
+Model::Model(const Model& model) {
+	this->position = model.position;
+	this->scaling = model.scaling;
+	this->rotation = model.rotation;
+	this->renderMode = model.renderMode;
+	this->shaderProgram = model.shaderProgram;
+	this->vao = model.vao;
+	this->vbo = model.vbo;
+}
+
 void Model::updatePosition(vec3 moveVector) {
 	this->position.x += moveVector.x;
 	this->position.y += moveVector.y;

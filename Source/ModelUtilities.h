@@ -16,7 +16,16 @@ namespace ModelUtilities{
 		LEFT,
 		BOTTOM,
 		RIGHT,
-		CENTER
+		CENTER,
+		TOP_LEFT,
+		TOP_RIGHT
+	};
+
+	enum class ComponentOrientation {
+		HORIZONTAL,
+		VERTICAL,
+		ANGLED_LEFT,
+		ANGLED_RIGHT
 	};
 
 	//Size of desired component to generate for model building
@@ -31,12 +40,12 @@ namespace ModelUtilities{
 		DIGIT
 	};
 
-	mat4 createComponent(ComponentSize size);
+	mat4 createComponent(ComponentSize size, ComponentOrientation orientation);
 	mat4 scaleComponent(mat4 component, vec3 scalingVector);
 	mat4 rotateComponent(mat4 component, float angle, vec3 rotationVector);
 	mat4 rotateComponentOnZ(mat4 component); //rotate component 90 degrees along the Z axis
+	mat4 rotateComponentOnZAngled(mat4 component, ComponentType componentType);
 	mat4 rotateComponentOnY(mat4 component); //rotate component 90 degrees along the Y axis
-	vec3 getComponentPosition(mat4 component, ComponentType componentType, ComponentSize componentSize, ModelType modelType);
-
+	vec3 getComponentPosition(mat4 component, ComponentType type, ComponentSize size, ModelType modelType, ComponentOrientation orientation);
 };
 
