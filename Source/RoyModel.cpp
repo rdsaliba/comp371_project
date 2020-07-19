@@ -26,5 +26,28 @@ void RoyModel::drawLetter(mat4 worldRotationUpdate) {
 }
 
 void RoyModel::drawDigit(mat4 worldRotationUpdate) {
-	//TO DO
+	//Bottom
+	mat4 component = createComponent(ComponentSize::SHORT, ComponentOrientation::HORIZONTAL);
+	vec3 componentPosition = getComponentPosition(component, ComponentType::BOTTOM, ComponentSize::SHORT, ModelType::DIGIT, ComponentOrientation::HORIZONTAL);
+	this->drawPart(worldRotationUpdate, component, componentPosition);
+
+	//Left side
+	component = createComponent(ComponentSize::LONG, ComponentOrientation::VERTICAL);
+	componentPosition = getComponentPosition(component, ComponentType::LEFT, ComponentSize::LONG, ModelType::DIGIT, ComponentOrientation::VERTICAL);
+	this->drawPart(worldRotationUpdate, component, componentPosition);
+
+	//Top
+	component = createComponent(ComponentSize::SHORT, ComponentOrientation::HORIZONTAL);
+	componentPosition = getComponentPosition(component, ComponentType::TOP, ComponentSize::SHORT, ModelType::DIGIT, ComponentOrientation::HORIZONTAL);
+	this->drawPart(worldRotationUpdate, component, componentPosition);
+
+	//Right side
+	component = createComponent(ComponentSize::LONG, ComponentOrientation::VERTICAL);
+	componentPosition = getComponentPosition(component, ComponentType::RIGHT, ComponentSize::LONG, ModelType::DIGIT, ComponentOrientation::VERTICAL);
+	this->drawPart(worldRotationUpdate, component, componentPosition);
+
+	//Middle
+	component = createComponent(ComponentSize::SHORT, ComponentOrientation::HORIZONTAL);
+	componentPosition = getComponentPosition(component, ComponentType::CENTER, ComponentSize::SHORT, ModelType::DIGIT, ComponentOrientation::HORIZONTAL);
+	this->drawPart(worldRotationUpdate, component, componentPosition);
 }
