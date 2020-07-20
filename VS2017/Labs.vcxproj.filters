@@ -72,19 +72,16 @@
     <ClCompile Include="..\Source\programmingAssignment.cpp">
       <Filter>Source Files\Class Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\Source\Model.cpp">
-      <Filter>Source Files\Class Files</Filter>
+    <ClCompile Include="Model.cpp">
+      <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\Source\Axis.cpp">
+    <ClCompile Include="..\Source\Model.cpp">
       <Filter>Source Files\Class Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\Source\Model.h">
       <Filter>Source Files\Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Source\Axis.h">
-      <Filter>Source Files\Class Files</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
