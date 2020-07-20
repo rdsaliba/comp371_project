@@ -116,10 +116,12 @@
     <Image Include="..\Assets\Textures\Particle.png" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="..\Source\Axis.cpp" />
     <ClCompile Include="..\Source\Model.cpp" />
     <ClCompile Include="..\Source\programmingAssignment.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\Source\Axis.h" />
     <ClInclude Include="..\Source\Model.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
