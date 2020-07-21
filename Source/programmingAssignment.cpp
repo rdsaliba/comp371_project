@@ -660,7 +660,7 @@ int main(int argc, char* argv[])
 
     //Handle window resizing 
     glfwSetWindowSizeCallback(window, framebuffer_size_callback);
-
+    glfwSetCursorPos(window, WIDTH/2.0, HEIGHT/2.0);
      // Entering Main Loop
     while (!glfwWindowShouldClose(window))
     {
