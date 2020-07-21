@@ -652,11 +652,14 @@ int main(int argc, char* argv[])
     focusedModel = &models[2];
     //Enable hidden surface removal
     glEnable(GL_CULL_FACE);
-    //glEnable(GL_DEPTH_TEST);
+    glEnable(GL_DEPTH_TEST);
 
     mat4 worldRotationX;
     mat4 worldRotationY;
     mat4 worldRotationUpdate;
+
+    //Handle window resizing 
+    glfwSetWindowSizeCallback(window, framebuffer_size_callback);
 
      // Entering Main Loop
     while (!glfwWindowShouldClose(window))
@@ -673,7 +676,7 @@ int main(int argc, char* argv[])
         updateInput(window, dt, worldRotation);
 
         // Each frame, reset color of each pixel to glClearColor
-        glClear(GL_COLOR_BUFFER_BIT);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         drawGroundGrid(shaderProgram, vaoArray, gridUnit, worldRotationUpdate);
         axis.drawAxisLines(shaderProgram, vaoArray, gridUnit, worldRotationUpdate);
@@ -693,7 +696,6 @@ int main(int argc, char* argv[])
         // - Update camera horizontal and vertical angle
         double mousePosX, mousePosY;
         glfwGetCursorPos(window, &mousePosX, &mousePosY);
-
         double dx = mousePosX - lastMousePosX;
         double dy = mousePosY - lastMousePosY;
 
