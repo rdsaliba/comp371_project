@@ -24,6 +24,7 @@
 #include "TaqiModel.h"
 #include "SwetangModel.h"
 #include "WilliamModel.h"
+#include "ViewController.h"
 using namespace std; 
 using namespace glm;
 
@@ -34,6 +35,7 @@ float gridUnit = 1.0f;
 void modelFocusSwitch(int nextModel);
 int SELECTEDMODELINDEX = 1;
 Model* focusedModel = NULL;
+ViewController* viewController = NULL;
 Model models[] = {
     Model(vec3(0.0f, 0.0f, 0.0f), 0.0f), //axis lines
     TaqiModel(vec3(-45.0f, 0.0f, -45.0f), 0.0f), //Taqi (Q4)
@@ -43,22 +45,27 @@ Model models[] = {
     WilliamModel(vec3(45.0f, 0.0f, 45.0f), 0.0f) //William (L9) 
 };
 
-//Default
-const glm::vec3 eye(0.0f, 7.0f, 20.0f);
-const glm::vec3 up(0.0f, 1.0f, 0.0f);
-glm::vec3 center(0.0f, 0.0f, 0.0f);
-//Camera settings
-glm::vec3 centerO = center;
-glm::vec3 cameraEye = eye;
-float x_rotate = 0;
-float y_rotate = 0;
-
 void framebuffer_size_callback(GLFWwindow* window, int width, int height)
 {
 	glViewport(0, 0, width, height);
 	//update projection matrix to new width and height
 	projection_matrix = glm::perspective(45.0f, (GLfloat)width / (GLfloat)height, 0.0f, 100.0f);
 }
+
+void cursor_enter_callback(GLFWwindow* window, int entered) {
+    if (entered) {
+        double mousePosX, mousePosY;
+       glfwGetCursorPos(window, &mousePosX, &mousePosY);
+       viewController->setMousePosX(mousePosX);
+       viewController->setMousePosY(mousePosY);
+    }
+}
+
+void cursor_position_callback(GLFWwindow* window, double xpos, double ypos){
+    viewController->setMousePosX(xpos);
+    viewController->setMousePosY(ypos);
+}
+
 const char* getVertexShaderSource()
 {
 	//Vertex Shader
@@ -546,31 +553,6 @@ int main(int argc, char* argv[])
     int shaderProgram = compileAndLinkShaders();
     glUseProgram(shaderProgram);
 
-    // Camera parameters for view transform
-    //Initial view values
-    vec3 cameraPosition(0.0f, 5.0f, 10.0f);
-    vec3 cameraLookAt(0.0f, 0.0f, 0.0f);
-    vec3 cameraUp(0.0f, 1.0f, 0.0f);
-
-    // Other camera parameters
-    float cameraSpeed = 1.0f;
-    float cameraFastSpeed = 2 * cameraSpeed;
-    float cameraHorizontalAngle = 90.0f;
-    float cameraVerticalAngle = 0.0f;
-
-    glm::mat4 projectionMatrix = glm::perspective(70.0f, 1024.0f / 768.0f, 0.01f, 100.0f);
-
-    GLuint projectionMatrixLocation = glGetUniformLocation(shaderProgram, "projectionMatrix");
-    glUniformMatrix4fv(projectionMatrixLocation, 1, GL_FALSE, &projectionMatrix[0][0]);
-
-    // Set initial view matrix
-    mat4 viewMatrix = lookAt(cameraPosition,  // eye
-        vec3(0.0f, 0.0f, 0.0f),  // center
-        cameraUp); // up
-
-    GLuint viewMatrixLocation = glGetUniformLocation(shaderProgram, "viewMatrix");
-    glUniformMatrix4fv(viewMatrixLocation, 1, GL_FALSE, &viewMatrix[0][0]);
-
     const int geometryCount = 5; //number of models to load
     GLuint vaoArray[geometryCount], vboArray[geometryCount];
     glGenVertexArrays(geometryCount, &vaoArray[0]);
@@ -658,9 +640,13 @@ int main(int argc, char* argv[])
     mat4 worldRotationY;
     mat4 worldRotationUpdate;
 
-    //Handle window resizing 
-    glfwSetWindowSizeCallback(window, framebuffer_size_callback);
-    glfwSetCursorPos(window, WIDTH/2.0, HEIGHT/2.0);
+    ViewController view(window, WIDTH, HEIGHT, shaderProgram);
+    viewController = &view;
+
+    glfwSetWindowSizeCallback(window, framebuffer_size_callback); //Handle window resizing 
+    glfwSetCursorEnterCallback(window, cursor_enter_callback); //Handle cursor leaving window event: Stop tracking mouse mouvement
+    glfwSetCursorPosCallback(window, cursor_position_callback); //Handle cursor mouvement event: Update ViewController's mouse position
+    viewController->initCamera();
      // Entering Main Loop
     while (!glfwWindowShouldClose(window))
     {
@@ -671,6 +657,7 @@ int main(int argc, char* argv[])
         //Frame time calculation
         float dt = glfwGetTime() - lastFrameTime;
         lastFrameTime += dt;
+        viewController->updateDt(dt);
 
         //Get user inputs
         updateInput(window, dt, worldRotation);
@@ -689,89 +676,9 @@ int main(int argc, char* argv[])
         drawWilliamModel(shaderProgram, vaoArray, worldRotationUpdate);
 
         //FPS camera
-        bool fastCam = glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS || glfwGetKey(window, GLFW_KEY_RIGHT_SHIFT) == GLFW_PRESS; //Press shift to go faster
-        float currentCameraSpeed = (fastCam) ? cameraFastSpeed : cameraSpeed;
-
-        // - Calculate mouse motion dx and dy
-        // - Update camera horizontal and vertical angle
-        double mousePosX, mousePosY;
-        glfwGetCursorPos(window, &mousePosX, &mousePosY);
-        double dx = mousePosX - lastMousePosX;
-        double dy = mousePosY - lastMousePosY;
-
-        lastMousePosX = mousePosX;
-        lastMousePosY = mousePosY;
-
-        // Convert to spherical coordinates
-        const float cameraAngularSpeed = 5.0f;
-        cameraHorizontalAngle -= dx * cameraAngularSpeed * dt;
-        cameraVerticalAngle -= dy * cameraAngularSpeed * dt;
-
-        // Clamp vertical angle to [-85, 85] degrees
-        cameraVerticalAngle = std::max(-85.0f, std::min(85.0f, cameraVerticalAngle));
-
-        float theta = radians(cameraHorizontalAngle);
-        float phi = radians(cameraVerticalAngle);
-
-        cameraLookAt = vec3(cosf(phi) * cosf(theta), sinf(phi), -cosf(phi) * sinf(theta));
-        vec3 cameraSideVector = glm::cross(cameraLookAt, vec3(0.0f, 1.0f, 0.0f));
-
-        glm::normalize(cameraSideVector); //vector to be normalized
-
-        // Use camera lookat and side vectors to update positions with CVBG
-        if (glfwGetKey(window, GLFW_KEY_G) == GLFW_PRESS)
-        {
-            cameraPosition += cameraLookAt * dt * currentCameraSpeed;
-        }
-
-        if (glfwGetKey(window, GLFW_KEY_V) == GLFW_PRESS)
-        {
-            cameraPosition -= cameraLookAt * dt * currentCameraSpeed;
-        }
-
-        if (glfwGetKey(window, GLFW_KEY_B) == GLFW_PRESS)
-        {
-            cameraPosition += cameraSideVector * dt * currentCameraSpeed;
-        }
-
-        if (glfwGetKey(window, GLFW_KEY_C) == GLFW_PRESS)
-        {
-            cameraPosition -= cameraSideVector * dt * currentCameraSpeed;
-        }
-
-        // Set the view matrix for first person camera
-        mat4 viewMatrix(1.0f);
-        viewMatrix = lookAt(cameraPosition, cameraPosition + cameraLookAt, cameraUp);
-        setViewMatrix(shaderProgram, viewMatrix);
-
-        //Mouse Panning, Tilting and Zooming
-        int pan = glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_RIGHT);
-        int tilt = glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_MIDDLE);
-        int zoom = glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT);
-
-        if (pan == GLFW_PRESS)
-        {
-            cameraHorizontalAngle -= dx * cameraAngularSpeed * dt;
-            vec3 eyeHorizon(cameraHorizontalAngle, 0.0f, 0.0f);
-
-            viewMatrix = lookAt(eye + eyeHorizon, center + eyeHorizon, up);
-            setViewMatrix(shaderProgram, viewMatrix);
-        }
-        if (tilt == GLFW_PRESS)
-        {
-            cameraVerticalAngle -= dy * cameraAngularSpeed * dt;
-            vec3 eyeVertical(0.0f, cameraVerticalAngle, 0.0f);
-            viewMatrix = lookAt(eye + eyeVertical, center, up);
-            setViewMatrix(shaderProgram, viewMatrix);
-        }
-        if (zoom == GLFW_PRESS)
-        {
-            cameraVerticalAngle -= dy * cameraAngularSpeed * dt;
-            vec3 eyeVertical(0.0f, 0.0f, cameraVerticalAngle);
-            viewMatrix = lookAt(eye + eyeVertical, center, up);
-            setViewMatrix(shaderProgram, viewMatrix);
-        }
-
+        viewController->setFastCam(glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS || glfwGetKey(window, GLFW_KEY_RIGHT_SHIFT) == GLFW_PRESS); //Press shift to go faster
+        viewController->update();
+                                                                                                                                           
         // End Frame
         glfwSwapBuffers(window);
         glfwPollEvents();
@@ -779,7 +686,6 @@ int main(int argc, char* argv[])
         // Handle inputs
         if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
             glfwSetWindowShouldClose(window, true);
-
     }
 
     // Shutdown GLFW
