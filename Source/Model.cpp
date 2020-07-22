@@ -8,6 +8,7 @@ Model::Model() {
 	this->shaderProgram = -1;
 	this->vao = -1;
 	this->vbo = -1;
+	this->toggle = 0;
 }
 
 Model::Model(vec3 position, float scaling) {
@@ -18,6 +19,7 @@ Model::Model(vec3 position, float scaling) {
 	this->shaderProgram = -1;
 	this->vao = -1;
 	this->vbo = -1;
+	this->toggle = 0;
 }
 
 Model::Model(const Model& model) {
@@ -28,6 +30,7 @@ Model::Model(const Model& model) {
 	this->shaderProgram = model.shaderProgram;
 	this->vao = model.vao;
 	this->vbo = model.vbo;
+	this->toggle = model.toggle;
 }
 
 Model::~Model() {
@@ -56,3 +59,4 @@ void Model::drawPart(mat4 worldRotationUpdate,mat4 part, vec3 componentPosition)
 	glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &modelPart[0][0]);
 	glDrawArrays(this->renderMode, 0, 36);
 }
+

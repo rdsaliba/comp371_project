@@ -4,12 +4,16 @@ using namespace ModelUtilities;
 
 SwetangModel::~SwetangModel() { Model::~Model(); }
 
-void SwetangModel::draw(mat4 worldRotationUpdate) {
-	this->drawLetter(worldRotationUpdate);
-	this->drawDigit(worldRotationUpdate);
+void SwetangModel::draw(mat4 worldRotationUpdate, GLuint textureArray[]) {
+	this->drawLetter(worldRotationUpdate, textureArray[0], textureArray[1]);
+	this->drawDigit(worldRotationUpdate, textureArray[0], textureArray[2]);
 }
 
-void SwetangModel::drawLetter(mat4 worldRotationUpdate) {
+void SwetangModel::drawLetter(mat4 worldRotationUpdate, GLuint toggle, GLuint texture) {
+	//glBindTexture(GL_TEXTURE_2D, 0);
+	//toggleTexture(texture);
+	setTexture(toggle, texture);
+
 	//Bottom
 	mat4 component = createComponent(ComponentSize::MED, ComponentOrientation::HORIZONTAL);
 	vec3 componentPosition = getComponentPosition(component, ComponentType::BOTTOM, ComponentSize::MED, ModelType::LETTER, ComponentOrientation::HORIZONTAL);
@@ -29,9 +33,15 @@ void SwetangModel::drawLetter(mat4 worldRotationUpdate) {
 	component = createComponent(ComponentSize::MED, ComponentOrientation::HORIZONTAL);
 	componentPosition = getComponentPosition(component, ComponentType::CENTER, ComponentSize::MED, ModelType::LETTER, ComponentOrientation::HORIZONTAL);
 	this->drawPart(worldRotationUpdate, component, componentPosition);
+
+	//glBindTexture(GL_TEXTURE_2D, 0);
 }
 
-void SwetangModel::drawDigit(mat4 worldRotationUpdate) {
+void SwetangModel::drawDigit(mat4 worldRotationUpdate, GLuint toggle, GLuint texture) {
+	//glBindTexture(GL_TEXTURE_2D, 0);
+	//toggleTexture(texture);
+	setTexture(toggle, texture);
+
 	//Bottom
 	mat4 component = createComponent(ComponentSize::SHORT, ComponentOrientation::HORIZONTAL);
 	vec3 componentPosition = getComponentPosition(component, ComponentType::BOTTOM, ComponentSize::SHORT, ModelType::DIGIT, ComponentOrientation::HORIZONTAL);
@@ -51,4 +61,6 @@ void SwetangModel::drawDigit(mat4 worldRotationUpdate) {
 	component = createComponent(ComponentSize::LONG, ComponentOrientation::VERTICAL);
 	componentPosition = getComponentPosition(component, ComponentType::RIGHT, ComponentSize::LONG, ModelType::DIGIT, ComponentOrientation::VERTICAL);
 	this->drawPart(worldRotationUpdate, component, componentPosition);
+
+	glBindTexture(GL_TEXTURE_2D, 0);
 }

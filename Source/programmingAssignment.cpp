@@ -24,6 +24,11 @@
 #include "TaqiModel.h"
 #include "SwetangModel.h"
 #include "WilliamModel.h"
+
+//Library to load popular file formats and easy integration to project
+#define STB_IMAGE_IMPLEMENTATION
+#include "stb_image.h"
+
 using namespace std; 
 using namespace glm;
 
@@ -43,6 +48,9 @@ Model models[] = {
     WilliamModel(vec3(45.0f, 0.0f, 45.0f), 0.0f) //William (L9) 
 };
 
+GLuint toggle = 0;
+GLuint textureArray[3] = {};
+
 //Default
 const glm::vec3 eye(0.0f, 7.0f, 20.0f);
 const glm::vec3 up(0.0f, 1.0f, 0.0f);
@@ -53,12 +61,29 @@ glm::vec3 cameraEye = eye;
 float x_rotate = 0;
 float y_rotate = 0;
 
+//Forward declarations
+GLuint loadTexture(const char* filename);
+const char* getTexturedVertexShaderSource();
+const char* getTexturedFragmentShaderSource();
+
+//UV coordinates with vertex data
+struct TexturedColoredVertex
+{
+    //Position of vertex, color of vertex, UV coordinate for that vertex
+    TexturedColoredVertex(vec3 _position, vec3 _color, vec2 _uv) : position(_position), color(_color), uv(_uv) {}
+
+    vec3 position;
+    vec3 color;
+    vec2 uv;
+};
+
 void framebuffer_size_callback(GLFWwindow* window, int width, int height)
 {
 	glViewport(0, 0, width, height);
 	//update projection matrix to new width and height
 	projection_matrix = glm::perspective(45.0f, (GLfloat)width / (GLfloat)height, 0.0f, 100.0f);
 }
+
 const char* getVertexShaderSource()
 {
 	//Vertex Shader
@@ -93,68 +118,159 @@ const char* getFragmentShaderSource()
 		"}";
 }
 
-
-int compileAndLinkShaders()
+//Vertex shader receives UV attributes and outputs them back to fragment shader
+const char* getTexturedVertexShaderSource()
 {
-	// compile and link shader program
-	// return shader program id
-	// ------------------------------------
-
-	// vertex shader
-	int vertexShader = glCreateShader(GL_VERTEX_SHADER);
-	const char* vertexShaderSource = getVertexShaderSource();
-	glShaderSource(vertexShader, 1, &vertexShaderSource, NULL);
-	glCompileShader(vertexShader);
-
-	// check for shader compile errors
-	int success;
-	char infoLog[512];
-	glGetShaderiv(vertexShader, GL_COMPILE_STATUS, &success);
-	if (!success)
-	{
-		glGetShaderInfoLog(vertexShader, 512, NULL, infoLog);
-		std::cerr << "ERROR::SHADER::VERTEX::COMPILATION_FAILED\n" << infoLog << std::endl;
-	}
-
-	// fragment shader
-	int fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
-	const char* fragmentShaderSource = getFragmentShaderSource();
-	glShaderSource(fragmentShader, 1, &fragmentShaderSource, NULL);
-	glCompileShader(fragmentShader);
-
-	// check for shader compile errors
-	glGetShaderiv(fragmentShader, GL_COMPILE_STATUS, &success);
-	if (!success)
-	{
-		glGetShaderInfoLog(fragmentShader, 512, NULL, infoLog);
-		std::cerr << "ERROR::SHADER::FRAGMENT::COMPILATION_FAILED\n" << infoLog << std::endl;
-	}
-
-	// link shaders
-	int shaderProgram = glCreateProgram();
-	glAttachShader(shaderProgram, vertexShader);
-	glAttachShader(shaderProgram, fragmentShader);
-	glLinkProgram(shaderProgram);
-
-	// check for linking errors
-	glGetProgramiv(shaderProgram, GL_LINK_STATUS, &success);
-	if (!success) {
-		glGetProgramInfoLog(shaderProgram, 512, NULL, infoLog);
-		std::cerr << "ERROR::SHADER::PROGRAM::LINKING_FAILED\n" << infoLog << std::endl;
-	}
-
-	glDeleteShader(vertexShader);
-	glDeleteShader(fragmentShader);
-
-	return shaderProgram;
+    // For now, you use a string for your shader code, shaders will be stored in .glsl files
+    return
+        "#version 330 core\n"
+        "layout (location = 0) in vec3 aPos;"
+        "layout (location = 1) in vec3 aColor;"
+        "layout (location = 2) in vec2 aUV;"
+        ""
+        "uniform mat4 worldMatrix;"
+        "uniform mat4 viewMatrix = mat4(1.0);"  // default value for view matrix (identity)
+        "uniform mat4 projectionMatrix = mat4(1.0);"
+        ""
+        "out vec3 vertexColor;"
+        "out vec2 vertexUV;"
+        ""
+        "void main()"
+        "{"
+        "   vertexColor = aColor;"
+        "   mat4 modelViewProjection = projectionMatrix * viewMatrix * worldMatrix;"
+        "   gl_Position = modelViewProjection * vec4(aPos.x, aPos.y, aPos.z, 1.0);"
+        "   vertexUV = aUV;"
+        "}";
 }
 
+//Fragment shader fetches the texture sample at coordinate UV and blends the color with vertex colors
+const char* getTexturedFragmentShaderSource()
+{
+    return
+        "#version 330 core\n"
+        "in vec3 vertexColor;"
+        "in vec2 vertexUV;"
+        "uniform sampler2D textureSampler;"
+        ""
+        "out vec4 FragColor;"
+        "void main()"
+        "{"
+        "   vec4 textureColor = texture( textureSampler, vertexUV );"
+        "   FragColor = textureColor * vec4(vertexColor.r, vertexColor.g, vertexColor.b, 1.0f);"
+        "}";
+}
+
+
+int compileAndLinkShaders(const char* vertexShaderSource, const char* fragmentShaderSource)
+{
+    // compile and link shader program
+    // return shader program id
+    // ------------------------------------
+
+    // vertex shader
+    int vertexShader = glCreateShader(GL_VERTEX_SHADER);
+    glShaderSource(vertexShader, 1, &vertexShaderSource, NULL);
+    glCompileShader(vertexShader);
+
+    // check for shader compile errors
+    int success;
+    char infoLog[512];
+    glGetShaderiv(vertexShader, GL_COMPILE_STATUS, &success);
+    if (!success)
+    {
+        glGetShaderInfoLog(vertexShader, 512, NULL, infoLog);
+        std::cerr << "ERROR::SHADER::VERTEX::COMPILATION_FAILED\n" << infoLog << std::endl;
+    }
+
+    // fragment shader
+    int fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
+    glShaderSource(fragmentShader, 1, &fragmentShaderSource, NULL);
+    glCompileShader(fragmentShader);
+
+    // check for shader compile errors
+    glGetShaderiv(fragmentShader, GL_COMPILE_STATUS, &success);
+    if (!success)
+    {
+        glGetShaderInfoLog(fragmentShader, 512, NULL, infoLog);
+        std::cerr << "ERROR::SHADER::FRAGMENT::COMPILATION_FAILED\n" << infoLog << std::endl;
+    }
+
+    // link shaders
+    int shaderProgram = glCreateProgram();
+    glAttachShader(shaderProgram, vertexShader);
+    glAttachShader(shaderProgram, fragmentShader);
+    glLinkProgram(shaderProgram);
+
+    // check for linking errors
+    glGetProgramiv(shaderProgram, GL_LINK_STATUS, &success);
+    if (!success) {
+        glGetProgramInfoLog(shaderProgram, 512, NULL, infoLog);
+        std::cerr << "ERROR::SHADER::PROGRAM::LINKING_FAILED\n" << infoLog << std::endl;
+    }
+
+    glDeleteShader(vertexShader);
+    glDeleteShader(fragmentShader);
+
+    return shaderProgram;
+}
 void setViewMatrix(int shaderProgram, mat4 viewMatrix)
 {
 	glUseProgram(shaderProgram);
 	GLuint viewMatrixLocation = glGetUniformLocation(shaderProgram, "viewMatrix");
 	glUniformMatrix4fv(viewMatrixLocation, 1, GL_FALSE, &viewMatrix[0][0]);
 }
+
+// Textured Cube model
+const TexturedColoredVertex texturedCubeVertexArray[] = {  // position, color, UV coordinates
+    TexturedColoredVertex(vec3(-0.5f,-0.5f,-0.5f), vec3(1.0f, 0.0f, 0.0f), vec2(0.0f, 0.0f)), //left - red
+    TexturedColoredVertex(vec3(-0.5f,-0.5f, 0.5f), vec3(1.0f, 0.0f, 0.0f), vec2(0.0f, 1.0f)),
+    TexturedColoredVertex(vec3(-0.5f, 0.5f, 0.5f), vec3(1.0f, 0.0f, 0.0f), vec2(1.0f, 1.0f)),
+
+    TexturedColoredVertex(vec3(-0.5f,-0.5f,-0.5f), vec3(1.0f, 0.0f, 0.0f), vec2(0.0f, 0.0f)),
+    TexturedColoredVertex(vec3(-0.5f, 0.5f, 0.5f), vec3(1.0f, 0.0f, 0.0f), vec2(1.0f, 1.0f)),
+    TexturedColoredVertex(vec3(-0.5f, 0.5f,-0.5f), vec3(1.0f, 0.0f, 0.0f), vec2(1.0f, 0.0f)),
+
+    TexturedColoredVertex(vec3(0.5f, 0.5f,-0.5f), vec3(0.0f, 0.0f, 1.0f), vec2(1.0f, 1.0f)), // far - blue
+    TexturedColoredVertex(vec3(-0.5f,-0.5f,-0.5f), vec3(0.0f, 0.0f, 1.0f), vec2(0.0f, 0.0f)),
+    TexturedColoredVertex(vec3(-0.5f, 0.5f,-0.5f), vec3(0.0f, 0.0f, 1.0f), vec2(0.0f, 1.0f)),
+
+    TexturedColoredVertex(vec3(0.5f, 0.5f,-0.5f), vec3(0.0f, 0.0f, 1.0f), vec2(1.0f, 1.0f)),
+    TexturedColoredVertex(vec3(0.5f,-0.5f,-0.5f), vec3(0.0f, 0.0f, 1.0f), vec2(1.0f, 0.0f)),
+    TexturedColoredVertex(vec3(-0.5f,-0.5f,-0.5f), vec3(0.0f, 0.0f, 1.0f), vec2(0.0f, 0.0f)),
+
+    TexturedColoredVertex(vec3(0.5f,-0.5f, 0.5f), vec3(0.0f, 1.0f, 1.0f), vec2(1.0f, 1.0f)), // bottom - turquoise
+    TexturedColoredVertex(vec3(-0.5f,-0.5f,-0.5f), vec3(0.0f, 1.0f, 1.0f), vec2(0.0f, 0.0f)),
+    TexturedColoredVertex(vec3(0.5f,-0.5f,-0.5f), vec3(0.0f, 1.0f, 1.0f), vec2(1.0f, 0.0f)),
+
+    TexturedColoredVertex(vec3(0.5f,-0.5f, 0.5f), vec3(0.0f, 1.0f, 1.0f), vec2(1.0f, 1.0f)),
+    TexturedColoredVertex(vec3(-0.5f,-0.5f, 0.5f), vec3(0.0f, 1.0f, 1.0f), vec2(0.0f, 1.0f)),
+    TexturedColoredVertex(vec3(-0.5f,-0.5f,-0.5f), vec3(0.0f, 1.0f, 1.0f), vec2(0.0f, 0.0f)),
+
+    TexturedColoredVertex(vec3(-0.5f, 0.5f, 0.5f), vec3(0.0f, 1.0f, 0.0f), vec2(0.0f, 1.0f)), // near - green
+    TexturedColoredVertex(vec3(-0.5f,-0.5f, 0.5f), vec3(0.0f, 1.0f, 0.0f), vec2(0.0f, 0.0f)),
+    TexturedColoredVertex(vec3(0.5f,-0.5f, 0.5f), vec3(0.0f, 1.0f, 0.0f), vec2(1.0f, 0.0f)),
+
+    TexturedColoredVertex(vec3(0.5f, 0.5f, 0.5f), vec3(0.0f, 1.0f, 0.0f), vec2(1.0f, 1.0f)),
+    TexturedColoredVertex(vec3(-0.5f, 0.5f, 0.5f), vec3(0.0f, 1.0f, 0.0f), vec2(0.0f, 1.0f)),
+    TexturedColoredVertex(vec3(0.5f,-0.5f, 0.5f), vec3(0.0f, 1.0f, 0.0f), vec2(1.0f, 0.0f)),
+
+    TexturedColoredVertex(vec3(0.5f, 0.5f, 0.5f), vec3(1.0f, 0.0f, 1.0f), vec2(1.0f, 1.0f)), // right - purple
+    TexturedColoredVertex(vec3(0.5f,-0.5f,-0.5f), vec3(1.0f, 0.0f, 1.0f), vec2(0.0f, 0.0f)),
+    TexturedColoredVertex(vec3(0.5f, 0.5f,-0.5f), vec3(1.0f, 0.0f, 1.0f), vec2(1.0f, 0.0f)),
+
+    TexturedColoredVertex(vec3(0.5f,-0.5f,-0.5f), vec3(1.0f, 0.0f, 1.0f), vec2(0.0f, 0.0f)),
+    TexturedColoredVertex(vec3(0.5f, 0.5f, 0.5f), vec3(1.0f, 0.0f, 1.0f), vec2(1.0f, 1.0f)),
+    TexturedColoredVertex(vec3(0.5f,-0.5f, 0.5f), vec3(1.0f, 0.0f, 1.0f), vec2(0.0f, 1.0f)),
+
+    TexturedColoredVertex(vec3(0.5f, 0.5f, 0.5f), vec3(1.0f, 1.0f, 0.0f), vec2(1.0f, 1.0f)), // top - yellow
+    TexturedColoredVertex(vec3(0.5f, 0.5f,-0.5f), vec3(1.0f, 1.0f, 0.0f), vec2(1.0f, 0.0f)),
+    TexturedColoredVertex(vec3(-0.5f, 0.5f,-0.5f), vec3(1.0f, 1.0f, 0.0f), vec2(0.0f, 0.0f)),
+
+    TexturedColoredVertex(vec3(0.5f, 0.5f, 0.5f), vec3(1.0f, 1.0f, 0.0f), vec2(1.0f, 1.0f)),
+    TexturedColoredVertex(vec3(-0.5f, 0.5f,-0.5f), vec3(1.0f, 1.0f, 0.0f), vec2(0.0f, 0.0f)),
+    TexturedColoredVertex(vec3(-0.5f, 0.5f, 0.5f), vec3(1.0f, 1.0f, 0.0f), vec2(0.0f, 1.0f))
+};
 
 
 vec3 cubeVertexArray[] = {  
@@ -322,7 +438,7 @@ void drawAxisLines(int shader, GLuint vao[], float gridUnit, mat4 worldRotationU
 /// </summary>
 /// <param name="shader"></param>
 /// <param name="vao"></param>
-void drawHauModel(int shader, GLuint vao[], mat4 worldRotationUpdate) {
+void drawHauModel(int shader, GLuint vao[], mat4 worldRotationUpdate, GLuint textureArray[]) {
     //Model model(models[2]);
     //HauModel hau(model);
     //hau.draw(worldRotationUpdate); 
@@ -332,11 +448,11 @@ void drawHauModel(int shader, GLuint vao[], mat4 worldRotationUpdate) {
     hau.setVao(vao[4]);
     hau.setRotation(model.getRotation());
     hau.setRenderMode(model.getRenderMode());
-    hau.draw(worldRotationUpdate);
+    hau.draw(worldRotationUpdate, textureArray);
 }
 
 //WILLIAM'S MODEL ("L9")
-void drawWilliamModel(int shaderProgram, GLuint vao[], mat4 worldRotationUpdate)
+void drawWilliamModel(int shaderProgram, GLuint vao[], mat4 worldRotationUpdate, GLuint textureArray[])
 {
     Model model = models[5];
     WilliamModel william(model.getPosition(), model.getScaling());
@@ -344,11 +460,11 @@ void drawWilliamModel(int shaderProgram, GLuint vao[], mat4 worldRotationUpdate)
     william.setVao(vao[4]);
     william.setRotation(model.getRotation());
     william.setRenderMode(model.getRenderMode());
-    william.draw(worldRotationUpdate);
+    william.draw(worldRotationUpdate, textureArray);
 }
 
 //TAQI'S MODEL ("Q4")
-void drawTaqiModel(int shaderProgram, GLuint vao[], mat4 worldRotationUpdate)
+void drawTaqiModel(int shaderProgram, GLuint vao[], mat4 worldRotationUpdate, GLuint textureArray[])
 {
     Model model = models[1];
     TaqiModel taqi(model.getPosition(), model.getScaling());
@@ -356,11 +472,12 @@ void drawTaqiModel(int shaderProgram, GLuint vao[], mat4 worldRotationUpdate)
     taqi.setVao(vao[4]);
     taqi.setRotation(model.getRotation());
     taqi.setRenderMode(model.getRenderMode());
-    taqi.draw(worldRotationUpdate);
+    taqi.setToggle(model.getToggle());
+    taqi.draw(worldRotationUpdate, textureArray);
 }
 
 //ROY'S MODEL ("Y8")
-void drawRoyModel(int shaderProgram, GLuint vao[], mat4 worldRotationUpdate)
+void drawRoyModel(int shaderProgram, GLuint vao[], mat4 worldRotationUpdate, GLuint textureArray[])
 {
     Model model = models[3];
     RoyModel roy(model.getPosition(), model.getScaling());
@@ -368,11 +485,11 @@ void drawRoyModel(int shaderProgram, GLuint vao[], mat4 worldRotationUpdate)
     roy.setVao(vao[4]);
     roy.setRotation(model.getRotation());
     roy.setRenderMode(model.getRenderMode());
-    roy.draw(worldRotationUpdate);
+    roy.draw(worldRotationUpdate, textureArray);
 }
 
 //Swetang Model "E0"
-void drawSwetangModel(int shaderProgram, GLuint vao[], mat4 worldRotationUpdate)
+void drawSwetangModel(int shaderProgram, GLuint vao[], mat4 worldRotationUpdate, GLuint textureArray[])
 {
     Model model = models[4];
     SwetangModel swetang(model.getPosition(), model.getScaling());
@@ -380,11 +497,12 @@ void drawSwetangModel(int shaderProgram, GLuint vao[], mat4 worldRotationUpdate)
     swetang.setVao(vao[4]);
     swetang.setRotation(model.getRotation());
     swetang.setRenderMode(model.getRenderMode());
-    swetang.draw(worldRotationUpdate);
+    swetang.draw(worldRotationUpdate, textureArray);
 }
 
 
 //Update through user input
+//void updateInput(GLFWwindow* window, float dt, vec3& worldRotation, GLuint& toggle)
 void updateInput(GLFWwindow* window, float dt, vec3& worldRotation)
 {
     //Scale
@@ -485,6 +603,33 @@ void updateInput(GLFWwindow* window, float dt, vec3& worldRotation)
         worldRotation.x = 0;
         worldRotation.y = 0;
     }
+
+    //Texture toggle
+    if (glfwGetKey(window, GLFW_KEY_N) == GLFW_PRESS)
+    {
+        //if (focusedModel->getToggle() == 0)
+        //{
+        //    focusedModel->setToggle(1);
+        //}
+        //else if (focusedModel->getToggle() == 1)
+        //{
+        //    focusedModel->setToggle(0);
+        //    //glDisable(GL_TEXTURE_2D);
+        //}
+
+        
+        if (toggle == 0)
+        {
+            toggle = 1;
+            textureArray[0] = toggle;
+        }
+        else if (toggle == 1)
+        {
+            toggle = 0;
+            textureArray[0] = toggle;
+        }
+
+    }
 }
 
 /// <summary>
@@ -539,12 +684,29 @@ int main(int argc, char* argv[])
         return -1;
     }
 
+    // Load Textures
+    #if defined(PLATFORM_OSX)
+        GLuint brickTextureID = loadTexture("Textures/brick.jpg");
+        GLuint cementTextureID = loadTexture("Textures/cement.jpg");
+    #else
+        GLuint brickTextureID = loadTexture("../Assets/Textures/brick.jpg");
+        GLuint cementTextureID = loadTexture("../Assets/Textures/cement.jpg");
+    #endif
+
+    //Array of textures
+    textureArray[0] = toggle; // 0 (texture off) or 1 (texture on)
+    textureArray[1] = brickTextureID;
+    textureArray[2] = cementTextureID;
+
     // Black background
     glClearColor(0.1f, 0.2f, 0.2f, 1.0f);
 
     // Compile and link shaders here ...
-    int shaderProgram = compileAndLinkShaders();
-    glUseProgram(shaderProgram);
+    int shaderProgram = compileAndLinkShaders(getVertexShaderSource(), getFragmentShaderSource());
+    //glUseProgram(shaderProgram);
+    int texturedShaderProgram = compileAndLinkShaders(getTexturedVertexShaderSource(), getTexturedFragmentShaderSource());
+    glUseProgram(texturedShaderProgram); //draw textured geometry
+
 
     // Camera parameters for view transform
     //Initial view values
@@ -624,12 +786,15 @@ int main(int argc, char* argv[])
     //Cube (for individual models)
     glBindVertexArray(vaoArray[4]);
     glBindBuffer(GL_ARRAY_BUFFER, vboArray[4]);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(cubeVertexArray), cubeVertexArray, GL_STATIC_DRAW);
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 2 * sizeof(glm::vec3), (void*)0);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(texturedCubeVertexArray), texturedCubeVertexArray, GL_STATIC_DRAW);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(TexturedColoredVertex), (void*)0);
     glEnableVertexAttribArray(0);
 
-    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 2 * sizeof(glm::vec3), (void*)sizeof(glm::vec3));
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(TexturedColoredVertex), (void*)sizeof(glm::vec3));
     glEnableVertexAttribArray(1);
+
+    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(TexturedColoredVertex), (void*)(2 * sizeof(vec3))); //attribute 2 matches aUV in vertex Shader
+    glEnableVertexAttribArray(2);
 
     models[1].setVbo(vboArray[4]);
     models[2].setVbo(vboArray[4]);
@@ -649,14 +814,16 @@ int main(int argc, char* argv[])
     double lastMousePosX, lastMousePosY;
     glfwGetCursorPos(window, &lastMousePosX, &lastMousePosY);
 
-    focusedModel = &models[2];
+
+    focusedModel = &models[1];
     //Enable hidden surface removal
     glEnable(GL_CULL_FACE);
-    //glEnable(GL_DEPTH_TEST);
+    glEnable(GL_DEPTH_TEST);
 
     mat4 worldRotationX;
     mat4 worldRotationY;
     mat4 worldRotationUpdate;
+
 
      // Entering Main Loop
     while (!glfwWindowShouldClose(window))
@@ -670,20 +837,39 @@ int main(int argc, char* argv[])
         lastFrameTime += dt;
 
         //Get user inputs
+        //updateInput(window, dt, worldRotation, textureArray[0]);
         updateInput(window, dt, worldRotation);
 
         // Each frame, reset color of each pixel to glClearColor
-        glClear(GL_COLOR_BUFFER_BIT);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+        //draw textured geometry
+        //glUseProgram(texturedShaderProgram); 
 
         drawGroundGrid(shaderProgram, vaoArray, gridUnit, worldRotationUpdate);
         axis.drawAxisLines(shaderProgram, vaoArray, gridUnit, worldRotationUpdate);
 
+        glUseProgram(texturedShaderProgram);
+        glActiveTexture(GL_TEXTURE0);
+        GLuint textureLocation = glGetUniformLocation(texturedShaderProgram, "textureSampler");
+        //glBindTexture(GL_TEXTURE_2D, brickTextureID);
+        glUniform1i(textureLocation, 0);                // Set our Texture sampler to user Texture Unit 0
+
+                // Draw ground
+        //mat4 groundWorldMatrix = translate(mat4(1.0f), vec3(0.0f, -0.01f, 0.0f)) * scale(mat4(1.0f), vec3(1000.0f, 0.02f, 1000.0f));
+        //GLuint worldMatrixLocation = glGetUniformLocation(texturedShaderProgram, "worldMatrix");
+        //glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &groundWorldMatrix[0][0]);
+        //glDrawArrays(GL_TRIANGLES, 0, 36); // 36 vertices, starting at index 0
+
         //MODELS
-        drawTaqiModel(shaderProgram, vaoArray, worldRotationUpdate);
-        drawHauModel(shaderProgram, vaoArray, worldRotationUpdate);
-        drawRoyModel(shaderProgram, vaoArray, worldRotationUpdate);
-        drawSwetangModel(shaderProgram, vaoArray, worldRotationUpdate);
-        drawWilliamModel(shaderProgram, vaoArray, worldRotationUpdate);
+        //glBindTexture(GL_TEXTURE_2D, brickTextureID);
+        drawTaqiModel(texturedShaderProgram, vaoArray, worldRotationUpdate, textureArray);
+        //glBindTexture(GL_TEXTURE_2D, cementTextureID);
+        drawHauModel(texturedShaderProgram, vaoArray, worldRotationUpdate, textureArray);
+        drawRoyModel(texturedShaderProgram, vaoArray, worldRotationUpdate, textureArray);
+        drawSwetangModel(texturedShaderProgram, vaoArray, worldRotationUpdate, textureArray);
+        drawWilliamModel(texturedShaderProgram, vaoArray, worldRotationUpdate, textureArray);
+
 
         //FPS camera
         bool fastCam = glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS || glfwGetKey(window, GLFW_KEY_RIGHT_SHIFT) == GLFW_PRESS; //Press shift to go faster
@@ -740,7 +926,7 @@ int main(int argc, char* argv[])
         // Set the view matrix for first person camera
         mat4 viewMatrix(1.0f);
         viewMatrix = lookAt(cameraPosition, cameraPosition + cameraLookAt, cameraUp);
-        setViewMatrix(shaderProgram, viewMatrix);
+        setViewMatrix(texturedShaderProgram, viewMatrix);
 
         //Mouse Panning, Tilting and Zooming
         int pan = glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_RIGHT);
@@ -753,21 +939,21 @@ int main(int argc, char* argv[])
             vec3 eyeHorizon(cameraHorizontalAngle, 0.0f, 0.0f);
 
             viewMatrix = lookAt(eye + eyeHorizon, center + eyeHorizon, up);
-            setViewMatrix(shaderProgram, viewMatrix);
+            setViewMatrix(texturedShaderProgram, viewMatrix);
         }
         if (tilt == GLFW_PRESS)
         {
             cameraVerticalAngle -= dy * cameraAngularSpeed * dt;
             vec3 eyeVertical(0.0f, cameraVerticalAngle, 0.0f);
             viewMatrix = lookAt(eye + eyeVertical, center, up);
-            setViewMatrix(shaderProgram, viewMatrix);
+            setViewMatrix(texturedShaderProgram, viewMatrix);
         }
         if (zoom == GLFW_PRESS)
         {
             cameraVerticalAngle -= dy * cameraAngularSpeed * dt;
             vec3 eyeVertical(0.0f, 0.0f, cameraVerticalAngle);
             viewMatrix = lookAt(eye + eyeVertical, center, up);
-            setViewMatrix(shaderProgram, viewMatrix);
+            setViewMatrix(texturedShaderProgram, viewMatrix);
         }
 
         // End Frame
@@ -784,4 +970,44 @@ int main(int argc, char* argv[])
     glfwTerminate();
 
     return 0;
+}
+
+GLuint loadTexture(const char* filename)
+{
+    // Step1 Create and bind textures
+    GLuint textureId = 0;
+    glGenTextures(1, &textureId);
+    assert(textureId != 0);
+
+
+    glBindTexture(GL_TEXTURE_2D, textureId);
+
+    // Step2 Set filter parameters
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+    // Step3 Load Textures with dimension data
+    int width, height, nrChannels;
+    unsigned char* data = stbi_load(filename, &width, &height, &nrChannels, 0);
+    if (!data)
+    {
+        std::cerr << "Error::Texture could not load texture file:" << filename << std::endl;
+        return 0;
+    }
+
+    // Step4 Upload the texture to the PU
+    GLenum format = 0;
+    if (nrChannels == 1)
+        format = GL_RED;
+    else if (nrChannels == 3)
+        format = GL_RGB;
+    else if (nrChannels == 4)
+        format = GL_RGBA;
+    glTexImage2D(GL_TEXTURE_2D, 0, format, width, height,
+        0, format, GL_UNSIGNED_BYTE, data);
+
+    // Step5 Free resources
+    stbi_image_free(data);
+    glBindTexture(GL_TEXTURE_2D, 0);
+    return textureId;
 }
