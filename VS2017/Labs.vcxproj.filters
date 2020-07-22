@@ -72,15 +72,60 @@
     <ClCompile Include="..\Source\programmingAssignment.cpp">
       <Filter>Source Files\Class Files</Filter>
     </ClCompile>
-    <ClCompile Include="Model.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="..\Source\Model.cpp">
+      <Filter>Source Files\Class Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Source\ModelUtilities.cpp">
+      <Filter>Source Files\Class Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Source\HauModel.cpp">
+      <Filter>Source Files\Class Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Source\Axis.cpp">
+      <Filter>Source Files\Class Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Source\RoyModel.cpp">
+      <Filter>Source Files\Class Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Source\TaqiModel.cpp">
+      <Filter>Source Files\Class Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Source\SwetangModel.cpp">
+      <Filter>Source Files\Class Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Source\WilliamModel.cpp">
+      <Filter>Source Files\Class Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Source\ViewController.cpp">
       <Filter>Source Files\Class Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\Source\Model.h">
+      <Filter>Source Files\Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Source\ModelUtilities.h">
+      <Filter>Source Files\Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Source\HauModel.h">
+      <Filter>Source Files\Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Source\Axis.h">
+      <Filter>Source Files\Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Source\RoyModel.h">
+      <Filter>Source Files\Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Source\TaqiModel.h">
+      <Filter>Source Files\Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Source\SwetangModel.h">
+      <Filter>Source Files\Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Source\WilliamModel.h">
+      <Filter>Source Files\Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Source\ViewController.h">
       <Filter>Source Files\Header Files</Filter>
     </ClInclude>
   </ItemGroup>
