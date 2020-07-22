@@ -12,7 +12,7 @@
 #include <GL/glew.h>    // Include GLEW - OpenGL Extension Wrangler
 
 #include <GLFW/glfw3.h> // GLFW provides a cross-platform interface for creating a graphical context,
-						// initializing OpenGL and binding inputs
+                        // initializing OpenGL and binding inputs
 
 #include <glm/glm.hpp>  // GLM is an optimized math library with syntax to similar to OpenGL Shading Language
 #include <glm/gtc/matrix_transform.hpp>
@@ -25,11 +25,12 @@
 #include "SwetangModel.h"
 #include "WilliamModel.h"
 #include "ViewController.h"
-using namespace std; 
+using namespace std;
 using namespace glm;
 
 const GLuint WIDTH = 1024, HEIGHT = 768;
 glm::mat4 projection_matrix;
+
 
 float gridUnit = 1.0f;
 void modelFocusSwitch(int nextModel);
@@ -40,16 +41,16 @@ Model models[] = {
     Model(vec3(0.0f, 0.0f, 0.0f), 0.0f), //axis lines
     TaqiModel(vec3(-45.0f, 0.0f, -45.0f), 0.0f), //Taqi (Q4)
     HauModel(vec3(45.0f, 0.0f, -45.0f), 0.0f), //Hau (U6)
-    RoyModel(vec3(-45.0f, 0.0f, 45.0f), 0.0f), //Roy (Y8)    
-    SwetangModel(vec3(0.0f, 0.0f, 0.0f), 0.0f), //Swetang (E0) 
-    WilliamModel(vec3(45.0f, 0.0f, 45.0f), 0.0f) //William (L9) 
+    RoyModel(vec3(-45.0f, 0.0f, 45.0f), 0.0f), //Roy (Y8)
+    SwetangModel(vec3(0.0f, 0.0f, 0.0f), 0.0f), //Swetang (E0)
+    WilliamModel(vec3(45.0f, 0.0f, 45.0f), 0.0f) //William (L9)
 };
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height)
 {
-	glViewport(0, 0, width, height);
-	//update projection matrix to new width and height
-	projection_matrix = glm::perspective(45.0f, (GLfloat)width / (GLfloat)height, 0.0f, 100.0f);
+    glViewport(0, 0, width, height);
+    //update projection matrix to new width and height
+    projection_matrix = glm::perspective(45.0f, (GLfloat)width / (GLfloat)height, 0.0f, 100.0f);
 }
 
 void cursor_enter_callback(GLFWwindow* window, int entered) {
@@ -68,200 +69,236 @@ void cursor_position_callback(GLFWwindow* window, double xpos, double ypos){
 
 const char* getVertexShaderSource()
 {
-	//Vertex Shader
-	return
-		"#version 330 core\n"
-		"layout (location=0) in vec3 aPos;"
-		"layout (location=1) in vec3 aColor;"
-		""
-		"uniform mat4 worldMatrix;"
-		"uniform mat4 viewMatrix = mat4(1.0);" //default value for view matrix (identity)
-		"uniform mat4 projectionMatrix = mat4(1.0);"
-		""
-		"out vec3 vertexColor;"
-		"void main()"
-		"{"
-		"   vertexColor = aColor;"
-		"   mat4 modelViewProjection = projectionMatrix * viewMatrix * worldMatrix;"
-		"   gl_Position = modelViewProjection * vec4(aPos.x, aPos.y, aPos.z, 1.0);"
-		"}";
+    //Vertex Shader
+    return
+        "#version 330 core\n"
+        "layout (location=0) in vec3 aPos;"
+        "layout (location=1) in vec3 aColor;"
+        "layout (location=2) in vec3 aNorm;"
+        ""
+        "uniform mat4 worldMatrix;"
+        "uniform mat4 viewMatrix = mat4(1.0);" //default value for view matrix (identity)
+        "uniform mat4 projectionMatrix = mat4(1.0);"
+        ""
+        "out vec3 vertexColor;"
+        "out vec3 norm;"
+        "out vec3 fragPos;"
+        "void main()"
+        "{"
+        "   vertexColor = aColor;"
+        "   fragPos = vec3(worldMatrix * vec4(aPos, 1.0));"
+        //"   fragPos = aPos;"
+        "   norm = mat3(transpose(inverse(worldMatrix))) * aNorm;"
+        //"   norm = aNorm;"
+        "   mat4 modelViewProjection = projectionMatrix * viewMatrix * worldMatrix;"
+        "   gl_Position = modelViewProjection * vec4(aPos.x, aPos.y, aPos.z, 1.0);"
+        "}";
 }
 
 const char* getFragmentShaderSource()
 {
-	//Fragment Shaders here 
-	return
-		"#version 330 core\n"
-		"in vec3 vertexColor;"
-		"out vec4 FragColor;"
-		"void main()"
-		"{"
-		"   FragColor = vec4(vertexColor.r, vertexColor.g, vertexColor.b, 1.0f);"
-		"}";
+    //Fragment Shaders here
+    return
+        "#version 330 core\n"
+           "out vec4 FragColor;"
+
+           "in vec3 fragPos;"
+           "in vec3 vertexColor;"
+           "in vec3 norm;"
+           
+
+           "uniform vec3 viewPos;"
+
+
+           "void main()"
+           "{"
+           "   vec3 color = vertexColor;"
+           "   vec3 lightPos = vec3(0.0f, 30.0f, 0.0f);"
+           // ambient
+           "   vec3 ambient = 0.05 * color;"  //0.05
+           // diffuse
+           "   vec3 lightDir = normalize(lightPos - fragPos);"
+           "   vec3 normal = normalize(norm);"
+           "   float diff = max(dot(lightDir, normal), 0.0);"
+           "   vec3 diffuse = diff * color;"
+           // specular
+           "   vec3 viewDir = normalize(viewPos - fragPos);"
+           "   float spec = 0.0;"
+           "   vec3 reflectDir = reflect(-lightDir, normal);"
+           "   spec = pow(max(dot(viewDir, reflectDir), 0.0), 32.0);"
+           "   vec3 specular = vec3(0.3) * spec;" // assuming bright white light color
+           "   FragColor = vec4(ambient + diffuse + specular, 1.0);"
+           " }";
 }
 
 
 int compileAndLinkShaders()
 {
-	// compile and link shader program
-	// return shader program id
-	// ------------------------------------
+    // compile and link shader program
+    // return shader program id
+    // ------------------------------------
 
-	// vertex shader
-	int vertexShader = glCreateShader(GL_VERTEX_SHADER);
-	const char* vertexShaderSource = getVertexShaderSource();
-	glShaderSource(vertexShader, 1, &vertexShaderSource, NULL);
-	glCompileShader(vertexShader);
+    // vertex shader
+    int vertexShader = glCreateShader(GL_VERTEX_SHADER);
+    const char* vertexShaderSource = getVertexShaderSource();
+    glShaderSource(vertexShader, 1, &vertexShaderSource, NULL);
+    glCompileShader(vertexShader);
 
-	// check for shader compile errors
-	int success;
-	char infoLog[512];
-	glGetShaderiv(vertexShader, GL_COMPILE_STATUS, &success);
-	if (!success)
-	{
-		glGetShaderInfoLog(vertexShader, 512, NULL, infoLog);
-		std::cerr << "ERROR::SHADER::VERTEX::COMPILATION_FAILED\n" << infoLog << std::endl;
-	}
+    // check for shader compile errors
+    int success;
+    char infoLog[512];
+    glGetShaderiv(vertexShader, GL_COMPILE_STATUS, &success);
+    if (!success)
+    {
+        glGetShaderInfoLog(vertexShader, 512, NULL, infoLog);
+        std::cerr << "ERROR::SHADER::VERTEX::COMPILATION_FAILED\n" << infoLog << std::endl;
+    }
 
-	// fragment shader
-	int fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
-	const char* fragmentShaderSource = getFragmentShaderSource();
-	glShaderSource(fragmentShader, 1, &fragmentShaderSource, NULL);
-	glCompileShader(fragmentShader);
+    // fragment shader
+    int fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
+    const char* fragmentShaderSource = getFragmentShaderSource();
+    glShaderSource(fragmentShader, 1, &fragmentShaderSource, NULL);
+    glCompileShader(fragmentShader);
 
-	// check for shader compile errors
-	glGetShaderiv(fragmentShader, GL_COMPILE_STATUS, &success);
-	if (!success)
-	{
-		glGetShaderInfoLog(fragmentShader, 512, NULL, infoLog);
-		std::cerr << "ERROR::SHADER::FRAGMENT::COMPILATION_FAILED\n" << infoLog << std::endl;
-	}
+    // check for shader compile errors
+    glGetShaderiv(fragmentShader, GL_COMPILE_STATUS, &success);
+    if (!success)
+    {
+        glGetShaderInfoLog(fragmentShader, 512, NULL, infoLog);
+        std::cerr << "ERROR::SHADER::FRAGMENT::COMPILATION_FAILED\n" << infoLog << std::endl;
+    }
 
-	// link shaders
-	int shaderProgram = glCreateProgram();
-	glAttachShader(shaderProgram, vertexShader);
-	glAttachShader(shaderProgram, fragmentShader);
-	glLinkProgram(shaderProgram);
+    // link shaders
+    int shaderProgram = glCreateProgram();
+    glAttachShader(shaderProgram, vertexShader);
+    glAttachShader(shaderProgram, fragmentShader);
+    glLinkProgram(shaderProgram);
 
-	// check for linking errors
-	glGetProgramiv(shaderProgram, GL_LINK_STATUS, &success);
-	if (!success) {
-		glGetProgramInfoLog(shaderProgram, 512, NULL, infoLog);
-		std::cerr << "ERROR::SHADER::PROGRAM::LINKING_FAILED\n" << infoLog << std::endl;
-	}
+    // check for linking errors
+    glGetProgramiv(shaderProgram, GL_LINK_STATUS, &success);
+    if (!success) {
+        glGetProgramInfoLog(shaderProgram, 512, NULL, infoLog);
+        std::cerr << "ERROR::SHADER::PROGRAM::LINKING_FAILED\n" << infoLog << std::endl;
+    }
 
-	glDeleteShader(vertexShader);
-	glDeleteShader(fragmentShader);
+    glDeleteShader(vertexShader);
+    glDeleteShader(fragmentShader);
 
-	return shaderProgram;
+    return shaderProgram;
 }
 
 void setViewMatrix(int shaderProgram, mat4 viewMatrix)
 {
-	glUseProgram(shaderProgram);
-	GLuint viewMatrixLocation = glGetUniformLocation(shaderProgram, "viewMatrix");
-	glUniformMatrix4fv(viewMatrixLocation, 1, GL_FALSE, &viewMatrix[0][0]);
+    glUseProgram(shaderProgram);
+    GLuint viewMatrixLocation = glGetUniformLocation(shaderProgram, "viewMatrix");
+    glUniformMatrix4fv(viewMatrixLocation, 1, GL_FALSE, &viewMatrix[0][0]);
 }
 
 
-vec3 cubeVertexArray[] = {  
-    // position,                   color
-    vec3(-0.5f,-0.5f,-0.5f), vec3(1.0f, 0.0f, 0.0f), //left - red
-    vec3(-0.5f,-0.5f, 0.5f), vec3(1.0f, 0.0f, 0.0f),
-    vec3(-0.5f, 0.5f, 0.5f), vec3(1.0f, 0.0f, 0.0f),
+vec3 cubeVertexArray[] = {
+    // position, color
+    vec3(-0.5f,-0.5f,-0.5f), vec3(1.0f, 0.0f, 0.0f), vec3(-1.0f, 0.0f, 0.0f),//left-  red
+    vec3(-0.5f,-0.5f, 0.5f), vec3(1.0f, 0.0f, 0.0f), vec3(-1.0f, 0.0f, 0.0f),
+    vec3(-0.5f, 0.5f, 0.5f), vec3(1.0f, 0.0f, 0.0f), vec3(-1.0f, 0.0f, 0.0f),
 
-    vec3(-0.5f,-0.5f,-0.5f), vec3(1.0f, 0.0f, 0.0f),
-    vec3(-0.5f, 0.5f, 0.5f), vec3(1.0f, 0.0f, 0.0f),
-    vec3(-0.5f, 0.5f,-0.5f), vec3(1.0f, 0.0f, 0.0f),
+    vec3(-0.5f,-0.5f,-0.5f), vec3(1.0f, 0.0f, 0.0f), vec3(-1.0f, 0.0f, 0.0f),
+    vec3(-0.5f, 0.5f, 0.5f), vec3(1.0f, 0.0f, 0.0f), vec3(-1.0f, 0.0f, 0.0f),
+    vec3(-0.5f, 0.5f,-0.5f), vec3(1.0f, 0.0f, 0.0f), vec3(-1.0f, 0.0f, 0.0f),
 
-    vec3(0.5f, 0.5f,-0.5f), vec3(0.0f, 0.0f, 1.0f), // far - blue
-    vec3(-0.5f,-0.5f,-0.5f), vec3(0.0f, 0.0f, 1.0f),
-    vec3(-0.5f, 0.5f,-0.5f), vec3(0.0f, 0.0f, 1.0f),
+    vec3(0.5f, 0.5f,-0.5f), vec3(0.0f, 0.0f, 1.0f), vec3(0.0f, 0.0f, -1.0f),// far - blue
+    vec3(-0.5f,-0.5f,-0.5f), vec3(0.0f, 0.0f, 1.0f), vec3(0.0f, 0.0f, -1.0f),
+    vec3(-0.5f, 0.5f,-0.5f), vec3(0.0f, 0.0f, 1.0f), vec3(0.0f, 0.0f, -1.0f),
 
-    vec3(0.5f, 0.5f,-0.5f), vec3(0.0f, 0.0f, 1.0f),
-    vec3(0.5f,-0.5f,-0.5f), vec3(0.0f, 0.0f, 1.0f),
-    vec3(-0.5f,-0.5f,-0.5f), vec3(0.0f, 0.0f, 1.0f),
+    vec3(0.5f, 0.5f,-0.5f), vec3(0.0f, 0.0f, 1.0f), vec3(0.0f, 0.0f, -1.0f),
+    vec3(0.5f,-0.5f,-0.5f), vec3(0.0f, 0.0f, 1.0f), vec3(0.0f, 0.0f, -1.0f),
+    vec3(-0.5f,-0.5f,-0.5f), vec3(0.0f, 0.0f, 1.0f), vec3(0.0f, 0.0f, -1.0f),
 
-    vec3(0.5f,-0.5f, 0.5f), vec3(0.0f, 1.0f, 1.0f), // bottom - turquoise
-    vec3(-0.5f,-0.5f,-0.5f), vec3(0.0f, 1.0f, 1.0f),
-    vec3(0.5f,-0.5f,-0.5f), vec3(0.0f, 1.0f, 1.0f),
+    vec3(0.5f,-0.5f, 0.5f), vec3(0.0f, 1.0f, 1.0f), vec3(0.0f, -1.0f, 0.0f), // bottom - turquoise
+    vec3(-0.5f,-0.5f,-0.5f), vec3(0.0f, 1.0f, 1.0f), vec3(0.0f, -1.0f, 0.0f),
+    vec3(0.5f,-0.5f,-0.5f), vec3(0.0f, 1.0f, 1.0f), vec3(0.0f, -1.0f, 0.0f),
 
-    vec3(0.5f,-0.5f, 0.5f), vec3(0.0f, 1.0f, 1.0f),
-    vec3(-0.5f,-0.5f, 0.5f), vec3(0.0f, 1.0f, 1.0f),
-    vec3(-0.5f,-0.5f,-0.5f), vec3(0.0f, 1.0f, 1.0f),
+    vec3(0.5f,-0.5f, 0.5f), vec3(0.0f, 1.0f, 1.0f), vec3(0.0f, -1.0f, 0.0f),
+    vec3(-0.5f,-0.5f, 0.5f), vec3(0.0f, 1.0f, 1.0f), vec3(0.0f, -1.0f, 0.0f),
+    vec3(-0.5f,-0.5f,-0.5f), vec3(0.0f, 1.0f, 1.0f), vec3(0.0f, -1.0f, 0.0f),
 
-    vec3(-0.5f, 0.5f, 0.5f), vec3(0.0f, 1.0f, 0.0f), // near - green
-    vec3(-0.5f,-0.5f, 0.5f), vec3(0.0f, 1.0f, 0.0f),
-    vec3(0.5f,-0.5f, 0.5f), vec3(0.0f, 1.0f, 0.0f),
+    vec3(-0.5f, 0.5f, 0.5f), vec3(0.0f, 1.0f, 0.0f), vec3(0.0f, 0.0f, 1.0f),// near - green
+    vec3(-0.5f,-0.5f, 0.5f), vec3(0.0f, 1.0f, 0.0f), vec3(0.0f, 0.0f, 1.0f),
+    vec3(0.5f,-0.5f, 0.5f), vec3(0.0f, 1.0f, 0.0f),  vec3(0.0f, 0.0f, 1.0f),
 
-    vec3(0.5f, 0.5f, 0.5f), vec3(0.0f, 1.0f, 0.0f),
-    vec3(-0.5f, 0.5f, 0.5f), vec3(0.0f, 1.0f, 0.0f),
-    vec3(0.5f,-0.5f, 0.5f), vec3(0.0f, 1.0f, 0.0f),
+    vec3(0.5f, 0.5f, 0.5f), vec3(0.0f, 1.0f, 0.0f), vec3(0.0f, 0.0f, 1.0f),
+    vec3(-0.5f, 0.5f, 0.5f), vec3(0.0f, 1.0f, 0.0f), vec3(0.0f, 0.0f, 1.0f),
+    vec3(0.5f,-0.5f, 0.5f), vec3(0.0f, 1.0f, 0.0f), vec3(0.0f, 0.0f, 1.0f),
 
-    vec3(0.5f, 0.5f, 0.5f), vec3(1.0f, 0.0f, 1.0f), // right - purple
-    vec3(0.5f,-0.5f,-0.5f), vec3(1.0f, 0.0f, 1.0f),
-    vec3(0.5f, 0.5f,-0.5f), vec3(1.0f, 0.0f, 1.0f),
+    vec3(0.5f, 0.5f, 0.5f), vec3(1.0f, 0.0f, 1.0f), vec3(1.0f, 0.0f, 0.0f),// right - purple
+    vec3(0.5f,-0.5f,-0.5f), vec3(1.0f, 0.0f, 1.0f), vec3(1.0f, 0.0f, 0.0f),
+    vec3(0.5f, 0.5f,-0.5f), vec3(1.0f, 0.0f, 1.0f), vec3(1.0f, 0.0f, 0.0f),
 
-    vec3(0.5f,-0.5f,-0.5f), vec3(1.0f, 0.0f, 1.0f),
-    vec3(0.5f, 0.5f, 0.5f), vec3(1.0f, 0.0f, 1.0f),
-    vec3(0.5f,-0.5f, 0.5f), vec3(1.0f, 0.0f, 1.0f),
+    vec3(0.5f,-0.5f,-0.5f), vec3(1.0f, 0.0f, 1.0f), vec3(1.0f, 0.0f, 0.0f),
+    vec3(0.5f, 0.5f, 0.5f), vec3(1.0f, 0.0f, 1.0f), vec3(1.0f, 0.0f, 0.0f),
+    vec3(0.5f,-0.5f, 0.5f), vec3(1.0f, 0.0f, 1.0f), vec3(1.0f, 0.0f, 0.0f),
 
-    vec3(0.5f, 0.5f, 0.5f), vec3(1.0f, 1.0f, 0.0f), // top - yellow
-    vec3(0.5f, 0.5f,-0.5f), vec3(1.0f, 1.0f, 0.0f),
-    vec3(-0.5f, 0.5f,-0.5f), vec3(1.0f, 1.0f, 0.0f),
+    vec3(0.5f, 0.5f, 0.5f), vec3(1.0f, 1.0f, 0.0f), vec3(0.0f, 1.0f, 0.0f),// top - yellow
+    vec3(0.5f, 0.5f,-0.5f), vec3(1.0f, 1.0f, 0.0f), vec3(0.0f, 1.0f, 0.0f),
+    vec3(-0.5f, 0.5f,-0.5f), vec3(1.0f, 1.0f, 0.0f), vec3(0.0f, 1.0f, 0.0f),
 
-    vec3(0.5f, 0.5f, 0.5f), vec3(1.0f, 1.0f, 0.0f),
-    vec3(-0.5f, 0.5f,-0.5f), vec3(1.0f, 1.0f, 0.0f),
-    vec3(-0.5f, 0.5f, 0.5f), vec3(1.0f, 1.0f, 0.0f)
+    vec3(0.5f, 0.5f, 0.5f), vec3(1.0f, 1.0f, 0.0f), vec3(0.0f, 1.0f, 0.0f),
+    vec3(-0.5f, 0.5f,-0.5f), vec3(1.0f, 1.0f, 0.0f), vec3(0.0f, 1.0f, 0.0f),
+    vec3(-0.5f, 0.5f, 0.5f), vec3(1.0f, 1.0f, 0.0f), vec3(0.0f, 1.0f, 0.0f)
 };
 
 vec3 gridVertexArray[] = {
-	//ground unit square vertices
-	glm::vec3(0.0f, 0.0f, 0.0f),
-	glm::vec3(0.0f, 1.0f, 0.0f),
-	glm::vec3(gridUnit, 0.0f, 0.0f),
-	glm::vec3(0.0f, 1.0f, 0.0f),
-	glm::vec3(gridUnit, 0.0f, gridUnit),
-	glm::vec3(0.0f, 1.0f, 0.0f),
-	glm::vec3(0.0f, 0.0f, gridUnit),
-	glm::vec3(0.0f, 1.0f, 0.0f),
+    //ground unit square vertices
+    glm::vec3(0.0f, 0.0f, 0.0f),
+    glm::vec3(0.0f, 1.0f, 0.0f),vec3(0.0f, 1.0f, 0.0f),
 
-	glm::vec3(0.0f, 0.0f, 0.0f),
-	glm::vec3(0.0f, 0.0f, 0.0f),
-	glm::vec3(5 * gridUnit, 0.0f, 0.0f),
-	glm::vec3(1.0f, 0.0f, 0.0f),
+    glm::vec3(gridUnit, 0.0f, 0.0f),
+    glm::vec3(0.0f, 1.0f, 0.0f),vec3(0.0f, 1.0f, 0.0f),
+
+    glm::vec3(gridUnit, 0.0f, gridUnit),
+    glm::vec3(0.0f, 1.0f, 0.0f),vec3(0.0f, 1.0f, 0.0f),
+
+    glm::vec3(0.0f, 0.0f, gridUnit),
+    glm::vec3(0.0f, 1.0f, 0.0f),vec3(0.0f, 1.0f, 0.0f),
+
+    glm::vec3(0.0f, 0.0f, 0.0f),
+    glm::vec3(0.0f, 0.0f, 0.0f),vec3(0.0f, 1.0f, 0.0f),
+
+    glm::vec3(5 * gridUnit, 0.0f, 0.0f),
+    glm::vec3(1.0f, 0.0f, 0.0f),vec3(0.0f, 1.0f, 0.0f),
 
 
-	glm::vec3(0.0f, 0.0f, 0.0f),
-	glm::vec3(0.0f, 0.0f, 0.0f),
-	glm::vec3(0.0f, 5 * gridUnit,0.0f),
-	glm::vec3(0.0f, 1.0f, 0.0f),
+    glm::vec3(0.0f, 0.0f, 0.0f),
+    glm::vec3(0.0f, 0.0f, 0.0f),vec3(0.0f, 1.0f, 0.0f),
 
-	glm::vec3(0.0f, 0.0f, 0.0f),
-	glm::vec3(0.0f, 0.0f, 0.0f),
-	glm::vec3(0.0f, 0.0f, 5 * gridUnit),
-	glm::vec3(0.0f, 0.0f, 1.0f)
+    glm::vec3(0.0f, 5 * gridUnit,0.0f),
+    glm::vec3(0.0f, 1.0f, 0.0f),vec3(0.0f, 1.0f, 0.0f),
+
+    glm::vec3(0.0f, 0.0f, 0.0f),
+    glm::vec3(0.0f, 0.0f, 0.0f),vec3(0.0f, 1.0f, 0.0f),
+
+    glm::vec3(0.0f, 0.0f, 5 * gridUnit),
+    glm::vec3(0.0f, 0.0f, 1.0f),vec3(0.0f, 1.0f, 0.0f)
 };
 
 vec3 xAxisVertexArray[] = {
-	glm::vec3(0.0f, 0.0f, 0.0f),
-	glm::vec3(1.0f, 0.0f, 0.0f),
-	glm::vec3(5 * gridUnit, 0.0f, 0.0f),
-	glm::vec3(1.0f, 0.0f, 0.0f)
+    glm::vec3(0.0f, 0.0f, 0.0f),
+    glm::vec3(1.0f, 0.0f, 0.0f),
+    glm::vec3(5 * gridUnit, 0.0f, 0.0f),
+    glm::vec3(1.0f, 0.0f, 0.0f)
 };
 
 vec3 yAxisVertexArray[] = {
-	glm::vec3(0.0f, 0.0f, 0.0f),
-	glm::vec3(0.0f, 1.0f, 1.0f),
-	glm::vec3(0.0f, 5 * gridUnit,0.0f),
-	glm::vec3(0.0f, 1.0f, 1.0f)
+    glm::vec3(0.0f, 0.0f, 0.0f),
+    glm::vec3(0.0f, 1.0f, 1.0f),
+    glm::vec3(0.0f, 5 * gridUnit,0.0f),
+    glm::vec3(0.0f, 1.0f, 1.0f)
 };
 
 vec3 zAxisVertexArray[] = {
-	 glm::vec3(0.0f, 0.0f, 0.0f),
-	 glm::vec3(0.0f, 0.0f, 1.0f),
-	 glm::vec3(0.0f, 0.0f, 5 * gridUnit),
-	 glm::vec3(0.0f, 0.0f, 1.0f)
+     glm::vec3(0.0f, 0.0f, 0.0f),
+     glm::vec3(0.0f, 0.0f, 1.0f),
+     glm::vec3(0.0f, 0.0f, 5 * gridUnit),
+     glm::vec3(0.0f, 0.0f, 1.0f)
 };
 
 /// <summary>
@@ -283,7 +320,7 @@ void drawGridSquare(GLuint worldMatrixLocation, float xDisplacement, float yDisp
 /// </summary>
 /// <param name="worldMatrixLocation"></param>
 /// <param name="pointDisplacementUnit">Length of vertex</param>
-void drawGroundGrid(int shader, GLuint vao[], float pointDisplacementUnit, mat4 worldRotationUpdate) {    
+void drawGroundGrid(int shader, GLuint vao[], float pointDisplacementUnit, mat4 worldRotationUpdate) {
 
     glBindVertexArray(vao[0]);
     mat4 worldMatrix = worldRotationUpdate * mat4(1.0f);
@@ -332,7 +369,7 @@ void drawAxisLines(int shader, GLuint vao[], float gridUnit, mat4 worldRotationU
 void drawHauModel(int shader, GLuint vao[], mat4 worldRotationUpdate) {
     //Model model(models[2]);
     //HauModel hau(model);
-    //hau.draw(worldRotationUpdate); 
+    //hau.draw(worldRotationUpdate);
     Model model = models[2];
     HauModel hau(model.getPosition(), model.getScaling());
     hau.setShaderProgram(shader);
@@ -487,7 +524,7 @@ void updateInput(GLFWwindow* window, float dt, vec3& worldRotation)
         worldRotation.y -= 5.0f * dt;
     }
     //Home button resets world orientation
-    if (glfwGetKey(window, GLFW_KEY_H) == GLFW_PRESS) 
+    if (glfwGetKey(window, GLFW_KEY_H) == GLFW_PRESS)
     {
         worldRotation.x = 0;
         worldRotation.y = 0;
@@ -504,7 +541,7 @@ void modelFocusSwitch(int nextModel)
     if (SELECTEDMODELINDEX == nextModel) {
         return;
     }
-    //Update pointer to the selected model 
+    //Update pointer to the selected model
     focusedModel = &models[nextModel];
     SELECTEDMODELINDEX = nextModel;
 
@@ -517,14 +554,14 @@ int main(int argc, char* argv[])
     glfwInit();
 
 #if defined(PLATFORM_OSX)
-	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 2);
-	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-	glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 2);
+    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+    glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
 #else
-	// On windows, we set OpenGL version to 2.1, to support more hardware
-	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 2);
-	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 1);
+    // On windows, we set OpenGL version to 2.1, to support more hardware
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 2);
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 1);
 #endif
 
     // Create Window and rendering context using GLFW, resolution is 1024x768
@@ -566,11 +603,16 @@ int main(int argc, char* argv[])
     glBindVertexArray(vaoArray[0]);
     glBindBuffer(GL_ARRAY_BUFFER, vboArray[0]);
     glBufferData(GL_ARRAY_BUFFER, sizeof(gridVertexArray), gridVertexArray, GL_STATIC_DRAW);
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 2 * sizeof(glm::vec3), (void*)0);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(glm::vec3), (void*)0);
     glEnableVertexAttribArray(0);
 
-    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 2 * sizeof(glm::vec3), (void*)sizeof(glm::vec3));
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(glm::vec3), (void*)sizeof(glm::vec3));
     glEnableVertexAttribArray(1);
+
+    glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(glm::vec3), (void*)sizeof(glm::vec3));
+    glEnableVertexAttribArray(2);
+
+
 
     //Axis lines
     //X
@@ -607,11 +649,14 @@ int main(int argc, char* argv[])
     glBindVertexArray(vaoArray[4]);
     glBindBuffer(GL_ARRAY_BUFFER, vboArray[4]);
     glBufferData(GL_ARRAY_BUFFER, sizeof(cubeVertexArray), cubeVertexArray, GL_STATIC_DRAW);
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 2 * sizeof(glm::vec3), (void*)0);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(glm::vec3), (void*)0);
     glEnableVertexAttribArray(0);
 
-    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 2 * sizeof(glm::vec3), (void*)sizeof(glm::vec3));
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(glm::vec3), (void*)sizeof(glm::vec3));
     glEnableVertexAttribArray(1);
+    
+    glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(glm::vec3), (void*)(2 * sizeof(glm::vec3)));
+    glEnableVertexAttribArray(2);
 
     models[1].setVbo(vboArray[4]);
     models[2].setVbo(vboArray[4]);
@@ -643,7 +688,7 @@ int main(int argc, char* argv[])
     ViewController view(window, WIDTH, HEIGHT, shaderProgram);
     viewController = &view;
 
-    glfwSetWindowSizeCallback(window, framebuffer_size_callback); //Handle window resizing 
+    glfwSetWindowSizeCallback(window, framebuffer_size_callback); //Handle window resizing
     glfwSetCursorEnterCallback(window, cursor_enter_callback); //Handle cursor leaving window event: Stop tracking mouse mouvement
     glfwSetCursorPosCallback(window, cursor_position_callback); //Handle cursor mouvement event: Update ViewController's mouse position
     viewController->initCamera();

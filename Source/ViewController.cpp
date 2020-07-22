@@ -131,7 +131,13 @@ void ViewController::update() {
 
     // Set the view matrix for first person camera
     viewMatrix = lookAt(cameraPosition, cameraPosition + cameraLookAt, cameraUp);
-
+    
+    //
+    glUseProgram(shaderProgram);
+    GLuint vP = glGetUniformLocation(shaderProgram, "viewPos");
+    
+    glUniformMatrix4fv(vP, 1, GL_FALSE, &cameraPosition[0]);
+    
     //Mouse Panning, Tilting and Zooming
     int pan = glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_RIGHT);
     int tilt = glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_MIDDLE);

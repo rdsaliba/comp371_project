@@ -16,7 +16,14 @@
 		03DA72D222B02FC5009C7A21 /* libGLEW.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 03DA72D122B02FC5009C7A21 /* libGLEW.a */; };
 		3BD01F6B2332AD6400B5FDF1 /* programmingassignment.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 3BD01F6A2332AD6400B5FDF1 /* programmingassignment.cpp */; };
 		541046F724C0DAD000E15A80 /* Model.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 541046F524C0DAD000E15A80 /* Model.cpp */; };
-		541046FA24C0DB1C00E15A80 /* Axis.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 541046F824C0DB1C00E15A80 /* Axis.cpp */; };
+		54B424C324C7ABBF00068873 /* TaqiModel.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 54B424B324C7ABBE00068873 /* TaqiModel.cpp */; };
+		54B424C424C7ABBF00068873 /* Axis.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 54B424B524C7ABBE00068873 /* Axis.cpp */; };
+		54B424C524C7ABBF00068873 /* ModelUtilities.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 54B424B624C7ABBE00068873 /* ModelUtilities.cpp */; };
+		54B424C624C7ABBF00068873 /* SwetangModel.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 54B424B724C7ABBE00068873 /* SwetangModel.cpp */; };
+		54B424C724C7ABBF00068873 /* WilliamModel.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 54B424B824C7ABBF00068873 /* WilliamModel.cpp */; };
+		54B424CA24C7ABBF00068873 /* HauModel.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 54B424BF24C7ABBF00068873 /* HauModel.cpp */; };
+		54B424CB24C7ABBF00068873 /* RoyModel.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 54B424C024C7ABBF00068873 /* RoyModel.cpp */; };
+		54B424CC24C7ABBF00068873 /* ViewController.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 54B424C224C7ABBF00068873 /* ViewController.cpp */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -44,8 +51,22 @@
 		3BD01F6A2332AD6400B5FDF1 /* programmingassignment.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = programmingassignment.cpp; sourceTree = "<group>"; };
 		541046F524C0DAD000E15A80 /* Model.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Model.cpp; sourceTree = "<group>"; };
 		541046F624C0DAD000E15A80 /* Model.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Model.h; sourceTree = "<group>"; };
-		541046F824C0DB1C00E15A80 /* Axis.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Axis.cpp; sourceTree = "<group>"; };
 		541046F924C0DB1C00E15A80 /* Axis.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Axis.h; sourceTree = "<group>"; };
+		54B424B024C7ABBE00068873 /* SwetangModel.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SwetangModel.h; sourceTree = "<group>"; };
+		54B424B224C7ABBE00068873 /* RoyModel.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RoyModel.h; sourceTree = "<group>"; };
+		54B424B324C7ABBE00068873 /* TaqiModel.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = TaqiModel.cpp; sourceTree = "<group>"; };
+		54B424B424C7ABBE00068873 /* ViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ViewController.h; sourceTree = "<group>"; };
+		54B424B524C7ABBE00068873 /* Axis.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Axis.cpp; sourceTree = "<group>"; };
+		54B424B624C7ABBE00068873 /* ModelUtilities.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ModelUtilities.cpp; sourceTree = "<group>"; };
+		54B424B724C7ABBE00068873 /* SwetangModel.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = SwetangModel.cpp; sourceTree = "<group>"; };
+		54B424B824C7ABBF00068873 /* WilliamModel.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = WilliamModel.cpp; sourceTree = "<group>"; };
+		54B424B924C7ABBF00068873 /* WilliamModel.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WilliamModel.h; sourceTree = "<group>"; };
+		54B424BC24C7ABBF00068873 /* TaqiModel.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TaqiModel.h; sourceTree = "<group>"; };
+		54B424BD24C7ABBF00068873 /* HauModel.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = HauModel.h; sourceTree = "<group>"; };
+		54B424BF24C7ABBF00068873 /* HauModel.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = HauModel.cpp; sourceTree = "<group>"; };
+		54B424C024C7ABBF00068873 /* RoyModel.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = RoyModel.cpp; sourceTree = "<group>"; };
+		54B424C124C7ABBF00068873 /* ModelUtilities.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ModelUtilities.h; sourceTree = "<group>"; };
+		54B424C224C7ABBF00068873 /* ViewController.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ViewController.cpp; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -109,10 +130,24 @@
 		038B785E1A6EB3F500111E36 /* Source */ = {
 			isa = PBXGroup;
 			children = (
-				541046F824C0DB1C00E15A80 /* Axis.cpp */,
+				54B424B524C7ABBE00068873 /* Axis.cpp */,
 				541046F924C0DB1C00E15A80 /* Axis.h */,
+				54B424BF24C7ABBF00068873 /* HauModel.cpp */,
+				54B424BD24C7ABBF00068873 /* HauModel.h */,
 				541046F524C0DAD000E15A80 /* Model.cpp */,
 				541046F624C0DAD000E15A80 /* Model.h */,
+				54B424B624C7ABBE00068873 /* ModelUtilities.cpp */,
+				54B424C124C7ABBF00068873 /* ModelUtilities.h */,
+				54B424C024C7ABBF00068873 /* RoyModel.cpp */,
+				54B424B224C7ABBE00068873 /* RoyModel.h */,
+				54B424B724C7ABBE00068873 /* SwetangModel.cpp */,
+				54B424B024C7ABBE00068873 /* SwetangModel.h */,
+				54B424B324C7ABBE00068873 /* TaqiModel.cpp */,
+				54B424BC24C7ABBF00068873 /* TaqiModel.h */,
+				54B424C224C7ABBF00068873 /* ViewController.cpp */,
+				54B424B424C7ABBE00068873 /* ViewController.h */,
+				54B424B824C7ABBF00068873 /* WilliamModel.cpp */,
+				54B424B924C7ABBF00068873 /* WilliamModel.h */,
 				3BD01F6A2332AD6400B5FDF1 /* programmingassignment.cpp */,
 			);
 			name = Source;
@@ -176,9 +211,16 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				541046FA24C0DB1C00E15A80 /* Axis.cpp in Sources */,
+				54B424C524C7ABBF00068873 /* ModelUtilities.cpp in Sources */,
+				54B424C724C7ABBF00068873 /* WilliamModel.cpp in Sources */,
 				3BD01F6B2332AD6400B5FDF1 /* programmingassignment.cpp in Sources */,
+				54B424CB24C7ABBF00068873 /* RoyModel.cpp in Sources */,
+				54B424CC24C7ABBF00068873 /* ViewController.cpp in Sources */,
+				54B424C324C7ABBF00068873 /* TaqiModel.cpp in Sources */,
+				54B424CA24C7ABBF00068873 /* HauModel.cpp in Sources */,
 				541046F724C0DAD000E15A80 /* Model.cpp in Sources */,
+				54B424C624C7ABBF00068873 /* SwetangModel.cpp in Sources */,
+				54B424C424C7ABBF00068873 /* Axis.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
