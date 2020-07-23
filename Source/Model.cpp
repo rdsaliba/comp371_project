@@ -54,6 +54,7 @@ void Model::drawPart(mat4 worldRotationUpdate,mat4 part, vec3 componentPosition)
 	mat4 modelPart = groupMatrix * translate(mat4(1.0f), componentPosition) * part;
 
 	glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &modelPart[0][0]);
+	//mesh.draw(shaderProgram);
 	glDrawArrays(this->renderMode, 0, 36);
 }
 

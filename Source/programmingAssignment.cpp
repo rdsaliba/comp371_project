@@ -17,13 +17,9 @@
 #include <glm/glm.hpp>  // GLM is an optimized math library with syntax to similar to OpenGL Shading Language
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/common.hpp>
+#include "ModelController.h"
 #include "Model.h"
 #include "Axis.h"
-#include "HauModel.h"
-#include "RoyModel.h"
-#include "TaqiModel.h"
-#include "SwetangModel.h"
-#include "WilliamModel.h"
 #include "ViewController.h"
 
 //Library to load popular file formats and easy integration to project
@@ -41,14 +37,7 @@ void modelFocusSwitch(int nextModel);
 int SELECTEDMODELINDEX = 1;
 Model* focusedModel = NULL;
 ViewController* viewController = NULL;
-Model models[] = {
-    Model(vec3(0.0f, 0.0f, 0.0f), 0.0f), //axis lines
-    TaqiModel(vec3(-45.0f, 0.0f, -45.0f), 0.0f), //Taqi (Q4)
-    HauModel(vec3(45.0f, 0.0f, -45.0f), 0.0f), //Hau (U6)
-    RoyModel(vec3(-45.0f, 0.0f, 45.0f), 0.0f), //Roy (Y8)
-    SwetangModel(vec3(0.0f, 0.0f, 0.0f), 0.0f), //Swetang (E0)
-    WilliamModel(vec3(45.0f, 0.0f, 45.0f), 0.0f) //William (L9)
-};
+ModelController* modelController = NULL;
 
 GLuint toggle = 0; //0 = off, 1 = on
 GLuint textureArray[4] = {}; //Contains toggle (on/off), box texture, metal texture, and tiled texture
@@ -402,7 +391,6 @@ void drawGridSquare(GLuint worldMatrixLocation, float xDisplacement, float yDisp
     glDrawArrays(GL_LINE_LOOP, 0, 4);
 }
 
-
 /// <summary>
 /// Generates ground grid
 /// </summary>
@@ -443,73 +431,6 @@ void drawGroundGrid(int shader, GLuint vao[], float pointDisplacementUnit, mat4 
     }
 }
 
-/// <summary>
-/// Draws Hau's model (U6)
-/// </summary>
-/// <param name="shader"></param>
-/// <param name="vao"></param>
-void drawHauModel(int shader, GLuint vao[], mat4 worldRotationUpdate, GLuint textureArray[]) {
-    //Model model(models[2]);
-    //HauModel hau(model);
-    //hau.draw(worldRotationUpdate);
-    Model model = models[2];
-    HauModel hau(model.getPosition(), model.getScaling());
-    hau.setShaderProgram(shader);
-    hau.setVao(vao[4]);
-    hau.setRotation(model.getRotation());
-    hau.setRenderMode(model.getRenderMode());
-    hau.draw(worldRotationUpdate, textureArray);
-}
-
-//WILLIAM'S MODEL ("L9")
-void drawWilliamModel(int shaderProgram, GLuint vao[], mat4 worldRotationUpdate, GLuint textureArray[])
-{
-    Model model = models[5];
-    WilliamModel william(model.getPosition(), model.getScaling());
-    william.setShaderProgram(shaderProgram);
-    william.setVao(vao[4]);
-    william.setRotation(model.getRotation());
-    william.setRenderMode(model.getRenderMode());
-    william.draw(worldRotationUpdate, textureArray);
-}
-
-//TAQI'S MODEL ("Q4")
-void drawTaqiModel(int shaderProgram, GLuint vao[], mat4 worldRotationUpdate, GLuint textureArray[])
-{
-    Model model = models[1];
-    TaqiModel taqi(model.getPosition(), model.getScaling());
-    taqi.setShaderProgram(shaderProgram);
-    taqi.setVao(vao[4]);
-    taqi.setRotation(model.getRotation());
-    taqi.setRenderMode(model.getRenderMode());
-    taqi.draw(worldRotationUpdate, textureArray);
-}
-
-//ROY'S MODEL ("Y8")
-void drawRoyModel(int shaderProgram, GLuint vao[], mat4 worldRotationUpdate, GLuint textureArray[])
-{
-    Model model = models[3];
-    RoyModel roy(model.getPosition(), model.getScaling());
-    roy.setShaderProgram(shaderProgram);
-    roy.setVao(vao[4]);
-    roy.setRotation(model.getRotation());
-    roy.setRenderMode(model.getRenderMode());
-    roy.draw(worldRotationUpdate, textureArray);
-}
-
-//Swetang Model "E0"
-void drawSwetangModel(int shaderProgram, GLuint vao[], mat4 worldRotationUpdate, GLuint textureArray[])
-{
-    Model model = models[4];
-    SwetangModel swetang(model.getPosition(), model.getScaling());
-    swetang.setShaderProgram(shaderProgram);
-    swetang.setVao(vao[4]);
-    swetang.setRotation(model.getRotation());
-    swetang.setRenderMode(model.getRenderMode());
-    swetang.draw(worldRotationUpdate, textureArray);
-}
-
-
 //Update through user input
 //void updateInput(GLFWwindow* window, float dt, vec3& worldRotation, GLuint& toggle)
 void updateInput(GLFWwindow* window, float dt, vec3& worldRotation, int shaderArray[])
@@ -517,75 +438,75 @@ void updateInput(GLFWwindow* window, float dt, vec3& worldRotation, int shaderAr
     //Scale
     if (glfwGetKey(window, GLFW_KEY_U) == GLFW_PRESS)
     {
-        (*focusedModel).updateScaling(0.1f);
+        modelController->updateScaling(0.1f);
     }
     if (glfwGetKey(window, GLFW_KEY_J) == GLFW_PRESS)
     {
-        (*focusedModel).updateScaling(-0.1f);
+        modelController->updateScaling(-0.1f);
     }
 
     //Position
     if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS && (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS || glfwGetKey(window, GLFW_KEY_RIGHT_SHIFT) == GLFW_PRESS))
     {
-        (*focusedModel).x(-0.1f);
+        modelController->updateX(-0.1f);
     }
     if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS && (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS || glfwGetKey(window, GLFW_KEY_RIGHT_SHIFT) == GLFW_PRESS))
     {
-        (*focusedModel).x(0.1f);
+        modelController->updateX(0.1f);
     }
     if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS && (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS || glfwGetKey(window, GLFW_KEY_RIGHT_SHIFT) == GLFW_PRESS))
     {
-        (*focusedModel).y(0.1f);
+        modelController->updateY(0.1f);
     }
     if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS && (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS || glfwGetKey(window, GLFW_KEY_RIGHT_SHIFT) == GLFW_PRESS))
     {
-        (*focusedModel).y(-0.1f);
+        modelController->updateY(-0.1f);
     }
 
     //rotation
     if (glfwGetKey(window, GLFW_KEY_A) && !((glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS || glfwGetKey(window, GLFW_KEY_RIGHT_SHIFT) == GLFW_PRESS)) == GLFW_PRESS)
     {
-        focusedModel->updateRotationY(-5.0f);
+        modelController->updateRotationY(-5.0f);
     }
     if (glfwGetKey(window, GLFW_KEY_D) && !((glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS || glfwGetKey(window, GLFW_KEY_RIGHT_SHIFT) == GLFW_PRESS)) == GLFW_PRESS)
     {
-        focusedModel->updateRotationY(5.0f);
+        modelController->updateRotationY(5.0f);
     }
 
     //Rendering mode
     if (glfwGetKey(window, GLFW_KEY_P) == GLFW_PRESS)
     {
-        focusedModel->setRenderMode(GL_POINTS);
+        modelController->updateRenderMode(GL_POINTS);
     }
     if (glfwGetKey(window, GLFW_KEY_L) == GLFW_PRESS)
     {
-        focusedModel->setRenderMode(GL_LINES);
+        modelController->updateRenderMode(GL_LINES);
     }
     if (glfwGetKey(window, GLFW_KEY_T) == GLFW_PRESS)
     {
-        focusedModel->setRenderMode(GL_TRIANGLES);
+        modelController->updateRenderMode(GL_TRIANGLES);
     }
 
     //Focused model selection
     if (glfwGetKey(window, GLFW_KEY_1) == GLFW_PRESS)
     {
-        modelFocusSwitch(1);
+        modelController->modelFocusSwitch(1);
     }
     if (glfwGetKey(window, GLFW_KEY_2) == GLFW_PRESS)
     {
-        modelFocusSwitch(2);
+        modelController->modelFocusSwitch(2);
     }
     if (glfwGetKey(window, GLFW_KEY_3) == GLFW_PRESS)
     {
-        modelFocusSwitch(3);
+        modelController->modelFocusSwitch(3);
     }
     if (glfwGetKey(window, GLFW_KEY_4) == GLFW_PRESS)
     {
-        modelFocusSwitch(4);
+        modelController->modelFocusSwitch(4);
     }
     if (glfwGetKey(window, GLFW_KEY_5) == GLFW_PRESS)
     {
-        modelFocusSwitch(5);
+        modelController->modelFocusSwitch(5);
     }
 
 
@@ -634,22 +555,6 @@ void updateInput(GLFWwindow* window, float dt, vec3& worldRotation, int shaderAr
             shaderType = shaderArray[0]; //Shader for color
         }
     }
-}
-
-/// <summary>
-/// Swaps model being controlled by user
-/// </summary>
-/// <param name="nextModel">Index of selected model to focus movement on</param>
-void modelFocusSwitch(int nextModel)
-{
-    //Don't update anything if model to switch to is current model
-    if (SELECTEDMODELINDEX == nextModel) {
-        return;
-    }
-    //Update pointer to the selected model
-    focusedModel = &models[nextModel];
-    SELECTEDMODELINDEX = nextModel;
-
 }
 
 
@@ -793,7 +698,6 @@ int main(int argc, char* argv[])
     glfwGetCursorPos(window, &lastMousePosX, &lastMousePosY);
 
 
-    focusedModel = &models[1];
     //Enable hidden surface removal
     glEnable(GL_CULL_FACE);
     glEnable(GL_DEPTH_TEST);
@@ -804,6 +708,10 @@ int main(int argc, char* argv[])
 
     ViewController view(window, WIDTH, HEIGHT, shaderProgram, shaderArray);
     viewController = &view;
+
+    ModelController model;
+    modelController = &model;
+    modelController->initModels(shaderProgram, vaoArray[4], vboArray[4]);
 
     glfwSetWindowSizeCallback(window, framebuffer_size_callback); //Handle window resizing
     glfwSetCursorEnterCallback(window, cursor_enter_callback); //Handle cursor leaving window event: Stop tracking mouse mouvement
@@ -832,11 +740,7 @@ int main(int argc, char* argv[])
         drawGroundGrid(shaderType, vaoArray, gridUnit, worldRotationUpdate, textureArray);
 
         //MODELS
-        drawTaqiModel(shaderType, vaoArray, worldRotationUpdate, textureArray);
-        drawHauModel(shaderType, vaoArray, worldRotationUpdate, textureArray);
-        drawRoyModel(shaderType, vaoArray, worldRotationUpdate, textureArray);
-        drawSwetangModel(shaderType, vaoArray, worldRotationUpdate, textureArray);
-        drawWilliamModel(shaderType, vaoArray, worldRotationUpdate, textureArray);
+        modelController->drawModels(worldRotationUpdate);
 
         viewController->setFastCam(glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS || glfwGetKey(window, GLFW_KEY_RIGHT_SHIFT) == GLFW_PRESS); //Press shift to go faster
         viewController->update(shaderType);
@@ -850,6 +754,8 @@ int main(int argc, char* argv[])
             glfwSetWindowShouldClose(window, true);
     }
 
+    viewController->~ViewController();
+    modelController->~ModelController();
     // Shutdown GLFW
     glfwTerminate();
 

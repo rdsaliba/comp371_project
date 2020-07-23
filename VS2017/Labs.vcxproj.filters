@@ -99,6 +99,12 @@
     <ClCompile Include="..\Source\ViewController.cpp">
       <Filter>Source Files\Class Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\Source\Mesh.cpp">
+      <Filter>Source Files\Class Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Source\ModelController.cpp">
+      <Filter>Source Files\Class Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\Source\Model.h">
@@ -130,6 +136,15 @@
 =======
     <ClInclude Include="..\Source\ViewController.h">
 >>>>>>> 5430cd2080068d05124cde5819f71c7bf531cad2
+      <Filter>Source Files\Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Source\Structs.h">
+      <Filter>Source Files\Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Source\Mesh.h">
+      <Filter>Source Files\Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Source\ModelController.h">
       <Filter>Source Files\Header Files</Filter>
     </ClInclude>
   </ItemGroup>
