@@ -3,6 +3,7 @@
 #include <GL/glew.h> 
 #include <GLFW/glfw3.h>
 #include <glm/gtc/matrix_transform.hpp>
+#include "Mesh.h"
 using namespace glm;
 /// <summary>
 /// Movable 3D model location/transformation information
@@ -13,7 +14,7 @@ public:
 	Model();
 	Model(vec3 position, float size);
 	Model(const Model &model);
-	~Model();
+	virtual ~Model();
 
 	vec3 getPosition() { return position; }
 	float getScaling() { return scaling; }
@@ -28,6 +29,7 @@ public:
 	void setShaderProgram(int shaderProgram) { this->shaderProgram = shaderProgram; }
 	void setVao(GLuint vao) { this->vao = vao; }
 	void setVbo(GLuint vbo) { this->vbo = vbo; }
+	void setMesh(Mesh mesh) { this->mesh = mesh; }
 
 
 	void updatePosition(vec3 moveVector);
@@ -40,9 +42,7 @@ public:
 
 	void updateRotationY(float yValue) { this->rotation.y += yValue; }
 
-	virtual void draw(mat4 model);
-	//virtual void drawLetter(mat4 worldRotationUpdate);
-	//virtual void drawDigit(mat4 worldRotationUpdate);
+	virtual void draw(mat4 model); 
 protected:
 	void drawPart(mat4 worldRotationUpdate, mat4 partMatrix, vec3 componentPosition);
 	//Location of model in 3D world
@@ -56,5 +56,5 @@ protected:
 	unsigned int vao;
 	unsigned int vbo;
 	int shaderProgram;
-
+	Mesh mesh;
 };
