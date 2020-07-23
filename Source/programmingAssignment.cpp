@@ -12,7 +12,7 @@
 #include <GL/glew.h>    // Include GLEW - OpenGL Extension Wrangler
 
 #include <GLFW/glfw3.h> // GLFW provides a cross-platform interface for creating a graphical context,
-						// initializing OpenGL and binding inputs
+                        // initializing OpenGL and binding inputs
 
 #include <glm/glm.hpp>  // GLM is an optimized math library with syntax to similar to OpenGL Shading Language
 #include <glm/gtc/matrix_transform.hpp>
@@ -24,12 +24,13 @@
 #include "TaqiModel.h"
 #include "SwetangModel.h"
 #include "WilliamModel.h"
+#include "ViewController.h"
 
 //Library to load popular file formats and easy integration to project
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
 
-using namespace std; 
+using namespace std;
 using namespace glm;
 
 const GLuint WIDTH = 1024, HEIGHT = 768;
@@ -39,28 +40,19 @@ float gridUnit = 1.0f;
 void modelFocusSwitch(int nextModel);
 int SELECTEDMODELINDEX = 1;
 Model* focusedModel = NULL;
+ViewController* viewController = NULL;
 Model models[] = {
     Model(vec3(0.0f, 0.0f, 0.0f), 0.0f), //axis lines
     TaqiModel(vec3(-45.0f, 0.0f, -45.0f), 0.0f), //Taqi (Q4)
     HauModel(vec3(45.0f, 0.0f, -45.0f), 0.0f), //Hau (U6)
-    RoyModel(vec3(-45.0f, 0.0f, 45.0f), 0.0f), //Roy (Y8)    
-    SwetangModel(vec3(0.0f, 0.0f, 0.0f), 0.0f), //Swetang (E0) 
-    WilliamModel(vec3(45.0f, 0.0f, 45.0f), 0.0f) //William (L9) 
+    RoyModel(vec3(-45.0f, 0.0f, 45.0f), 0.0f), //Roy (Y8)
+    SwetangModel(vec3(0.0f, 0.0f, 0.0f), 0.0f), //Swetang (E0)
+    WilliamModel(vec3(45.0f, 0.0f, 45.0f), 0.0f) //William (L9)
 };
 
 GLuint toggle = 0; //0 = off, 1 = on
 GLuint textureArray[4] = {}; //Contains toggle (on/off), box texture, metal texture, and tiled texture
 int shaderType; //Color or texture
-
-//Default
-const glm::vec3 eye(0.0f, 7.0f, 20.0f);
-const glm::vec3 up(0.0f, 1.0f, 0.0f);
-glm::vec3 center(0.0f, 0.0f, 0.0f);
-//Camera settings
-glm::vec3 centerO = center;
-glm::vec3 cameraEye = eye;
-float x_rotate = 0;
-float y_rotate = 0;
 
 //Forward declarations
 GLuint loadTexture(const char* filename);
@@ -80,43 +72,87 @@ struct TexturedColoredVertex
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height)
 {
-	glViewport(0, 0, width, height);
-	//update projection matrix to new width and height
-	projection_matrix = glm::perspective(45.0f, (GLfloat)width / (GLfloat)height, 0.0f, 100.0f);
+    glViewport(0, 0, width, height);
+    //update projection matrix to new width and height
+    projection_matrix = glm::perspective(45.0f, (GLfloat)width / (GLfloat)height, 0.0f, 100.0f);
+}
+
+void cursor_enter_callback(GLFWwindow* window, int entered) {
+    if (entered) {
+        double mousePosX, mousePosY;
+       glfwGetCursorPos(window, &mousePosX, &mousePosY);
+       viewController->setMousePosX(mousePosX);
+       viewController->setMousePosY(mousePosY);
+    }
+}
+
+void cursor_position_callback(GLFWwindow* window, double xpos, double ypos){
+    viewController->setMousePosX(xpos);
+    viewController->setMousePosY(ypos);
 }
 
 const char* getVertexShaderSource()
 {
-	//Vertex Shader
-	return
-		"#version 330 core\n"
-		"layout (location=0) in vec3 aPos;"
-		"layout (location=1) in vec3 aColor;"
-		""
-		"uniform mat4 worldMatrix;"
-		"uniform mat4 viewMatrix = mat4(1.0);" //default value for view matrix (identity)
-		"uniform mat4 projectionMatrix = mat4(1.0);"
-		""
-		"out vec3 vertexColor;"
-		"void main()"
-		"{"
-		"   vertexColor = aColor;"
-		"   mat4 modelViewProjection = projectionMatrix * viewMatrix * worldMatrix;"
-		"   gl_Position = modelViewProjection * vec4(aPos.x, aPos.y, aPos.z, 1.0);"
-		"}";
+    //Vertex Shader
+    return
+        "#version 330 core\n"
+        "layout (location=0) in vec3 aPos;"
+        "layout (location=1) in vec3 aColor;"
+        "layout (location=2) in vec3 aNorm;"
+        ""
+        "uniform mat4 worldMatrix;"
+        "uniform mat4 viewMatrix = mat4(1.0);" //default value for view matrix (identity)
+        "uniform mat4 projectionMatrix = mat4(1.0);"
+        ""
+        "out vec3 vertexColor;"
+        "out vec3 norm;"
+        "out vec3 fragPos;"
+        "void main()"
+        "{"
+        "   vertexColor = aColor;"
+        "   fragPos = vec3(worldMatrix * vec4(aPos, 1.0));"
+        //"   fragPos = aPos;"
+        "   norm = mat3(transpose(inverse(worldMatrix))) * aNorm;"
+        //"   norm = aNorm;"
+        "   mat4 modelViewProjection = projectionMatrix * viewMatrix * worldMatrix;"
+        "   gl_Position = modelViewProjection * vec4(aPos.x, aPos.y, aPos.z, 1.0);"
+        "}";
 }
 
 const char* getFragmentShaderSource()
 {
-	//Fragment Shaders here 
-	return
-		"#version 330 core\n"
-		"in vec3 vertexColor;"
-		"out vec4 FragColor;"
-		"void main()"
-		"{"
-		"   FragColor = vec4(vertexColor.r, vertexColor.g, vertexColor.b, 1.0f);"
-		"}";
+    //Fragment Shaders here
+    return
+        "#version 330 core\n"
+           "out vec4 FragColor;"
+
+           "in vec3 fragPos;"
+           "in vec3 vertexColor;"
+           "in vec3 norm;"
+           
+
+           "uniform vec3 viewPos;"
+
+
+           "void main()"
+           "{"
+           "   vec3 color = vertexColor;"
+           "   vec3 lightPos = vec3(0.0f, 30.0f, 0.0f);"
+           // ambient
+           "   vec3 ambient = 0.05 * color;"  //0.05
+           // diffuse
+           "   vec3 lightDir = normalize(lightPos - fragPos);"
+           "   vec3 normal = normalize(norm);"
+           "   float diff = max(dot(lightDir, normal), 0.0);"
+           "   vec3 diffuse = diff * color;"
+           // specular
+           "   vec3 viewDir = normalize(viewPos - fragPos);"
+           "   float spec = 0.0;"
+           "   vec3 reflectDir = reflect(-lightDir, normal);"
+           "   spec = pow(max(dot(viewDir, reflectDir), 0.0), 32.0);"
+           "   vec3 specular = vec3(0.3) * spec;" // assuming bright white light color
+           "   FragColor = vec4(ambient + diffuse + specular, 1.0);"
+           " }";
 }
 
 //Vertex shader receives UV attributes and outputs them back to fragment shader
@@ -224,13 +260,6 @@ void setProjectionMatrix(int shaderProgram, mat4 projectionMatrix)
     glUniformMatrix4fv(projectionMatrixLocation, 1, GL_FALSE, &projectionMatrix[0][0]);
 }
 
-void setViewMatrix(int shaderProgram, mat4 viewMatrix)
-{
-	glUseProgram(shaderProgram);
-	GLuint viewMatrixLocation = glGetUniformLocation(shaderProgram, "viewMatrix");
-	glUniformMatrix4fv(viewMatrixLocation, 1, GL_FALSE, &viewMatrix[0][0]);
-}
-
 void setWorldMatrix(int shaderProgram, mat4 worldMatrix)
 {
     glUseProgram(shaderProgram);
@@ -302,52 +331,58 @@ const TexturedColoredVertex texturedGroundVertexArray[] = {  // position, color,
 };
 
 vec3 gridVertexArray[] = {
-	//ground unit square vertices
-	glm::vec3(0.0f, 0.0f, 0.0f),
-	glm::vec3(0.0f, 1.0f, 0.0f),
-	glm::vec3(gridUnit, 0.0f, 0.0f),
-	glm::vec3(0.0f, 1.0f, 0.0f),
-	glm::vec3(gridUnit, 0.0f, gridUnit),
-	glm::vec3(0.0f, 1.0f, 0.0f),
-	glm::vec3(0.0f, 0.0f, gridUnit),
-	glm::vec3(0.0f, 1.0f, 0.0f),
+    //ground unit square vertices
+    glm::vec3(0.0f, 0.0f, 0.0f),
+    glm::vec3(0.0f, 1.0f, 0.0f),vec3(0.0f, 1.0f, 0.0f),
 
-	glm::vec3(0.0f, 0.0f, 0.0f),
-	glm::vec3(0.0f, 0.0f, 0.0f),
-	glm::vec3(5 * gridUnit, 0.0f, 0.0f),
-	glm::vec3(1.0f, 0.0f, 0.0f),
+    glm::vec3(gridUnit, 0.0f, 0.0f),
+    glm::vec3(0.0f, 1.0f, 0.0f),vec3(0.0f, 1.0f, 0.0f),
+
+    glm::vec3(gridUnit, 0.0f, gridUnit),
+    glm::vec3(0.0f, 1.0f, 0.0f),vec3(0.0f, 1.0f, 0.0f),
+
+    glm::vec3(0.0f, 0.0f, gridUnit),
+    glm::vec3(0.0f, 1.0f, 0.0f),vec3(0.0f, 1.0f, 0.0f),
+
+    glm::vec3(0.0f, 0.0f, 0.0f),
+    glm::vec3(0.0f, 0.0f, 0.0f),vec3(0.0f, 1.0f, 0.0f),
+
+    glm::vec3(5 * gridUnit, 0.0f, 0.0f),
+    glm::vec3(1.0f, 0.0f, 0.0f),vec3(0.0f, 1.0f, 0.0f),
 
 
-	glm::vec3(0.0f, 0.0f, 0.0f),
-	glm::vec3(0.0f, 0.0f, 0.0f),
-	glm::vec3(0.0f, 5 * gridUnit,0.0f),
-	glm::vec3(0.0f, 1.0f, 0.0f),
+    glm::vec3(0.0f, 0.0f, 0.0f),
+    glm::vec3(0.0f, 0.0f, 0.0f),vec3(0.0f, 1.0f, 0.0f),
 
-	glm::vec3(0.0f, 0.0f, 0.0f),
-	glm::vec3(0.0f, 0.0f, 0.0f),
-	glm::vec3(0.0f, 0.0f, 5 * gridUnit),
-	glm::vec3(0.0f, 0.0f, 1.0f)
+    glm::vec3(0.0f, 5 * gridUnit,0.0f),
+    glm::vec3(0.0f, 1.0f, 0.0f),vec3(0.0f, 1.0f, 0.0f),
+
+    glm::vec3(0.0f, 0.0f, 0.0f),
+    glm::vec3(0.0f, 0.0f, 0.0f),vec3(0.0f, 1.0f, 0.0f),
+
+    glm::vec3(0.0f, 0.0f, 5 * gridUnit),
+    glm::vec3(0.0f, 0.0f, 1.0f),vec3(0.0f, 1.0f, 0.0f)
 };
 
 vec3 xAxisVertexArray[] = {
-	glm::vec3(0.0f, 0.0f, 0.0f),
-	glm::vec3(1.0f, 0.0f, 0.0f),
-	glm::vec3(5 * gridUnit, 0.0f, 0.0f),
-	glm::vec3(1.0f, 0.0f, 0.0f)
+    glm::vec3(0.0f, 0.0f, 0.0f),
+    glm::vec3(1.0f, 0.0f, 0.0f),
+    glm::vec3(5 * gridUnit, 0.0f, 0.0f),
+    glm::vec3(1.0f, 0.0f, 0.0f)
 };
 
 vec3 yAxisVertexArray[] = {
-	glm::vec3(0.0f, 0.0f, 0.0f),
-	glm::vec3(0.0f, 1.0f, 1.0f),
-	glm::vec3(0.0f, 5 * gridUnit,0.0f),
-	glm::vec3(0.0f, 1.0f, 1.0f)
+    glm::vec3(0.0f, 0.0f, 0.0f),
+    glm::vec3(0.0f, 1.0f, 1.0f),
+    glm::vec3(0.0f, 5 * gridUnit,0.0f),
+    glm::vec3(0.0f, 1.0f, 1.0f)
 };
 
 vec3 zAxisVertexArray[] = {
-	 glm::vec3(0.0f, 0.0f, 0.0f),
-	 glm::vec3(0.0f, 0.0f, 1.0f),
-	 glm::vec3(0.0f, 0.0f, 5 * gridUnit),
-	 glm::vec3(0.0f, 0.0f, 1.0f)
+     glm::vec3(0.0f, 0.0f, 0.0f),
+     glm::vec3(0.0f, 0.0f, 1.0f),
+     glm::vec3(0.0f, 0.0f, 5 * gridUnit),
+     glm::vec3(0.0f, 0.0f, 1.0f)
 };
 
 /// <summary>
@@ -413,7 +448,7 @@ void drawGroundGrid(int shader, GLuint vao[], float pointDisplacementUnit, mat4 
 void drawHauModel(int shader, GLuint vao[], mat4 worldRotationUpdate, GLuint textureArray[]) {
     //Model model(models[2]);
     //HauModel hau(model);
-    //hau.draw(worldRotationUpdate); 
+    //hau.draw(worldRotationUpdate);
     Model model = models[2];
     HauModel hau(model.getPosition(), model.getScaling());
     hau.setShaderProgram(shader);
@@ -569,7 +604,7 @@ void updateInput(GLFWwindow* window, float dt, vec3& worldRotation, int shaderAr
         worldRotation.y -= 5.0f * dt;
     }
     //Home button resets world orientation
-    if (glfwGetKey(window, GLFW_KEY_H) == GLFW_PRESS) 
+    if (glfwGetKey(window, GLFW_KEY_H) == GLFW_PRESS)
     {
         worldRotation.x = 0;
         worldRotation.y = 0;
@@ -608,7 +643,7 @@ void modelFocusSwitch(int nextModel)
     if (SELECTEDMODELINDEX == nextModel) {
         return;
     }
-    //Update pointer to the selected model 
+    //Update pointer to the selected model
     focusedModel = &models[nextModel];
     SELECTEDMODELINDEX = nextModel;
 
@@ -621,14 +656,14 @@ int main(int argc, char* argv[])
     glfwInit();
 
 #if defined(PLATFORM_OSX)
-	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 2);
-	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-	glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 2);
+    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+    glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
 #else
-	// On windows, we set OpenGL version to 2.1, to support more hardware
-	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 2);
-	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 1);
+    // On windows, we set OpenGL version to 2.1, to support more hardware
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 2);
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 1);
 #endif
 
     // Create Window and rendering context using GLFW, resolution is 1024x768
@@ -676,29 +711,7 @@ int main(int argc, char* argv[])
     int shaderArray[2] = { shaderProgram, texturedShaderProgram };
     shaderType = shaderArray[0]; //Initial shader is the one with color, without texture
 
-
-    // Camera parameters for view transform
-    //Initial view values
-    vec3 cameraPosition(0.0f, 5.0f, 10.0f);
-    vec3 cameraLookAt(0.0f, 0.0f, 0.0f);
-    vec3 cameraUp(0.0f, 1.0f, 0.0f);
-
-    // Other camera parameters
-    float cameraSpeed = 1.0f;
-    float cameraFastSpeed = 2 * cameraSpeed;
-    float cameraHorizontalAngle = 90.0f;
-    float cameraVerticalAngle = 0.0f;
-
     glm::mat4 projectionMatrix = glm::perspective(70.0f, 1024.0f / 768.0f, 0.01f, 100.0f);
-
-    // Set initial view matrix
-    mat4 viewMatrix = lookAt(cameraPosition,  // eye
-        vec3(0.0f, 0.0f, 0.0f),  // center
-        cameraUp); // up
-
-    // Set View and Projection matrices on both shaders
-    setViewMatrix(shaderArray[0], viewMatrix);
-    setViewMatrix(shaderArray[1], viewMatrix);
 
     setProjectionMatrix(shaderArray[0], projectionMatrix);
     setProjectionMatrix(shaderArray[1], projectionMatrix);
@@ -713,13 +726,16 @@ int main(int argc, char* argv[])
     glBindVertexArray(vaoArray[0]);
     glBindBuffer(GL_ARRAY_BUFFER, vboArray[0]);
     glBufferData(GL_ARRAY_BUFFER, sizeof(gridVertexArray), gridVertexArray, GL_STATIC_DRAW);
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 2 * sizeof(glm::vec3), (void*)0);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(glm::vec3), (void*)0);
     glEnableVertexAttribArray(0);
 
-    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 2 * sizeof(glm::vec3), (void*)sizeof(glm::vec3));
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(glm::vec3), (void*)sizeof(glm::vec3));
     glEnableVertexAttribArray(1);
 
-    // Define and upload geometry for all our models to the GPU
+    glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(glm::vec3), (void*)sizeof(glm::vec3));
+    glEnableVertexAttribArray(2);
+
+    //Axis
     Axis axis = Axis(0.0f, gridUnit, vaoArray, vboArray);
     axis.bindAxis(); //Vao 1, 2, 3
 
@@ -777,6 +793,13 @@ int main(int argc, char* argv[])
     mat4 worldRotationY;
     mat4 worldRotationUpdate;
 
+    ViewController view(window, WIDTH, HEIGHT, shaderProgram, shaderArray);
+    viewController = &view;
+
+    glfwSetWindowSizeCallback(window, framebuffer_size_callback); //Handle window resizing
+    glfwSetCursorEnterCallback(window, cursor_enter_callback); //Handle cursor leaving window event: Stop tracking mouse mouvement
+    glfwSetCursorPosCallback(window, cursor_position_callback); //Handle cursor mouvement event: Update ViewController's mouse position
+    viewController->initCamera();
 
      // Entering Main Loop
     while (!glfwWindowShouldClose(window))
@@ -788,6 +811,7 @@ int main(int argc, char* argv[])
         //Frame time calculation
         float dt = glfwGetTime() - lastFrameTime;
         lastFrameTime += dt;
+        viewController->updateDt(dt);
 
         //Get user inputs
         updateInput(window, dt, worldRotation, shaderArray);
@@ -805,91 +829,9 @@ int main(int argc, char* argv[])
         drawSwetangModel(shaderType, vaoArray, worldRotationUpdate, textureArray);
         drawWilliamModel(shaderType, vaoArray, worldRotationUpdate, textureArray);
 
-        //FPS camera
-        bool fastCam = glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS || glfwGetKey(window, GLFW_KEY_RIGHT_SHIFT) == GLFW_PRESS; //Press shift to go faster
-        float currentCameraSpeed = (fastCam) ? cameraFastSpeed : cameraSpeed;
-
-        // - Calculate mouse motion dx and dy
-        // - Update camera horizontal and vertical angle
-        double mousePosX, mousePosY;
-        glfwGetCursorPos(window, &mousePosX, &mousePosY);
-
-        double dx = mousePosX - lastMousePosX;
-        double dy = mousePosY - lastMousePosY;
-
-        lastMousePosX = mousePosX;
-        lastMousePosY = mousePosY;
-
-        // Convert to spherical coordinates
-        const float cameraAngularSpeed = 5.0f;
-        cameraHorizontalAngle -= dx * cameraAngularSpeed * dt;
-        cameraVerticalAngle -= dy * cameraAngularSpeed * dt;
-
-        // Clamp vertical angle to [-85, 85] degrees
-        cameraVerticalAngle = std::max(-85.0f, std::min(85.0f, cameraVerticalAngle));
-
-        float theta = radians(cameraHorizontalAngle);
-        float phi = radians(cameraVerticalAngle);
-
-        cameraLookAt = vec3(cosf(phi) * cosf(theta), sinf(phi), -cosf(phi) * sinf(theta));
-        vec3 cameraSideVector = glm::cross(cameraLookAt, vec3(0.0f, 1.0f, 0.0f));
-
-        glm::normalize(cameraSideVector); //vector to be normalized
-
-        // Use camera lookat and side vectors to update positions with CVBG
-        if (glfwGetKey(window, GLFW_KEY_G) == GLFW_PRESS)
-        {
-            cameraPosition += cameraLookAt * dt * currentCameraSpeed;
-        }
-
-        if (glfwGetKey(window, GLFW_KEY_V) == GLFW_PRESS)
-        {
-            cameraPosition -= cameraLookAt * dt * currentCameraSpeed;
-        }
-
-        if (glfwGetKey(window, GLFW_KEY_B) == GLFW_PRESS)
-        {
-            cameraPosition += cameraSideVector * dt * currentCameraSpeed;
-        }
-
-        if (glfwGetKey(window, GLFW_KEY_C) == GLFW_PRESS)
-        {
-            cameraPosition -= cameraSideVector * dt * currentCameraSpeed;
-        }
-
-        // Set the view matrix for first person camera
-        mat4 viewMatrix(1.0f);
-        viewMatrix = lookAt(cameraPosition, cameraPosition + cameraLookAt, cameraUp);
-        setViewMatrix(shaderType, viewMatrix);
-
-        //Mouse Panning, Tilting and Zooming
-        int pan = glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_RIGHT);
-        int tilt = glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_MIDDLE);
-        int zoom = glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT);
-
-        if (pan == GLFW_PRESS)
-        {
-            cameraHorizontalAngle -= dx * cameraAngularSpeed * dt;
-            vec3 eyeHorizon(cameraHorizontalAngle, 0.0f, 0.0f);
-
-            viewMatrix = lookAt(eye + eyeHorizon, center + eyeHorizon, up);
-            setViewMatrix(shaderType, viewMatrix);
-        }
-        if (tilt == GLFW_PRESS)
-        {
-            cameraVerticalAngle -= dy * cameraAngularSpeed * dt;
-            vec3 eyeVertical(0.0f, cameraVerticalAngle, 0.0f);
-            viewMatrix = lookAt(eye + eyeVertical, center, up);
-            setViewMatrix(shaderType, viewMatrix);
-        }
-        if (zoom == GLFW_PRESS)
-        {
-            cameraVerticalAngle -= dy * cameraAngularSpeed * dt;
-            vec3 eyeVertical(0.0f, 0.0f, cameraVerticalAngle);
-            viewMatrix = lookAt(eye + eyeVertical, center, up);
-            setViewMatrix(shaderType, viewMatrix);
-        }
-
+        viewController->setFastCam(glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS || glfwGetKey(window, GLFW_KEY_RIGHT_SHIFT) == GLFW_PRESS); //Press shift to go faster
+        viewController->update(shaderType);
+                                                                                                                                           
         // End Frame
         glfwSwapBuffers(window);
         glfwPollEvents();
@@ -897,7 +839,6 @@ int main(int argc, char* argv[])
         // Handle inputs
         if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
             glfwSetWindowShouldClose(window, true);
-
     }
 
     // Shutdown GLFW

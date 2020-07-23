@@ -96,6 +96,9 @@
     <ClCompile Include="..\Source\WilliamModel.cpp">
       <Filter>Source Files\Class Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\Source\ViewController.cpp">
+      <Filter>Source Files\Class Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\Source\Model.h">
@@ -122,7 +125,11 @@
     <ClInclude Include="..\Source\WilliamModel.h">
       <Filter>Source Files\Header Files</Filter>
     </ClInclude>
+<<<<<<< HEAD
     <ClInclude Include="..\Source\stb_image.h">
+=======
+    <ClInclude Include="..\Source\ViewController.h">
+>>>>>>> 5430cd2080068d05124cde5819f71c7bf531cad2
       <Filter>Source Files\Header Files</Filter>
     </ClInclude>
   </ItemGroup>

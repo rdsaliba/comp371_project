@@ -117,6 +117,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\Source\Axis.cpp" />
+    <ClCompile Include="..\Source\ViewController.cpp" />
     <ClCompile Include="..\Source\Model.cpp" />
     <ClCompile Include="..\Source\programmingAssignment.cpp" />
     <ClCompile Include="..\Source\ModelUtilities.cpp" />
@@ -128,6 +129,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\Source\Axis.h" />
+    <ClInclude Include="..\Source\ViewController.h" />
     <ClInclude Include="..\Source\Model.h" />
     <ClInclude Include="..\Source\ModelUtilities.h" />
     <ClInclude Include="..\Source\HauModel.h" />
