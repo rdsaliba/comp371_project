@@ -48,8 +48,9 @@ Model models[] = {
     WilliamModel(vec3(45.0f, 0.0f, 45.0f), 0.0f) //William (L9) 
 };
 
-GLuint toggle = 0;
-GLuint textureArray[3] = {};
+GLuint toggle = 0; //0 = off, 1 = on
+GLuint textureArray[4] = {}; //Contains toggle (on/off), box texture, metal texture, and tiled texture
+int shaderType;
 
 //Default
 const glm::vec3 eye(0.0f, 7.0f, 20.0f);
@@ -157,7 +158,8 @@ const char* getTexturedFragmentShaderSource()
         "void main()"
         "{"
         "   vec4 textureColor = texture( textureSampler, vertexUV );"
-        "   FragColor = textureColor * vec4(vertexColor.r, vertexColor.g, vertexColor.b, 1.0f);"
+        //"   FragColor = textureColor * vec4(vertexColor.r, vertexColor.g, vertexColor.b, 1.0f);"
+        "   FragColor = textureColor;"
         "}";
 }
 
@@ -214,11 +216,26 @@ int compileAndLinkShaders(const char* vertexShaderSource, const char* fragmentSh
 
     return shaderProgram;
 }
+
+void setProjectionMatrix(int shaderProgram, mat4 projectionMatrix)
+{
+    glUseProgram(shaderProgram);
+    GLuint projectionMatrixLocation = glGetUniformLocation(shaderProgram, "projectionMatrix");
+    glUniformMatrix4fv(projectionMatrixLocation, 1, GL_FALSE, &projectionMatrix[0][0]);
+}
+
 void setViewMatrix(int shaderProgram, mat4 viewMatrix)
 {
 	glUseProgram(shaderProgram);
 	GLuint viewMatrixLocation = glGetUniformLocation(shaderProgram, "viewMatrix");
 	glUniformMatrix4fv(viewMatrixLocation, 1, GL_FALSE, &viewMatrix[0][0]);
+}
+
+void setWorldMatrix(int shaderProgram, mat4 worldMatrix)
+{
+    glUseProgram(shaderProgram);
+    GLuint worldMatrixLocation = glGetUniformLocation(shaderProgram, "worldMatrix");
+    glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &worldMatrix[0][0]);
 }
 
 // Textured Cube model
@@ -324,6 +341,37 @@ vec3 cubeVertexArray[] = {
     vec3(-0.5f, 0.5f, 0.5f), vec3(1.0f, 1.0f, 0.0f)
 };
 
+vec3 triangle_strip[] = {
+        //glm::vec3(0.0f,  0.5f, 0.0f),  
+        //glm::vec3(1.0f,  0.0f, 0.0f),  
+        //glm::vec3(0.0f, -0.5f, 0.0f), 
+        //glm::vec3(0.0f,  1.0f, 0.0f),  
+        //glm::vec3(-0.5f, -0.5f, 0.0f),  
+        //glm::vec3(0.0f,  0.0f, 1.0f),  
+        ////glm::vec3(0.0f,  0.5f, 0.0f), 
+        ////glm::vec3(1.0f,  0.0f, 0.0f)  
+
+    vec3(0.5f, 0.0f, 0.5f), vec3(1.0f, 1.0f, 0.0f), 
+    vec3(0.5f, 0.0f,-0.5f), vec3(1.0f, 1.0f, 0.0f),
+    vec3(-0.5f, 0.0f,-0.5f), vec3(1.0f, 1.0f, 0.0f),
+
+    vec3(0.5f, 0.0f, 0.5f), vec3(1.0f, 1.0f, 0.0f),
+    vec3(-0.5f, 0.0f,-0.5f), vec3(1.0f, 1.0f, 0.0f),
+    vec3(-0.5f, 0.0f, 0.5f), vec3(1.0f, 1.0f, 0.0f)
+
+};
+
+const TexturedColoredVertex texturedTriangleVertexArray[] = {  // position, color, UV coordinates
+
+    TexturedColoredVertex(vec3(0.0f, 0.0f, -1.0f), vec3(1.0f, 1.0f, 0.0f), vec2(1.0f, 1.0f)), // top - yellow
+    TexturedColoredVertex(vec3(-1.0f, 0.0f,-1.0f), vec3(1.0f, 1.0f, 0.0f), vec2(1.0f, 0.0f)),
+    TexturedColoredVertex(vec3(0.0f, 0.0f, 0.0f), vec3(1.0f, 1.0f, 0.0f), vec2(0.0f, 0.0f)),
+
+    TexturedColoredVertex(vec3(0.0f, 0.0f, 0.0f), vec3(1.0f, 1.0f, 0.0f), vec2(1.0f, 1.0f)),
+    TexturedColoredVertex(vec3(-1.0f, 0.0f,-1.0f), vec3(1.0f, 1.0f, 0.0f), vec2(0.0f, 0.0f)),
+    TexturedColoredVertex(vec3(-1.0f, 0.0f, 0.0f), vec3(1.0f, 1.0f, 0.0f), vec2(0.0f, 1.0f))
+};
+
 vec3 gridVertexArray[] = {
 	//ground unit square vertices
 	glm::vec3(0.0f, 0.0f, 0.0f),
@@ -380,9 +428,26 @@ vec3 zAxisVertexArray[] = {
 /// <param name="xDisplacement"></param>
 /// <param name="yDisplacement"></param>
 /// <param name="zDisplacement"></param>
-void drawGridSquare(GLuint worldMatrixLocation, float xDisplacement, float yDisplacement, float zDisplacement, float gridUnit, mat4 worldRotationUpdate) {
+void drawGridSquare(GLuint worldMatrixLocation, float xDisplacement, float yDisplacement, float zDisplacement, float gridUnit, mat4 worldRotationUpdate, GLuint textureArray[]) {
 
-    glm::mat4 translationMatrix = worldRotationUpdate * glm::translate(glm::mat4(1.0f), glm::vec3(xDisplacement, yDisplacement, zDisplacement)); //Note: Multiplying with worldRotationUpdate causes lag
+    if (textureArray[0] == 1)
+    {
+        glBindTexture(GL_TEXTURE_2D, textureArray[3]);
+    }
+
+    glm::mat4 translationMatrix = worldRotationUpdate * glm::translate(glm::mat4(1.0f), glm::vec3(xDisplacement, yDisplacement, zDisplacement)); 
+    glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &translationMatrix[0][0]);
+    glDrawArrays(GL_LINE_LOOP, 0, 4);
+}
+
+void drawTextureGridSquare(GLuint worldMatrixLocation, float xDisplacement, float yDisplacement, float zDisplacement, float gridUnit, mat4 worldRotationUpdate, GLuint textureArray[]) {
+
+    //if (textureArray[0] == 1)
+    //{
+    //    glBindTexture(GL_TEXTURE_2D, textureArray[3]);
+    //}
+
+    glm::mat4 translationMatrix = worldRotationUpdate * glm::translate(glm::mat4(1.0f), glm::vec3(xDisplacement, yDisplacement, zDisplacement));
     glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &translationMatrix[0][0]);
     glDrawArrays(GL_LINE_LOOP, 0, 4);
 }
@@ -392,16 +457,45 @@ void drawGridSquare(GLuint worldMatrixLocation, float xDisplacement, float yDisp
 /// </summary>
 /// <param name="worldMatrixLocation"></param>
 /// <param name="pointDisplacementUnit">Length of vertex</param>
-void drawGroundGrid(int shader, GLuint vao[], float pointDisplacementUnit, mat4 worldRotationUpdate) {    
+void drawGroundGrid(int shader, GLuint vao[], float pointDisplacementUnit, mat4 worldRotationUpdate, GLuint textureArray[]) {    
 
-    glBindVertexArray(vao[0]);
+
+
+    
     mat4 worldMatrix = worldRotationUpdate * mat4(1.0f);
     GLuint worldMatrixLocation = glGetUniformLocation(shader, "worldMatrix");
-    for (int row = -50; row < 50; row++) {
-        for (int col = -50; col < 50; col++) {
-            drawGridSquare(worldMatrixLocation, col * pointDisplacementUnit, 0.0f, row * pointDisplacementUnit, pointDisplacementUnit, worldRotationUpdate);
+
+    if (textureArray[0] == 0)
+    {
+        glBindVertexArray(vao[0]);
+        for (int row = -50; row < 50; row++) {
+            for (int col = -50; col < 50; col++) {
+                drawGridSquare(worldMatrixLocation, col * pointDisplacementUnit, 0.0f, row * pointDisplacementUnit, pointDisplacementUnit, worldRotationUpdate, textureArray);
+            }
         }
     }
+    //glBindVertexArray(vao[5]);
+    //glm::mat4 translationMatrix = worldRotationUpdate * glm::translate(glm::mat4(1.0f), glm::vec3(0, 0, 0));
+    //glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &translationMatrix[0][0]);
+    //glDrawArrays(GL_TRIANGLES, 0, 6);
+
+
+    else if (textureArray[0] == 1)
+    {
+        glBindTexture(GL_TEXTURE_2D, textureArray[3]);
+
+        glBindVertexArray(vao[5]);
+
+    for (int row = -49; row < 51; row++) {
+        for (int col = -49; col < 51; col++) {
+        glm::mat4 translationMatrix = worldRotationUpdate * glm::translate(glm::mat4(1.0f), glm::vec3(row, 0, col));
+        glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &translationMatrix[0][0]);
+        glDrawArrays(GL_TRIANGLES, 0, 6);
+        }
+    }
+    }
+
+
 }
 
 /// <summary>
@@ -503,7 +597,7 @@ void drawSwetangModel(int shaderProgram, GLuint vao[], mat4 worldRotationUpdate,
 
 //Update through user input
 //void updateInput(GLFWwindow* window, float dt, vec3& worldRotation, GLuint& toggle)
-void updateInput(GLFWwindow* window, float dt, vec3& worldRotation)
+void updateInput(GLFWwindow* window, float dt, vec3& worldRotation, int shaderArray[])
 {
     //Scale
     if (glfwGetKey(window, GLFW_KEY_U) == GLFW_PRESS)
@@ -622,11 +716,17 @@ void updateInput(GLFWwindow* window, float dt, vec3& worldRotation)
         {
             toggle = 1;
             textureArray[0] = toggle;
+            shaderType = shaderArray[1];
+            glUseProgram(shaderType);
+            glActiveTexture(GL_TEXTURE0);
+            GLuint textureLocation = glGetUniformLocation(shaderType, "textureSampler");
+            glUniform1i(textureLocation, 0);  // Set our Texture sampler to user Texture Unit 0
         }
         else if (toggle == 1)
         {
             toggle = 0;
             textureArray[0] = toggle;
+            shaderType = shaderArray[0];
         }
 
     }
@@ -686,17 +786,20 @@ int main(int argc, char* argv[])
 
     // Load Textures
     #if defined(PLATFORM_OSX)
-        GLuint brickTextureID = loadTexture("Textures/brick.jpg");
-        GLuint cementTextureID = loadTexture("Textures/cement.jpg");
+        GLuint boxTextureID = loadTexture("Textures/box_texture.png");
+        GLuint metalTextureID = loadTexture("Textures/metal_finish.jpg"); 
+        GLuint tiledTextureID = loadTexture("Textures/tiled_texture.png"); 
     #else
-        GLuint brickTextureID = loadTexture("../Assets/Textures/brick.jpg");
-        GLuint cementTextureID = loadTexture("../Assets/Textures/cement.jpg");
+        GLuint boxTextureID = loadTexture("../Assets/Textures/box_texture.png"); //Source: https://jooinn.com/wood-texture-box.html
+        GLuint metalTextureID = loadTexture("../Assets/Textures/metal_finish.jpg"); //Source: https://unsplash.com/photos/v6uiP2MD6vs
+        GLuint tiledTextureID = loadTexture("../Assets/Textures/tiled_texture.png"); //Source: https://www.3dxo.com/textures/tiles
     #endif
 
     //Array of textures
     textureArray[0] = toggle; // 0 (texture off) or 1 (texture on)
-    textureArray[1] = brickTextureID;
-    textureArray[2] = cementTextureID;
+    textureArray[1] = boxTextureID;
+    textureArray[2] = metalTextureID;
+    textureArray[3] = tiledTextureID;
 
     // Black background
     glClearColor(0.1f, 0.2f, 0.2f, 1.0f);
@@ -705,7 +808,9 @@ int main(int argc, char* argv[])
     int shaderProgram = compileAndLinkShaders(getVertexShaderSource(), getFragmentShaderSource());
     //glUseProgram(shaderProgram);
     int texturedShaderProgram = compileAndLinkShaders(getTexturedVertexShaderSource(), getTexturedFragmentShaderSource());
-    glUseProgram(texturedShaderProgram); //draw textured geometry
+    int shaderArray[2] = { shaderProgram, texturedShaderProgram };
+    shaderType = shaderArray[0];
+    //glUseProgram(shaderType); //draw textured geometry
 
 
     // Camera parameters for view transform
@@ -722,18 +827,20 @@ int main(int argc, char* argv[])
 
     glm::mat4 projectionMatrix = glm::perspective(70.0f, 1024.0f / 768.0f, 0.01f, 100.0f);
 
-    GLuint projectionMatrixLocation = glGetUniformLocation(shaderProgram, "projectionMatrix");
-    glUniformMatrix4fv(projectionMatrixLocation, 1, GL_FALSE, &projectionMatrix[0][0]);
-
     // Set initial view matrix
     mat4 viewMatrix = lookAt(cameraPosition,  // eye
         vec3(0.0f, 0.0f, 0.0f),  // center
         cameraUp); // up
 
-    GLuint viewMatrixLocation = glGetUniformLocation(shaderProgram, "viewMatrix");
-    glUniformMatrix4fv(viewMatrixLocation, 1, GL_FALSE, &viewMatrix[0][0]);
+    // Set View and Projection matrices on both shaders
+    setViewMatrix(shaderArray[0], viewMatrix);
+    setViewMatrix(shaderArray[1], viewMatrix);
 
-    const int geometryCount = 5; //number of models to load
+    setProjectionMatrix(shaderArray[0], projectionMatrix);
+    setProjectionMatrix(shaderArray[1], projectionMatrix);
+
+    //const int geometryCount = 5; //number of models to load
+    const int geometryCount = 6; //number of models to load
     GLuint vaoArray[geometryCount], vboArray[geometryCount];
     glGenVertexArrays(geometryCount, &vaoArray[0]);
     glGenBuffers(geometryCount, &vboArray[0]);
@@ -802,6 +909,28 @@ int main(int argc, char* argv[])
     models[4].setVbo(vboArray[4]);
     models[5].setVbo(vboArray[4]);
 
+    //Ground Grid
+    //glBindVertexArray(vaoArray[5]);
+    //glBindBuffer(GL_ARRAY_BUFFER, vboArray[5]);
+    //glBufferData(GL_ARRAY_BUFFER, sizeof(triangle_strip), triangle_strip, GL_STATIC_DRAW);
+    //glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 2 * sizeof(glm::vec3), (void*)0);
+    //glEnableVertexAttribArray(0);
+
+    //glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 2 * sizeof(glm::vec3), (void*)sizeof(glm::vec3));
+    //glEnableVertexAttribArray(1);
+
+    glBindVertexArray(vaoArray[5]);
+    glBindBuffer(GL_ARRAY_BUFFER, vboArray[5]);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(texturedTriangleVertexArray), texturedTriangleVertexArray, GL_STATIC_DRAW);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(TexturedColoredVertex), (void*)0);
+    glEnableVertexAttribArray(0);
+
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(TexturedColoredVertex), (void*)sizeof(glm::vec3));
+    glEnableVertexAttribArray(1);
+
+    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(TexturedColoredVertex), (void*)(2 * sizeof(vec3))); //attribute 2 matches aUV in vertex Shader
+    glEnableVertexAttribArray(2);
+
     // Variables to be used later in tutorial
     float angle = 0;
     float rotationSpeed = 180.0f;  // 180 degrees per second
@@ -837,8 +966,7 @@ int main(int argc, char* argv[])
         lastFrameTime += dt;
 
         //Get user inputs
-        //updateInput(window, dt, worldRotation, textureArray[0]);
-        updateInput(window, dt, worldRotation);
+        updateInput(window, dt, worldRotation, shaderArray);
 
         // Each frame, reset color of each pixel to glClearColor
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -846,29 +974,32 @@ int main(int argc, char* argv[])
         //draw textured geometry
         //glUseProgram(texturedShaderProgram); 
 
-        drawGroundGrid(shaderProgram, vaoArray, gridUnit, worldRotationUpdate);
-        axis.drawAxisLines(shaderProgram, vaoArray, gridUnit, worldRotationUpdate);
+        //glUseProgram(shaderArray[0]);
+        axis.drawAxisLines(shaderType, vaoArray, gridUnit, worldRotationUpdate);
+        //axis.drawAxisLines(shaderProgram, vaoArray, gridUnit, worldRotationUpdate);
 
-        glUseProgram(texturedShaderProgram);
-        glActiveTexture(GL_TEXTURE0);
-        GLuint textureLocation = glGetUniformLocation(texturedShaderProgram, "textureSampler");
-        //glBindTexture(GL_TEXTURE_2D, brickTextureID);
-        glUniform1i(textureLocation, 0);                // Set our Texture sampler to user Texture Unit 0
+        //glUseProgram(texturedShaderProgram);
+        //glUseProgram(shaderType);
+        //glActiveTexture(GL_TEXTURE0);
+        //GLuint textureLocation = glGetUniformLocation(texturedShaderProgram, "textureSampler");
+        //glUniform1i(textureLocation, 0);  // Set our Texture sampler to user Texture Unit 0
+        
+        drawGroundGrid(shaderType, vaoArray, gridUnit, worldRotationUpdate, textureArray);
 
-                // Draw ground
+        // Draw ground
         //mat4 groundWorldMatrix = translate(mat4(1.0f), vec3(0.0f, -0.01f, 0.0f)) * scale(mat4(1.0f), vec3(1000.0f, 0.02f, 1000.0f));
-        //GLuint worldMatrixLocation = glGetUniformLocation(texturedShaderProgram, "worldMatrix");
-        //glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &groundWorldMatrix[0][0]);
+        //setWorldMatrix(shaderType, groundWorldMatrix);
+
         //glDrawArrays(GL_TRIANGLES, 0, 36); // 36 vertices, starting at index 0
 
         //MODELS
         //glBindTexture(GL_TEXTURE_2D, brickTextureID);
-        drawTaqiModel(texturedShaderProgram, vaoArray, worldRotationUpdate, textureArray);
+        drawTaqiModel(shaderType, vaoArray, worldRotationUpdate, textureArray);
         //glBindTexture(GL_TEXTURE_2D, cementTextureID);
-        drawHauModel(texturedShaderProgram, vaoArray, worldRotationUpdate, textureArray);
-        drawRoyModel(texturedShaderProgram, vaoArray, worldRotationUpdate, textureArray);
-        drawSwetangModel(texturedShaderProgram, vaoArray, worldRotationUpdate, textureArray);
-        drawWilliamModel(texturedShaderProgram, vaoArray, worldRotationUpdate, textureArray);
+        drawHauModel(shaderType, vaoArray, worldRotationUpdate, textureArray);
+        drawRoyModel(shaderType, vaoArray, worldRotationUpdate, textureArray);
+        drawSwetangModel(shaderType, vaoArray, worldRotationUpdate, textureArray);
+        drawWilliamModel(shaderType, vaoArray, worldRotationUpdate, textureArray);
 
 
         //FPS camera
@@ -926,7 +1057,7 @@ int main(int argc, char* argv[])
         // Set the view matrix for first person camera
         mat4 viewMatrix(1.0f);
         viewMatrix = lookAt(cameraPosition, cameraPosition + cameraLookAt, cameraUp);
-        setViewMatrix(texturedShaderProgram, viewMatrix);
+        setViewMatrix(shaderType, viewMatrix);
 
         //Mouse Panning, Tilting and Zooming
         int pan = glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_RIGHT);
@@ -939,21 +1070,21 @@ int main(int argc, char* argv[])
             vec3 eyeHorizon(cameraHorizontalAngle, 0.0f, 0.0f);
 
             viewMatrix = lookAt(eye + eyeHorizon, center + eyeHorizon, up);
-            setViewMatrix(texturedShaderProgram, viewMatrix);
+            setViewMatrix(shaderType, viewMatrix);
         }
         if (tilt == GLFW_PRESS)
         {
             cameraVerticalAngle -= dy * cameraAngularSpeed * dt;
             vec3 eyeVertical(0.0f, cameraVerticalAngle, 0.0f);
             viewMatrix = lookAt(eye + eyeVertical, center, up);
-            setViewMatrix(texturedShaderProgram, viewMatrix);
+            setViewMatrix(shaderType, viewMatrix);
         }
         if (zoom == GLFW_PRESS)
         {
             cameraVerticalAngle -= dy * cameraAngularSpeed * dt;
             vec3 eyeVertical(0.0f, 0.0f, cameraVerticalAngle);
             viewMatrix = lookAt(eye + eyeVertical, center, up);
-            setViewMatrix(texturedShaderProgram, viewMatrix);
+            setViewMatrix(shaderType, viewMatrix);
         }
 
         // End Frame
