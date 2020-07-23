@@ -12,11 +12,11 @@ using namespace glm;
 class ViewController {
 public:
 	ViewController();
-	ViewController(GLFWwindow* window, int width, int height, int shaderProgram);
+	ViewController(GLFWwindow* window, int width, int height, int shaderProgram, int shaderArray[]);
 	~ViewController();
 
 	void setShaderProgram(int shaderProgram) { this->shaderProgram = shaderProgram; }
-	void setViewMatrix();
+	void setViewMatrix(int shaderProgram);
 	void setFastCam(bool isFastCam) { this->fastCam = isFastCam; }
 	void setLastMousePosX(double lastMousePosX) { this->lastMousePosX = lastMousePosX; }
 	void setLastMousePosY(double lastMousePosY) { this->lastMousePosY = lastMousePosY; }
@@ -28,12 +28,13 @@ public:
 
 	void initCamera();
 	void updateDt(float dt) { this->dt = dt; }
-	void update();
+	void update(int shaderType);
 
 private:
 	int width;
 	int height;
 	int shaderProgram;
+	int shaderArray[2];
 	GLFWwindow* window;
 	mat4 projection_matrix;
 	mat4 viewMatrix;

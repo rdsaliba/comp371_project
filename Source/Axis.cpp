@@ -7,19 +7,19 @@ Axis::Axis(float size, float gridUnit, GLuint * vaoArray, GLuint * vboArray)
 {
     _xAxisVertexArray[0] = glm::vec3(0.0f, 0.0f, 0.0f);
     _xAxisVertexArray[1] = glm::vec3(1.0f, 0.0f, 0.0f); // Red
-    _xAxisVertexArray[2] = glm::vec3(3 * gridUnit, 0.0f, 0.0f); //3 units in lengths
+    _xAxisVertexArray[2] = glm::vec3(5 * gridUnit, 0.0f, 0.0f); //3 units in lengths
     _xAxisVertexArray[3] = glm::vec3(1.0f, 0.0f, 0.0f);
     
 
     _yAxisVertexArray[0] = glm::vec3(0.0f, 0.0f, 0.0f);
     _yAxisVertexArray[1] = glm::vec3(0.0f, 1.0f, 0.0f); //Green
-    _yAxisVertexArray[2] = glm::vec3(0.0f, 3 * gridUnit, 0.0f); //3 units in lengths
+    _yAxisVertexArray[2] = glm::vec3(0.0f, 5 * gridUnit, 0.0f); //3 units in lengths
     _yAxisVertexArray[3] = glm::vec3(0.0f, 1.0f, 1.0f);
     
 
     _zAxisVertexArray[0] = glm::vec3(0.0f, 0.0f, 0.0f);
     _zAxisVertexArray[1] = glm::vec3(1.0f, 1.0f, 0.0f); //Yellow
-    _zAxisVertexArray[2] = glm::vec3(0.0f, 0.0f, 3 * gridUnit); //3 units in lengths
+    _zAxisVertexArray[2] = glm::vec3(0.0f, 0.0f, 5 * gridUnit); //3 units in lengths
     _zAxisVertexArray[3] = glm::vec3(1.0f, 1.0f, 0.0f);
    
     _vaoArray = vaoArray;

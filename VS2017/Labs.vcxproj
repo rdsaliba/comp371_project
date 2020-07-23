@@ -134,6 +134,7 @@
     <ClInclude Include="..\Source\ModelUtilities.h" />
     <ClInclude Include="..\Source\HauModel.h" />
     <ClInclude Include="..\Source\RoyModel.h" />
+    <ClInclude Include="..\Source\stb_image.h" />
     <ClInclude Include="..\Source\SwetangModel.h" />
     <ClInclude Include="..\Source\TaqiModel.h" />
     <ClInclude Include="..\Source\WilliamModel.h" />

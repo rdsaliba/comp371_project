@@ -3,6 +3,7 @@
 #include <GL/glew.h> 
 #include <GLFW/glfw3.h>
 #include <glm/gtc/matrix_transform.hpp>
+#include <iostream>
 using namespace glm;
 /// <summary>
 /// Movable 3D model location/transformation information
@@ -12,7 +13,7 @@ class Model {
 public:
 	Model();
 	Model(vec3 position, float size);
-	Model(const Model &model);
+	Model(const Model& model);
 	~Model();
 
 	vec3 getPosition() { return position; }
@@ -29,7 +30,13 @@ public:
 	void setVao(GLuint vao) { this->vao = vao; }
 	void setVbo(GLuint vbo) { this->vbo = vbo; }
 
-
+	void setTexture(GLuint toggle, GLuint texture)
+	{
+		if (toggle == 1)
+		{
+			glBindTexture(GL_TEXTURE_2D, texture);
+		}
+	}
 	void updatePosition(vec3 moveVector);
 	void updateScaling(float value) { this->scaling += value; }
 
@@ -40,7 +47,7 @@ public:
 
 	void updateRotationY(float yValue) { this->rotation.y += yValue; }
 
-	virtual void draw(mat4 model);
+	virtual void draw(mat4 model, GLuint textureArray[]);
 	//virtual void drawLetter(mat4 worldRotationUpdate);
 	//virtual void drawDigit(mat4 worldRotationUpdate);
 protected:
@@ -53,6 +60,7 @@ protected:
 	vec3 rotation;
 
 	GLenum renderMode;
+
 	unsigned int vao;
 	unsigned int vbo;
 	int shaderProgram;

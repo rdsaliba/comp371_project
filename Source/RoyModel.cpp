@@ -4,12 +4,15 @@ using namespace ModelUtilities;
 
 RoyModel::~RoyModel() { Model::~Model(); }
 
-void RoyModel::draw(mat4 worldRotationUpdate) {
-	this->drawLetter(worldRotationUpdate);
-	this->drawDigit(worldRotationUpdate);
+void RoyModel::draw(mat4 worldRotationUpdate, GLuint textureArray[]) {
+	this->drawLetter(worldRotationUpdate, textureArray[0], textureArray[1]);
+	this->drawDigit(worldRotationUpdate, textureArray[0], textureArray[2]);
 }
 
-void RoyModel::drawLetter(mat4 worldRotationUpdate) {
+void RoyModel::drawLetter(mat4 worldRotationUpdate, GLuint toggle, GLuint texture) {
+
+	setTexture(toggle, texture);
+
 	//base
 	mat4 component = createComponent(ComponentSize::SHORT, ComponentOrientation::VERTICAL);
 	vec3 componentPosition = getComponentPosition(component, ComponentType::BOTTOM, ComponentSize::SHORT, ModelType::LETTER, ComponentOrientation::VERTICAL);
@@ -25,7 +28,10 @@ void RoyModel::drawLetter(mat4 worldRotationUpdate) {
 	this->drawPart(worldRotationUpdate, component, componentPosition);
 }
 
-void RoyModel::drawDigit(mat4 worldRotationUpdate) {
+void RoyModel::drawDigit(mat4 worldRotationUpdate, GLuint toggle, GLuint texture) {
+
+	setTexture(toggle, texture);
+
 	//Bottom
 	mat4 component = createComponent(ComponentSize::SHORT, ComponentOrientation::HORIZONTAL);
 	vec3 componentPosition = getComponentPosition(component, ComponentType::BOTTOM, ComponentSize::SHORT, ModelType::DIGIT, ComponentOrientation::HORIZONTAL);

@@ -40,6 +40,7 @@ ESC: close window
 
 H: home button
 
+X: texture toggle
 
 ### Model Controls:
 
@@ -47,17 +48,17 @@ U: scale up
 
 J: scale down
 
-A: move left
+shift_A: move left
 
-D: move right
+shift_D: move right
 
-W: move up
+shift_W: move up
 
-S: move down
+shift_S: move down
 
-z: rotate left 5 degrees about Y axis
+A: rotate left 5 degrees about Y axis
 
-x: rotate right 5 degrees about Y axis
+D: rotate right 5 degrees about Y axis
 
 
 P: points rendering mode

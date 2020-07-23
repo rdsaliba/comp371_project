@@ -41,7 +41,7 @@ void Model::updatePosition(vec3 moveVector) {
 	this->position.z += moveVector.z;
 }
 
-void Model::draw(mat4 worldRotationUpdate) {}
+void Model::draw(mat4 worldRotationUpdate, GLuint textureArray[]) {}
 
 void Model::drawPart(mat4 worldRotationUpdate,mat4 part, vec3 componentPosition) {
 	glBindVertexArray(this->vao);
@@ -56,3 +56,4 @@ void Model::drawPart(mat4 worldRotationUpdate,mat4 part, vec3 componentPosition)
 	glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &modelPart[0][0]);
 	glDrawArrays(this->renderMode, 0, 36);
 }
+

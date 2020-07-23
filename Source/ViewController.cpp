@@ -5,6 +5,8 @@ ViewController::ViewController() {
 	this->height = 768;
     this->projection_matrix = mat4(1.0f);
 	this->shaderProgram = -1;
+    this->shaderArray[0] = -1;
+    this->shaderArray[1] = -1;
 
 	this->fastCam = false;
 	this->cameraSpeed = 1.0f;
@@ -25,11 +27,13 @@ ViewController::ViewController() {
     this->viewMatrix = mat4(1.0f);
 }
 
-ViewController::ViewController(GLFWwindow* window, int width, int height, int shaderProgram) {
+ViewController::ViewController(GLFWwindow* window, int width, int height, int shaderProgram, int shaderArray[]) {
 	this->window = window;
 	this->width = width;
 	this->height = height;
 	this->shaderProgram = shaderProgram;
+    this->shaderArray[0] = shaderArray[0];
+    this->shaderArray[1] = shaderArray[1];
     this->projection_matrix = mat4(1.0f);
 	
     this->fastCam = false;
@@ -70,19 +74,20 @@ void ViewController::initCamera() {
 
     // Set initial view matrix
     viewMatrix = lookAt(cameraPosition, cameraLookAt, cameraUp);
-    setViewMatrix();
+    setViewMatrix(shaderArray[0]);
+    setViewMatrix(shaderArray[1]);
 }
 
-void ViewController::setViewMatrix(){
-	glUseProgram(shaderProgram);
-	GLuint viewMatrixLocation = glGetUniformLocation(shaderProgram, "viewMatrix");
+void ViewController::setViewMatrix(int shaderType){
+	glUseProgram(shaderType);
+	GLuint viewMatrixLocation = glGetUniformLocation(shaderType, "viewMatrix");
 	glUniformMatrix4fv(viewMatrixLocation, 1, GL_FALSE, &viewMatrix[0][0]);
 }
 
 /// <summary>
 /// Update View/camera according to user inputs
 /// </summary>
-void ViewController::update() {
+void ViewController::update(int shaderType) {
 	float currentCameraSpeed = (fastCam) ? cameraFastSpeed : cameraSpeed;
 
     // - Calculate mouse motion dx and dy
@@ -161,5 +166,5 @@ void ViewController::update() {
         vec3 eyeVertical(0.0f, 0.0f, cameraVerticalAngle);
         viewMatrix = lookAt(cameraPosition + eyeVertical, cameraLookAt, cameraUp);
     }
-    setViewMatrix();
+    setViewMatrix(shaderType);
 }
