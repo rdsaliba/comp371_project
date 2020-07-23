@@ -8,7 +8,6 @@ Model::Model() {
 	this->shaderProgram = -1;
 	this->vao = -1;
 	this->vbo = -1;
-	this->toggle = 0;
 }
 
 Model::Model(vec3 position, float scaling) {
@@ -19,7 +18,6 @@ Model::Model(vec3 position, float scaling) {
 	this->shaderProgram = -1;
 	this->vao = -1;
 	this->vbo = -1;
-	this->toggle = 0;
 }
 
 Model::Model(const Model& model) {
@@ -30,7 +28,6 @@ Model::Model(const Model& model) {
 	this->shaderProgram = model.shaderProgram;
 	this->vao = model.vao;
 	this->vbo = model.vbo;
-	this->toggle = model.toggle;
 }
 
 Model::~Model() {
@@ -44,7 +41,7 @@ void Model::updatePosition(vec3 moveVector) {
 	this->position.z += moveVector.z;
 }
 
-void Model::draw(mat4 worldRotationUpdate) {}
+void Model::draw(mat4 worldRotationUpdate, GLuint textureArray[]) {}
 
 void Model::drawPart(mat4 worldRotationUpdate,mat4 part, vec3 componentPosition) {
 	glBindVertexArray(this->vao);

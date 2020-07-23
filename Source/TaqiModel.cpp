@@ -13,9 +13,6 @@ void TaqiModel::draw(mat4 worldRotationUpdate, GLuint textureArray[]) {
 
 void TaqiModel::drawLetter(mat4 worldRotationUpdate, GLuint toggle, GLuint texture) {
 
-	//std::cerr << getToggle();
-	//toggleTexture(texture);
-	//std::cerr << texture[0];
 	setTexture(toggle, texture);
 
 	mat4 component = createComponent(ComponentSize::SHORT, ComponentOrientation::HORIZONTAL);
@@ -43,12 +40,10 @@ void TaqiModel::drawLetter(mat4 worldRotationUpdate, GLuint toggle, GLuint textu
 	component = createComponent(ComponentSize::SHORT, ComponentOrientation::ANGLED_RIGHT);
 	componentPosition = getComponentPosition(component, ComponentType::BOTTOM_RIGHT, ComponentSize::SHORT, ModelType::LETTER, ComponentOrientation::ANGLED_RIGHT);
 	this->drawPart(worldRotationUpdate, component, componentPosition);
-	//glBindTexture(GL_TEXTURE_2D, 0);
 }
 
 void TaqiModel::drawDigit(mat4 worldRotationUpdate, GLuint toggle, GLuint texture) {
 
-	//toggleTexture(texture);
 	setTexture(toggle, texture);
 
 	//Right side of 4
@@ -66,5 +61,4 @@ void TaqiModel::drawDigit(mat4 worldRotationUpdate, GLuint toggle, GLuint textur
 	componentPosition = getComponentPosition(component, ComponentType::TOP_LEFT, ComponentSize::SHORT, ModelType::DIGIT, ComponentOrientation::VERTICAL);
 	this->drawPart(worldRotationUpdate, component, componentPosition);
 
-	//glBindTexture(GL_TEXTURE_2D, 0);
 }

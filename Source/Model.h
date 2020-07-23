@@ -21,7 +21,6 @@ public:
 	vec3 getRotation() { return rotation; }
 	GLenum getRenderMode() { return renderMode; }
 	int getShaderProgram() { return shaderProgram; }
-	int getToggle() { return toggle; }
 
 	void setPosition(vec3 position) { this->position = position; }
 	void setSize(float scaling) { this->scaling = scaling; }
@@ -30,8 +29,6 @@ public:
 	void setShaderProgram(int shaderProgram) { this->shaderProgram = shaderProgram; }
 	void setVao(GLuint vao) { this->vao = vao; }
 	void setVbo(GLuint vbo) { this->vbo = vbo; }
-	void setToggle(int toggleMode) { this->toggle = toggleMode; }
-	
 
 	void setTexture(GLuint toggle, GLuint texture)
 	{
@@ -50,7 +47,7 @@ public:
 
 	void updateRotationY(float yValue) { this->rotation.y += yValue; }
 
-	virtual void draw(mat4 model);
+	virtual void draw(mat4 model, GLuint textureArray[]);
 	//virtual void drawLetter(mat4 worldRotationUpdate);
 	//virtual void drawDigit(mat4 worldRotationUpdate);
 protected:
@@ -63,7 +60,6 @@ protected:
 	vec3 rotation;
 
 	GLenum renderMode;
-	int toggle;
 
 	unsigned int vao;
 	unsigned int vbo;

@@ -10,8 +10,7 @@ void SwetangModel::draw(mat4 worldRotationUpdate, GLuint textureArray[]) {
 }
 
 void SwetangModel::drawLetter(mat4 worldRotationUpdate, GLuint toggle, GLuint texture) {
-	//glBindTexture(GL_TEXTURE_2D, 0);
-	//toggleTexture(texture);
+
 	setTexture(toggle, texture);
 
 	//Bottom
@@ -34,12 +33,10 @@ void SwetangModel::drawLetter(mat4 worldRotationUpdate, GLuint toggle, GLuint te
 	componentPosition = getComponentPosition(component, ComponentType::CENTER, ComponentSize::MED, ModelType::LETTER, ComponentOrientation::HORIZONTAL);
 	this->drawPart(worldRotationUpdate, component, componentPosition);
 
-	//glBindTexture(GL_TEXTURE_2D, 0);
 }
 
 void SwetangModel::drawDigit(mat4 worldRotationUpdate, GLuint toggle, GLuint texture) {
-	//glBindTexture(GL_TEXTURE_2D, 0);
-	//toggleTexture(texture);
+
 	setTexture(toggle, texture);
 
 	//Bottom
@@ -62,5 +59,4 @@ void SwetangModel::drawDigit(mat4 worldRotationUpdate, GLuint toggle, GLuint tex
 	componentPosition = getComponentPosition(component, ComponentType::RIGHT, ComponentSize::LONG, ModelType::DIGIT, ComponentOrientation::VERTICAL);
 	this->drawPart(worldRotationUpdate, component, componentPosition);
 
-	glBindTexture(GL_TEXTURE_2D, 0);
 }

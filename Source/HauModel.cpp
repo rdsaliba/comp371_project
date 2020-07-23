@@ -12,6 +12,7 @@ void HauModel::draw(mat4 worldRotationUpdate, GLuint textureArray[]) {
 void HauModel::drawLetter(mat4 worldRotationUpdate, GLuint toggle, GLuint texture) {
 
 	setTexture(toggle, texture);
+
 	//Bottom
 	mat4 component = createComponent(ComponentSize::SHORT, ComponentOrientation::HORIZONTAL);
 	vec3 componentPosition = getComponentPosition(component, ComponentType::BOTTOM, ComponentSize::SHORT, ModelType::LETTER, ComponentOrientation::HORIZONTAL);
@@ -31,6 +32,7 @@ void HauModel::drawLetter(mat4 worldRotationUpdate, GLuint toggle, GLuint textur
 void HauModel::drawDigit(mat4 worldRotationUpdate, GLuint toggle, GLuint texture){
 
 	setTexture(toggle, texture);
+
 	//Bottom
 	mat4 component = createComponent(ComponentSize::SHORT, ComponentOrientation::HORIZONTAL);
 	vec3 componentPosition = getComponentPosition(component, ComponentType::BOTTOM, ComponentSize::SHORT, ModelType::DIGIT, ComponentOrientation::HORIZONTAL);

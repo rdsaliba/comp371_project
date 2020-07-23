@@ -50,7 +50,7 @@ Model models[] = {
 
 GLuint toggle = 0; //0 = off, 1 = on
 GLuint textureArray[4] = {}; //Contains toggle (on/off), box texture, metal texture, and tiled texture
-int shaderType;
+int shaderType; //Color or texture
 
 //Default
 const glm::vec3 eye(0.0f, 7.0f, 20.0f);
@@ -289,87 +289,16 @@ const TexturedColoredVertex texturedCubeVertexArray[] = {  // position, color, U
     TexturedColoredVertex(vec3(-0.5f, 0.5f, 0.5f), vec3(1.0f, 1.0f, 0.0f), vec2(0.0f, 1.0f))
 };
 
+//Square plane
+const TexturedColoredVertex texturedGroundVertexArray[] = {  // position, color, UV coordinates
 
-vec3 cubeVertexArray[] = {  
-    // position,                   color
-    vec3(-0.5f,-0.5f,-0.5f), vec3(1.0f, 0.0f, 0.0f), //left - red
-    vec3(-0.5f,-0.5f, 0.5f), vec3(1.0f, 0.0f, 0.0f),
-    vec3(-0.5f, 0.5f, 0.5f), vec3(1.0f, 0.0f, 0.0f),
+    TexturedColoredVertex(vec3(0.0f, 0.0f, -1.0f), vec3(0.0f, 1.0f, 0.0f), vec2(1.0f, 1.0f)), // top - yellow
+    TexturedColoredVertex(vec3(-1.0f, 0.0f,-1.0f), vec3(0.0f, 1.0f, 0.0f), vec2(1.0f, 0.0f)),
+    TexturedColoredVertex(vec3(0.0f, 0.0f, 0.0f), vec3(0.0f, 1.0f, 0.0f), vec2(0.0f, 0.0f)),
 
-    vec3(-0.5f,-0.5f,-0.5f), vec3(1.0f, 0.0f, 0.0f),
-    vec3(-0.5f, 0.5f, 0.5f), vec3(1.0f, 0.0f, 0.0f),
-    vec3(-0.5f, 0.5f,-0.5f), vec3(1.0f, 0.0f, 0.0f),
-
-    vec3(0.5f, 0.5f,-0.5f), vec3(0.0f, 0.0f, 1.0f), // far - blue
-    vec3(-0.5f,-0.5f,-0.5f), vec3(0.0f, 0.0f, 1.0f),
-    vec3(-0.5f, 0.5f,-0.5f), vec3(0.0f, 0.0f, 1.0f),
-
-    vec3(0.5f, 0.5f,-0.5f), vec3(0.0f, 0.0f, 1.0f),
-    vec3(0.5f,-0.5f,-0.5f), vec3(0.0f, 0.0f, 1.0f),
-    vec3(-0.5f,-0.5f,-0.5f), vec3(0.0f, 0.0f, 1.0f),
-
-    vec3(0.5f,-0.5f, 0.5f), vec3(0.0f, 1.0f, 1.0f), // bottom - turquoise
-    vec3(-0.5f,-0.5f,-0.5f), vec3(0.0f, 1.0f, 1.0f),
-    vec3(0.5f,-0.5f,-0.5f), vec3(0.0f, 1.0f, 1.0f),
-
-    vec3(0.5f,-0.5f, 0.5f), vec3(0.0f, 1.0f, 1.0f),
-    vec3(-0.5f,-0.5f, 0.5f), vec3(0.0f, 1.0f, 1.0f),
-    vec3(-0.5f,-0.5f,-0.5f), vec3(0.0f, 1.0f, 1.0f),
-
-    vec3(-0.5f, 0.5f, 0.5f), vec3(0.0f, 1.0f, 0.0f), // near - green
-    vec3(-0.5f,-0.5f, 0.5f), vec3(0.0f, 1.0f, 0.0f),
-    vec3(0.5f,-0.5f, 0.5f), vec3(0.0f, 1.0f, 0.0f),
-
-    vec3(0.5f, 0.5f, 0.5f), vec3(0.0f, 1.0f, 0.0f),
-    vec3(-0.5f, 0.5f, 0.5f), vec3(0.0f, 1.0f, 0.0f),
-    vec3(0.5f,-0.5f, 0.5f), vec3(0.0f, 1.0f, 0.0f),
-
-    vec3(0.5f, 0.5f, 0.5f), vec3(1.0f, 0.0f, 1.0f), // right - purple
-    vec3(0.5f,-0.5f,-0.5f), vec3(1.0f, 0.0f, 1.0f),
-    vec3(0.5f, 0.5f,-0.5f), vec3(1.0f, 0.0f, 1.0f),
-
-    vec3(0.5f,-0.5f,-0.5f), vec3(1.0f, 0.0f, 1.0f),
-    vec3(0.5f, 0.5f, 0.5f), vec3(1.0f, 0.0f, 1.0f),
-    vec3(0.5f,-0.5f, 0.5f), vec3(1.0f, 0.0f, 1.0f),
-
-    vec3(0.5f, 0.5f, 0.5f), vec3(1.0f, 1.0f, 0.0f), // top - yellow
-    vec3(0.5f, 0.5f,-0.5f), vec3(1.0f, 1.0f, 0.0f),
-    vec3(-0.5f, 0.5f,-0.5f), vec3(1.0f, 1.0f, 0.0f),
-
-    vec3(0.5f, 0.5f, 0.5f), vec3(1.0f, 1.0f, 0.0f),
-    vec3(-0.5f, 0.5f,-0.5f), vec3(1.0f, 1.0f, 0.0f),
-    vec3(-0.5f, 0.5f, 0.5f), vec3(1.0f, 1.0f, 0.0f)
-};
-
-vec3 triangle_strip[] = {
-        //glm::vec3(0.0f,  0.5f, 0.0f),  
-        //glm::vec3(1.0f,  0.0f, 0.0f),  
-        //glm::vec3(0.0f, -0.5f, 0.0f), 
-        //glm::vec3(0.0f,  1.0f, 0.0f),  
-        //glm::vec3(-0.5f, -0.5f, 0.0f),  
-        //glm::vec3(0.0f,  0.0f, 1.0f),  
-        ////glm::vec3(0.0f,  0.5f, 0.0f), 
-        ////glm::vec3(1.0f,  0.0f, 0.0f)  
-
-    vec3(0.5f, 0.0f, 0.5f), vec3(1.0f, 1.0f, 0.0f), 
-    vec3(0.5f, 0.0f,-0.5f), vec3(1.0f, 1.0f, 0.0f),
-    vec3(-0.5f, 0.0f,-0.5f), vec3(1.0f, 1.0f, 0.0f),
-
-    vec3(0.5f, 0.0f, 0.5f), vec3(1.0f, 1.0f, 0.0f),
-    vec3(-0.5f, 0.0f,-0.5f), vec3(1.0f, 1.0f, 0.0f),
-    vec3(-0.5f, 0.0f, 0.5f), vec3(1.0f, 1.0f, 0.0f)
-
-};
-
-const TexturedColoredVertex texturedTriangleVertexArray[] = {  // position, color, UV coordinates
-
-    TexturedColoredVertex(vec3(0.0f, 0.0f, -1.0f), vec3(1.0f, 1.0f, 0.0f), vec2(1.0f, 1.0f)), // top - yellow
-    TexturedColoredVertex(vec3(-1.0f, 0.0f,-1.0f), vec3(1.0f, 1.0f, 0.0f), vec2(1.0f, 0.0f)),
-    TexturedColoredVertex(vec3(0.0f, 0.0f, 0.0f), vec3(1.0f, 1.0f, 0.0f), vec2(0.0f, 0.0f)),
-
-    TexturedColoredVertex(vec3(0.0f, 0.0f, 0.0f), vec3(1.0f, 1.0f, 0.0f), vec2(1.0f, 1.0f)),
-    TexturedColoredVertex(vec3(-1.0f, 0.0f,-1.0f), vec3(1.0f, 1.0f, 0.0f), vec2(0.0f, 0.0f)),
-    TexturedColoredVertex(vec3(-1.0f, 0.0f, 0.0f), vec3(1.0f, 1.0f, 0.0f), vec2(0.0f, 1.0f))
+    TexturedColoredVertex(vec3(0.0f, 0.0f, 0.0f), vec3(0.0f, 1.0f, 0.0f), vec2(1.0f, 1.0f)),
+    TexturedColoredVertex(vec3(-1.0f, 0.0f,-1.0f), vec3(0.0f, 1.0f, 0.0f), vec2(0.0f, 0.0f)),
+    TexturedColoredVertex(vec3(-1.0f, 0.0f, 0.0f), vec3(0.0f, 1.0f, 0.0f), vec2(0.0f, 1.0f))
 };
 
 vec3 gridVertexArray[] = {
@@ -430,27 +359,11 @@ vec3 zAxisVertexArray[] = {
 /// <param name="zDisplacement"></param>
 void drawGridSquare(GLuint worldMatrixLocation, float xDisplacement, float yDisplacement, float zDisplacement, float gridUnit, mat4 worldRotationUpdate, GLuint textureArray[]) {
 
-    if (textureArray[0] == 1)
-    {
-        glBindTexture(GL_TEXTURE_2D, textureArray[3]);
-    }
-
     glm::mat4 translationMatrix = worldRotationUpdate * glm::translate(glm::mat4(1.0f), glm::vec3(xDisplacement, yDisplacement, zDisplacement)); 
     glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &translationMatrix[0][0]);
     glDrawArrays(GL_LINE_LOOP, 0, 4);
 }
 
-void drawTextureGridSquare(GLuint worldMatrixLocation, float xDisplacement, float yDisplacement, float zDisplacement, float gridUnit, mat4 worldRotationUpdate, GLuint textureArray[]) {
-
-    //if (textureArray[0] == 1)
-    //{
-    //    glBindTexture(GL_TEXTURE_2D, textureArray[3]);
-    //}
-
-    glm::mat4 translationMatrix = worldRotationUpdate * glm::translate(glm::mat4(1.0f), glm::vec3(xDisplacement, yDisplacement, zDisplacement));
-    glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &translationMatrix[0][0]);
-    glDrawArrays(GL_LINE_LOOP, 0, 4);
-}
 
 /// <summary>
 /// Generates ground grid
@@ -459,12 +372,10 @@ void drawTextureGridSquare(GLuint worldMatrixLocation, float xDisplacement, floa
 /// <param name="pointDisplacementUnit">Length of vertex</param>
 void drawGroundGrid(int shader, GLuint vao[], float pointDisplacementUnit, mat4 worldRotationUpdate, GLuint textureArray[]) {    
 
-
-
-    
     mat4 worldMatrix = worldRotationUpdate * mat4(1.0f);
     GLuint worldMatrixLocation = glGetUniformLocation(shader, "worldMatrix");
 
+    //Ground without texture
     if (textureArray[0] == 0)
     {
         glBindVertexArray(vao[0]);
@@ -474,58 +385,25 @@ void drawGroundGrid(int shader, GLuint vao[], float pointDisplacementUnit, mat4 
             }
         }
     }
-    //glBindVertexArray(vao[5]);
-    //glm::mat4 translationMatrix = worldRotationUpdate * glm::translate(glm::mat4(1.0f), glm::vec3(0, 0, 0));
-    //glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &translationMatrix[0][0]);
-    //glDrawArrays(GL_TRIANGLES, 0, 6);
 
-
+    //Ground with texture
     else if (textureArray[0] == 1)
     {
         glBindTexture(GL_TEXTURE_2D, textureArray[3]);
 
         glBindVertexArray(vao[5]);
 
-    for (int row = -49; row < 51; row++) {
-        for (int col = -49; col < 51; col++) {
-        glm::mat4 translationMatrix = worldRotationUpdate * glm::translate(glm::mat4(1.0f), glm::vec3(row, 0, col));
-        glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &translationMatrix[0][0]);
-        glDrawArrays(GL_TRIANGLES, 0, 6);
+        for (int row = -49; row < 51; row++) 
+        {
+            for (int col = -49; col < 51; col++) 
+            {
+                glm::mat4 translationMatrix = worldRotationUpdate * glm::translate(glm::mat4(1.0f), glm::vec3(row, 0, col));
+                glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &translationMatrix[0][0]);
+                glDrawArrays(GL_TRIANGLES, 0, 6);
+            }
         }
     }
-    }
-
-
 }
-
-/// <summary>
-/// Draws Axis lines centered at the origin
-/// </summary>
-/// <param name="shader"></param>
-/// <param name="vao"></param>
-/// <param name="gridUnit"></param>
-void drawAxisLines(int shader, GLuint vao[], float gridUnit, mat4 worldRotationUpdate) {
-    glBindVertexArray(vao[1]);
-    mat4 axisMatrix = worldRotationUpdate * mat4(1.0f);
-
-    GLuint worldMatrixLocation = glGetUniformLocation(shader, "worldMatrix");
-    //X-axis
-    glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &axisMatrix[0][0]);
-    glDrawArrays(GL_LINES, 0, 2);
-
-    //Y-axis
-    glBindVertexArray(vao[2]);
-    axisMatrix = worldRotationUpdate * glm::mat4(1.0f);
-    glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &axisMatrix[0][0]);
-    glDrawArrays(GL_LINES, 0, 2);
-
-    //Z-axis
-    glBindVertexArray(vao[3]);
-    axisMatrix = worldRotationUpdate * glm::mat4(1.0f);
-    glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &axisMatrix[0][0]);
-    glDrawArrays(GL_LINES, 0, 2);
-}
-
 
 /// <summary>
 /// Draws Hau's model (U6)
@@ -566,7 +444,6 @@ void drawTaqiModel(int shaderProgram, GLuint vao[], mat4 worldRotationUpdate, GL
     taqi.setVao(vao[4]);
     taqi.setRotation(model.getRotation());
     taqi.setRenderMode(model.getRenderMode());
-    taqi.setToggle(model.getToggle());
     taqi.draw(worldRotationUpdate, textureArray);
 }
 
@@ -700,23 +577,13 @@ void updateInput(GLFWwindow* window, float dt, vec3& worldRotation, int shaderAr
 
     //Texture toggle
     if (glfwGetKey(window, GLFW_KEY_N) == GLFW_PRESS)
-    {
-        //if (focusedModel->getToggle() == 0)
-        //{
-        //    focusedModel->setToggle(1);
-        //}
-        //else if (focusedModel->getToggle() == 1)
-        //{
-        //    focusedModel->setToggle(0);
-        //    //glDisable(GL_TEXTURE_2D);
-        //}
-
-        
+    {    
         if (toggle == 0)
         {
-            toggle = 1;
-            textureArray[0] = toggle;
-            shaderType = shaderArray[1];
+            toggle = 1; //Texture is on
+            textureArray[0] = toggle; 
+
+            shaderType = shaderArray[1]; //Shader for texture
             glUseProgram(shaderType);
             glActiveTexture(GL_TEXTURE0);
             GLuint textureLocation = glGetUniformLocation(shaderType, "textureSampler");
@@ -724,11 +591,10 @@ void updateInput(GLFWwindow* window, float dt, vec3& worldRotation, int shaderAr
         }
         else if (toggle == 1)
         {
-            toggle = 0;
+            toggle = 0; //Texture is off
             textureArray[0] = toggle;
-            shaderType = shaderArray[0];
+            shaderType = shaderArray[0]; //Shader for color
         }
-
     }
 }
 
@@ -806,11 +672,9 @@ int main(int argc, char* argv[])
 
     // Compile and link shaders here ...
     int shaderProgram = compileAndLinkShaders(getVertexShaderSource(), getFragmentShaderSource());
-    //glUseProgram(shaderProgram);
     int texturedShaderProgram = compileAndLinkShaders(getTexturedVertexShaderSource(), getTexturedFragmentShaderSource());
     int shaderArray[2] = { shaderProgram, texturedShaderProgram };
-    shaderType = shaderArray[0];
-    //glUseProgram(shaderType); //draw textured geometry
+    shaderType = shaderArray[0]; //Initial shader is the one with color, without texture
 
 
     // Camera parameters for view transform
@@ -839,15 +703,11 @@ int main(int argc, char* argv[])
     setProjectionMatrix(shaderArray[0], projectionMatrix);
     setProjectionMatrix(shaderArray[1], projectionMatrix);
 
-    //const int geometryCount = 5; //number of models to load
     const int geometryCount = 6; //number of models to load
     GLuint vaoArray[geometryCount], vboArray[geometryCount];
     glGenVertexArrays(geometryCount, &vaoArray[0]);
     glGenBuffers(geometryCount, &vboArray[0]);
 
-    // Define and upload geometry for all our models to the GPU
-    Axis axis = Axis(0.0f, gridUnit, vaoArray, vboArray);
-    axis.bindAxis();
 
     //Ground Grid
     glBindVertexArray(vaoArray[0]);
@@ -859,36 +719,9 @@ int main(int argc, char* argv[])
     glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 2 * sizeof(glm::vec3), (void*)sizeof(glm::vec3));
     glEnableVertexAttribArray(1);
 
-    //Axis lines
-    //X
-    glBindVertexArray(vaoArray[1]);
-    glBindBuffer(GL_ARRAY_BUFFER, vboArray[1]);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(xAxisVertexArray), xAxisVertexArray, GL_STATIC_DRAW);
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 2 * sizeof(glm::vec3), (void*)0);
-    glEnableVertexAttribArray(0);
-
-    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 2 * sizeof(glm::vec3), (void*)sizeof(glm::vec3));
-    glEnableVertexAttribArray(1);
-
-    //Y
-    glBindVertexArray(vaoArray[2]);
-    glBindBuffer(GL_ARRAY_BUFFER, vboArray[2]);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(yAxisVertexArray), yAxisVertexArray, GL_STATIC_DRAW);
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 2 * sizeof(glm::vec3), (void*)0);
-    glEnableVertexAttribArray(0);
-
-    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 2 * sizeof(glm::vec3), (void*)sizeof(glm::vec3));
-    glEnableVertexAttribArray(1);
-
-    //Z
-    glBindVertexArray(vaoArray[3]);
-    glBindBuffer(GL_ARRAY_BUFFER, vboArray[3]);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(zAxisVertexArray), zAxisVertexArray, GL_STATIC_DRAW);
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 2 * sizeof(glm::vec3), (void*)0);
-    glEnableVertexAttribArray(0);
-
-    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 2 * sizeof(glm::vec3), (void*)sizeof(glm::vec3));
-    glEnableVertexAttribArray(1);
+    // Define and upload geometry for all our models to the GPU
+    Axis axis = Axis(0.0f, gridUnit, vaoArray, vboArray);
+    axis.bindAxis(); //Vao 1, 2, 3
 
     //Cube (for individual models)
     glBindVertexArray(vaoArray[4]);
@@ -909,19 +742,10 @@ int main(int argc, char* argv[])
     models[4].setVbo(vboArray[4]);
     models[5].setVbo(vboArray[4]);
 
-    //Ground Grid
-    //glBindVertexArray(vaoArray[5]);
-    //glBindBuffer(GL_ARRAY_BUFFER, vboArray[5]);
-    //glBufferData(GL_ARRAY_BUFFER, sizeof(triangle_strip), triangle_strip, GL_STATIC_DRAW);
-    //glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 2 * sizeof(glm::vec3), (void*)0);
-    //glEnableVertexAttribArray(0);
-
-    //glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 2 * sizeof(glm::vec3), (void*)sizeof(glm::vec3));
-    //glEnableVertexAttribArray(1);
-
+    //Ground textured Grid
     glBindVertexArray(vaoArray[5]);
     glBindBuffer(GL_ARRAY_BUFFER, vboArray[5]);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(texturedTriangleVertexArray), texturedTriangleVertexArray, GL_STATIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(texturedGroundVertexArray), texturedGroundVertexArray, GL_STATIC_DRAW);
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(TexturedColoredVertex), (void*)0);
     glEnableVertexAttribArray(0);
 
@@ -971,36 +795,15 @@ int main(int argc, char* argv[])
         // Each frame, reset color of each pixel to glClearColor
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-        //draw textured geometry
-        //glUseProgram(texturedShaderProgram); 
-
-        //glUseProgram(shaderArray[0]);
         axis.drawAxisLines(shaderType, vaoArray, gridUnit, worldRotationUpdate);
-        //axis.drawAxisLines(shaderProgram, vaoArray, gridUnit, worldRotationUpdate);
-
-        //glUseProgram(texturedShaderProgram);
-        //glUseProgram(shaderType);
-        //glActiveTexture(GL_TEXTURE0);
-        //GLuint textureLocation = glGetUniformLocation(texturedShaderProgram, "textureSampler");
-        //glUniform1i(textureLocation, 0);  // Set our Texture sampler to user Texture Unit 0
-        
         drawGroundGrid(shaderType, vaoArray, gridUnit, worldRotationUpdate, textureArray);
 
-        // Draw ground
-        //mat4 groundWorldMatrix = translate(mat4(1.0f), vec3(0.0f, -0.01f, 0.0f)) * scale(mat4(1.0f), vec3(1000.0f, 0.02f, 1000.0f));
-        //setWorldMatrix(shaderType, groundWorldMatrix);
-
-        //glDrawArrays(GL_TRIANGLES, 0, 36); // 36 vertices, starting at index 0
-
         //MODELS
-        //glBindTexture(GL_TEXTURE_2D, brickTextureID);
         drawTaqiModel(shaderType, vaoArray, worldRotationUpdate, textureArray);
-        //glBindTexture(GL_TEXTURE_2D, cementTextureID);
         drawHauModel(shaderType, vaoArray, worldRotationUpdate, textureArray);
         drawRoyModel(shaderType, vaoArray, worldRotationUpdate, textureArray);
         drawSwetangModel(shaderType, vaoArray, worldRotationUpdate, textureArray);
         drawWilliamModel(shaderType, vaoArray, worldRotationUpdate, textureArray);
-
 
         //FPS camera
         bool fastCam = glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS || glfwGetKey(window, GLFW_KEY_RIGHT_SHIFT) == GLFW_PRESS; //Press shift to go faster
@@ -1103,6 +906,7 @@ int main(int argc, char* argv[])
     return 0;
 }
 
+//Load the texture
 GLuint loadTexture(const char* filename)
 {
     // Step1 Create and bind textures
