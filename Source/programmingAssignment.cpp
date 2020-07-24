@@ -737,18 +737,10 @@ int main(int argc, char* argv[])
     // Black background
     glClearColor(0.1f, 0.2f, 0.2f, 1.0f);
 
-    
-
-
     const int geometryCount = 5; //number of models to load
     GLuint vaoArray[geometryCount], vboArray[geometryCount];
     glGenVertexArrays(geometryCount, &vaoArray[0]);
     glGenBuffers(geometryCount, &vboArray[0]);
-
-    
-    // Define and upload geometry for all our models to the GPU
-    Axis axis = Axis(0.0f, gridUnit, vaoArray, vboArray);
-    axis.bindAxis();
 
     //Ground Grid
     glBindVertexArray(vaoArray[0]);
@@ -763,38 +755,9 @@ int main(int argc, char* argv[])
     glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(glm::vec3), (void*)sizeof(glm::vec3));
     glEnableVertexAttribArray(2);
 
-
-
-    //Axis lines
-    //X
-    glBindVertexArray(vaoArray[1]);
-    glBindBuffer(GL_ARRAY_BUFFER, vboArray[1]);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(xAxisVertexArray), xAxisVertexArray, GL_STATIC_DRAW);
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 2 * sizeof(glm::vec3), (void*)0);
-    glEnableVertexAttribArray(0);
-
-    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 2 * sizeof(glm::vec3), (void*)sizeof(glm::vec3));
-    glEnableVertexAttribArray(1);
-
-    //Y
-    glBindVertexArray(vaoArray[2]);
-    glBindBuffer(GL_ARRAY_BUFFER, vboArray[2]);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(yAxisVertexArray), yAxisVertexArray, GL_STATIC_DRAW);
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 2 * sizeof(glm::vec3), (void*)0);
-    glEnableVertexAttribArray(0);
-
-    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 2 * sizeof(glm::vec3), (void*)sizeof(glm::vec3));
-    glEnableVertexAttribArray(1);
-
-    //Z
-    glBindVertexArray(vaoArray[3]);
-    glBindBuffer(GL_ARRAY_BUFFER, vboArray[3]);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(zAxisVertexArray), zAxisVertexArray, GL_STATIC_DRAW);
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 2 * sizeof(glm::vec3), (void*)0);
-    glEnableVertexAttribArray(0);
-
-    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 2 * sizeof(glm::vec3), (void*)sizeof(glm::vec3));
-    glEnableVertexAttribArray(1);
+    // Define and upload geometry for all our models to the GPU
+    Axis axis = Axis(0.0f, gridUnit, vaoArray, vboArray);
+    axis.bindAxis();
 
     //Cube (for individual models)
     glBindVertexArray(vaoArray[4]);
