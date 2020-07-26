@@ -16,7 +16,6 @@ public:
 	Model(vec3 position, float size);
 	Model(const Model& model);
 	~Model();
-	//Mesh mesh;
 
 	vec3 getPosition() { return position; }
 	float getScaling() { return scaling; }
@@ -62,7 +61,6 @@ protected:
 	vec3 rotation;
 
 	GLenum renderMode;
-
 	unsigned int vao;
 	unsigned int vbo;
 	int shaderProgram;

@@ -5,7 +5,6 @@
 #define GLFW_MOUSE_PRESS_BUTTON_RIGHT GLFW_MOUSE_BUTTON_2
 #define GLFW_MOUSE_PRESS_BUTTON_LEFT GLFW_MOUSE_BUTTON_1
 #define GLFW_MOUSE_BUTTON_1
-
 #define GLFW_MOUSE_BUTTON_2
 #pragma comment (lib,"glew32s.lib")
 #define GLEW_STATIC // This allows linking with Static Library on Windows, without DLL
@@ -35,7 +34,6 @@ glm::mat4 projection_matrix;
 
 float gridUnit = 1.0f;
 int SELECTEDMODELINDEX = 1;
-Model* focusedModel = NULL;
 ViewController* viewController = NULL;
 ModelController* modelController = NULL;
 
@@ -556,7 +554,6 @@ void updateInput(GLFWwindow* window, float dt, vec3& worldRotation, int shaderAr
         }
     }
 }
-
 
 int main(int argc, char* argv[])
 {
