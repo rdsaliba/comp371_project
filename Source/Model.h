@@ -4,7 +4,7 @@
 #include <GLFW/glfw3.h>
 #include <glm/gtc/matrix_transform.hpp>
 #include <iostream>
-#include "Mesh.h"
+#include "Sphere.h"
 using namespace glm;
 /// <summary>
 /// Movable 3D model location/transformation information
@@ -16,6 +16,7 @@ public:
 	Model(vec3 position, float size);
 	Model(const Model& model);
 	~Model();
+	//Mesh mesh;
 
 	vec3 getPosition() { return position; }
 	float getScaling() { return scaling; }
@@ -30,7 +31,7 @@ public:
 	void setShaderProgram(int shaderProgram) { this->shaderProgram = shaderProgram; }
 	void setVao(GLuint vao) { this->vao = vao; }
 	void setVbo(GLuint vbo) { this->vbo = vbo; }
-	void setMesh(Mesh mesh) { this->mesh = mesh; }
+	void setSphere(Sphere sphere) { this->sphere = sphere; }
 
 	void setTexture(GLuint toggle, GLuint texture)
 	{
@@ -49,9 +50,10 @@ public:
 
 	void updateRotationY(float yValue) { this->rotation.y += yValue; }
 
-	virtual void draw(mat4 model); 
+	virtual void draw(mat4 model, GLuint textureArray[]);
 protected:
 	void drawPart(mat4 worldRotationUpdate, mat4 partMatrix, vec3 componentPosition);
+	void drawSphere(mat4 worldRotationUpdate);
 	//Location of model in 3D world
 	vec3 position;
 	//Scaling value applied onto model to change base size
@@ -64,5 +66,5 @@ protected:
 	unsigned int vao;
 	unsigned int vbo;
 	int shaderProgram;
-	Mesh mesh;
+	Sphere sphere;
 };

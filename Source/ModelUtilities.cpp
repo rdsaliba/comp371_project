@@ -180,4 +180,21 @@ namespace ModelUtilities {
 
 		return position;
 	}
+
+	//vector<TexturedColoredVertex>  getCubeVertices() {
+	//	vector<TexturedColoredVertex> vertices = vector<TexturedColoredVertex>();
+
+	//	for (int i = 0; i < 36; i += 3) {
+	//		vertices.push_back(cubeVertexArray[i]);
+	//	}
+	//	return vertices;
+	//}
+
+	//vector<unsigned int> getCubeIndices() {
+	//	vector<unsigned int> indices = vector<unsigned int>();
+	//	for (int i = 0; i < 36; i++) {
+	//		indices.push_back(i);
+	//	}
+	//	return indices;
+	//}
 }

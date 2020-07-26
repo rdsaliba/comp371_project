@@ -31,8 +31,8 @@ Model::Model(const Model& model) {
 }
 
 Model::~Model() {
-	/*glDeleteBuffers(1, &vbo);
-	glDeleteVertexArrays(1, &vao);*/
+	glDeleteBuffers(1, &vbo);
+	glDeleteVertexArrays(1, &vao);
 }
 
 void Model::updatePosition(vec3 moveVector) {
@@ -52,9 +52,18 @@ void Model::drawPart(mat4 worldRotationUpdate,mat4 part, vec3 componentPosition)
 
 	mat4 groupMatrix = worldRotationUpdate * translate(mat4(1.0f), this->position) * rotationUpdate * scaleUpdate;
 	mat4 modelPart = groupMatrix * translate(mat4(1.0f), componentPosition) * part;
-
+	modelPart = scale(mat4(1.0f), vec3(1.0f, 2.0f, 1.0f)) * modelPart;
 	glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &modelPart[0][0]);
-	//mesh.draw(shaderProgram);
 	glDrawArrays(this->renderMode, 0, 36);
 }
 
+void Model::drawSphere(mat4 worldRotationUpdate) {
+	mat4 model(1.0f);
+	model = glm::translate(mat4(1.0f), vec3(0.0f, 8.0f, 0.0f)) * model;
+
+	mat4 rotationUpdate = rotate(mat4(1.0f), radians(this->rotation.y), vec3(0.0f, 1.0f, 0.0f));
+	mat4 scaleUpdate = scale(mat4(1.0f), vec3(1.0f + this->scaling));
+	mat4 groupMatrix = worldRotationUpdate * translate(mat4(1.0f), this->position) * rotationUpdate * scaleUpdate;
+	model = groupMatrix * model;
+	this->sphere.draw(shaderProgram, model);
+}

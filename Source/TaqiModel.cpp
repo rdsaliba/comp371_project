@@ -9,6 +9,7 @@ TaqiModel::~TaqiModel() { Model::~Model(); }
 void TaqiModel::draw(mat4 worldRotationUpdate, GLuint textureArray[]) {
 	this->drawLetter(worldRotationUpdate, textureArray[0], textureArray[1]);
 	this->drawDigit(worldRotationUpdate, textureArray[0], textureArray[2]);
+	this->drawSphere(worldRotationUpdate);
 }
 
 void TaqiModel::drawLetter(mat4 worldRotationUpdate, GLuint toggle, GLuint texture) {

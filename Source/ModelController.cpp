@@ -1,5 +1,6 @@
 #include "ModelController.h"
-
+#include "ModelUtilities.h"
+using namespace ModelUtilities;
 ModelController::ModelController() {
 	focusedModel = NULL;
 	models = vector<Model*>();
@@ -14,13 +15,13 @@ void ModelController::addModel(Model* model) {
 	models.push_back(model);
 }
 
-void ModelController::initModels(int shaderProgram, unsigned int vao, unsigned int vbo) {
+void ModelController::initModels(int shaderProgram, unsigned int vao, unsigned int vbo, Sphere sphere) {
 	Model* axisModel = new Model(vec3(0.0f, 0.0f, 0.0f), 0.0f); //axis lines
-	TaqiModel* taqi = new TaqiModel(vec3(-45.0f, 0.0f, -45.0f), 0.0f); //Taqi (Q4)
-	HauModel* hau = new HauModel(vec3(45.0f, 0.0f, -45.0f), 0.0f); //Hau (U6)
-	RoyModel* roy = new RoyModel(vec3(-45.0f, 0.0f, 45.0f), 0.0f); //Roy (Y8)
+	TaqiModel* taqi = new TaqiModel(vec3(-40.0f, 0.0f, -40.0f), 0.0f); //Taqi (Q4)
+	HauModel* hau = new HauModel(vec3(40.0f, 0.0f, -40.0f), 0.0f); //Hau (U6)
+	RoyModel* roy = new RoyModel(vec3(-40.0f, 0.0f, 40.0f), 0.0f); //Roy (Y8)
 	SwetangModel* swetang = new SwetangModel(vec3(0.0f, 0.0f, 0.0f), 0.0f); //Swetang (E0)
-	WilliamModel* william = new WilliamModel(vec3(45.0f, 0.0f, 45.0f), 0.0f); //William (L9)
+	WilliamModel* william = new WilliamModel(vec3(40.0f, 0.0f, 40.0f), 0.0f); //William (L9)
 
 	models.push_back(axisModel);
 	models.push_back(taqi);
@@ -32,12 +33,15 @@ void ModelController::initModels(int shaderProgram, unsigned int vao, unsigned i
 	setModelsShaderProgram(shaderProgram);
 	setModelsVAO(vao);
 	setModelsVBO(vbo);
+	setModelsSphere(sphere);
+	modelFocusSwitch(4);
 }
 
-void ModelController::drawModels(mat4 worldRotationUpdate) {
+void ModelController::drawModels(mat4 worldRotationUpdate, GLuint textureArray[], int shaderProgram) {
 	for (vector<Model*>::iterator model = models.begin(); model != models.end(); ++model)
 	{
-		(*model)->draw(worldRotationUpdate);
+		(*model)->setShaderProgram(shaderProgram);
+		(*model)->draw(worldRotationUpdate, textureArray);
 	}
 }
 
@@ -71,5 +75,12 @@ void ModelController::setModelsVBO(unsigned int vbo) {
 	for (vector<Model*>::iterator model = models.begin(); model != models.end(); ++model)
 	{
 		(*model)->setVbo(vbo);
+	}
+}
+
+void ModelController::setModelsSphere(Sphere sphere) {
+	for (vector<Model*>::iterator model = models.begin(); model != models.end(); ++model)
+	{
+		(*model)->setSphere(sphere);
 	}
 }

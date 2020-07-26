@@ -1,13 +1,12 @@
 #pragma once
-#include <list>
+#include <vector>
 #include "Model.h"
 #include "HauModel.h"
 #include "RoyModel.h"
 #include "TaqiModel.h"
 #include "SwetangModel.h"
 #include "WilliamModel.h"
-#include <vector>
-
+using namespace std;
 class ModelController {
 public:
 	Model* focusedModel;
@@ -16,12 +15,13 @@ public:
 	~ModelController();
 
 	void addModel(Model* model);
-	void initModels(int shaderProgram, unsigned int vao, unsigned int vbo);
-	void drawModels(mat4 worldRotationUpdate);
+	void initModels(int shaderProgram, unsigned int vao, unsigned int vbo, Sphere sphere);
+	void drawModels(mat4 worldRotationUpdate, GLuint textureArray[], int shaderProgram);
 	void modelFocusSwitch(int nextModel);
 	void setModelsShaderProgram(int shaderProgram);
 	void setModelsVAO(unsigned int vao);
 	void setModelsVBO(unsigned int vbo);
+	void setModelsSphere(Sphere sphere);
 
 	//Functions to update the currently selected model
 	void updateScaling(float scaling) { focusedModel->updateScaling(scaling); }

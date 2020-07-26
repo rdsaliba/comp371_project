@@ -5,6 +5,7 @@
 #define GLFW_MOUSE_PRESS_BUTTON_RIGHT GLFW_MOUSE_BUTTON_2
 #define GLFW_MOUSE_PRESS_BUTTON_LEFT GLFW_MOUSE_BUTTON_1
 #define GLFW_MOUSE_BUTTON_1
+
 #define GLFW_MOUSE_BUTTON_2
 #pragma comment (lib,"glew32s.lib")
 #define GLEW_STATIC // This allows linking with Static Library on Windows, without DLL
@@ -18,13 +19,13 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/common.hpp>
 #include "ModelController.h"
-#include "Model.h"
 #include "Axis.h"
 #include "ViewController.h"
-
 //Library to load popular file formats and easy integration to project
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
+#include "Structs.h"
+#include "Sphere.h"
 
 using namespace std;
 using namespace glm;
@@ -33,7 +34,6 @@ const GLuint WIDTH = 1024, HEIGHT = 768;
 glm::mat4 projection_matrix;
 
 float gridUnit = 1.0f;
-void modelFocusSwitch(int nextModel);
 int SELECTEDMODELINDEX = 1;
 Model* focusedModel = NULL;
 ViewController* viewController = NULL;
@@ -49,16 +49,16 @@ const char* getTexturedVertexShaderSource();
 const char* getTexturedFragmentShaderSource();
 
 //UV coordinates with vertex data
-struct TexturedColoredVertex
-{
-    //Position of vertex, color of vertex, UV coordinate for that vertex
-    TexturedColoredVertex(vec3 _position, vec3 _color, vec3 _normal, vec2 _uv) : position(_position), color(_color), normal(_normal), uv(_uv) {}
-
-    vec3 position;
-    vec3 color;
-    vec3 normal;
-    vec2 uv;
-};
+//struct TexturedColoredVertex
+//{
+//    //Position of vertex, color of vertex, UV coordinate for that vertex
+//    TexturedColoredVertex(vec3 _position, vec3 _color, vec3 _normal, vec2 _uv) : position(_position), color(_color), normal(_normal), uv(_uv) {}
+//
+//    vec3 position;
+//    vec3 color;
+//    vec3 normal;
+//    vec2 uv;
+//};
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height)
 {
@@ -624,7 +624,7 @@ int main(int argc, char* argv[])
     setProjectionMatrix(shaderArray[0], projectionMatrix);
     setProjectionMatrix(shaderArray[1], projectionMatrix);
 
-    const int geometryCount = 6; //number of models to load
+    const int geometryCount = 8; //number of models to load
     GLuint vaoArray[geometryCount], vboArray[geometryCount];
     glGenVertexArrays(geometryCount, &vaoArray[0]);
     glGenBuffers(geometryCount, &vboArray[0]);
@@ -654,36 +654,53 @@ int main(int argc, char* argv[])
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(TexturedColoredVertex), (void*)0); //position
     glEnableVertexAttribArray(0);
 
-    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(TexturedColoredVertex), (void*)sizeof(glm::vec3)); //color
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(TexturedColoredVertex), (void*)offsetof(TexturedColoredVertex, color)); //color
     glEnableVertexAttribArray(1);
 
-    glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, sizeof(TexturedColoredVertex), (void*)(2 * sizeof(glm::vec3))); //normal
+    glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, sizeof(TexturedColoredVertex), (void*)offsetof(TexturedColoredVertex, normal)); //normal
     glEnableVertexAttribArray(2);
 
-    glVertexAttribPointer(3, 2, GL_FLOAT, GL_FALSE, sizeof(TexturedColoredVertex), (void*)(3 * sizeof(vec3))); //aUV in vertex shader
+    glVertexAttribPointer(3, 2, GL_FLOAT, GL_FALSE, sizeof(TexturedColoredVertex), (void*)offsetof(TexturedColoredVertex, uv)); //aUV in vertex shader
     glEnableVertexAttribArray(3);
-
-    models[1].setVbo(vboArray[4]);
-    models[2].setVbo(vboArray[4]);
-    models[3].setVbo(vboArray[4]);
-    models[4].setVbo(vboArray[4]);
-    models[5].setVbo(vboArray[4]);
 
     //Ground textured Grid
     glBindVertexArray(vaoArray[5]);
     glBindBuffer(GL_ARRAY_BUFFER, vboArray[5]);
     glBufferData(GL_ARRAY_BUFFER, sizeof(texturedGroundVertexArray), texturedGroundVertexArray, GL_STATIC_DRAW);
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(TexturedColoredVertex), (void*)0);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(TexturedColoredVertex), (void*)0); //position
     glEnableVertexAttribArray(0);
 
-    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(TexturedColoredVertex), (void*)sizeof(glm::vec3));
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(TexturedColoredVertex), (void*)offsetof(TexturedColoredVertex, color)); //color
     glEnableVertexAttribArray(1);
 
-    glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, sizeof(TexturedColoredVertex), (void*)(2 * sizeof(vec3))); 
+    glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, sizeof(TexturedColoredVertex), (void*)offsetof(TexturedColoredVertex, normal)); //normal
     glEnableVertexAttribArray(2);
 
-    glVertexAttribPointer(3, 2, GL_FLOAT, GL_FALSE, sizeof(TexturedColoredVertex), (void*)(3 * sizeof(vec3))); 
+    glVertexAttribPointer(3, 2, GL_FLOAT, GL_FALSE, sizeof(TexturedColoredVertex), (void*)offsetof(TexturedColoredVertex, uv)); //aUV in vertex shader
     glEnableVertexAttribArray(3);
+
+    //Sphere
+    Sphere sphere(5.5f, 100, 50, shaderProgram);
+    sphere.buildSphere();
+
+    glBindVertexArray(vaoArray[6]);
+    glBindBuffer(GL_ARRAY_BUFFER, vboArray[6]);
+    glBufferData(GL_ARRAY_BUFFER, sphere.getVerticesSize(), sphere.vertices.data(), GL_STATIC_DRAW);
+
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(TexturedColoredVertex), (void*)0); //position
+    glEnableVertexAttribArray(0);
+
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(TexturedColoredVertex), (void*)offsetof(TexturedColoredVertex, color)); //color
+    glEnableVertexAttribArray(1);
+
+    glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, sizeof(TexturedColoredVertex), (void*)offsetof(TexturedColoredVertex, normal)); //normal
+    glEnableVertexAttribArray(2);
+
+    glVertexAttribPointer(3, 2, GL_FLOAT, GL_FALSE, sizeof(TexturedColoredVertex), (void*)offsetof(TexturedColoredVertex, uv)); //aUV in vertex shader
+    glEnableVertexAttribArray(3);
+
+    sphere.setVao(vaoArray[6]);
+    sphere.setVbo(vboArray[6]);
 
     // Variables to be used later in tutorial
     float angle = 0;
@@ -711,7 +728,7 @@ int main(int argc, char* argv[])
 
     ModelController model;
     modelController = &model;
-    modelController->initModels(shaderProgram, vaoArray[4], vboArray[4]);
+    modelController->initModels(shaderProgram, vaoArray[4], vboArray[4], sphere);
 
     glfwSetWindowSizeCallback(window, framebuffer_size_callback); //Handle window resizing
     glfwSetCursorEnterCallback(window, cursor_enter_callback); //Handle cursor leaving window event: Stop tracking mouse mouvement
@@ -740,7 +757,7 @@ int main(int argc, char* argv[])
         drawGroundGrid(shaderType, vaoArray, gridUnit, worldRotationUpdate, textureArray);
 
         //MODELS
-        modelController->drawModels(worldRotationUpdate);
+        modelController->drawModels(worldRotationUpdate, textureArray, shaderType);
 
         viewController->setFastCam(glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS || glfwGetKey(window, GLFW_KEY_RIGHT_SHIFT) == GLFW_PRESS); //Press shift to go faster
         viewController->update(shaderType);
