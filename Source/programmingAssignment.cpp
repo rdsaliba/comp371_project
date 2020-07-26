@@ -457,6 +457,7 @@ void drawHauModel(int shader, GLuint vao[], mat4 worldRotationUpdate, GLuint tex
     hau.setShaderProgram(shader);
     hau.setVao(vao[4]);
     hau.setRotation(model.getRotation());
+    hau.setShear(model.getShearing());
     hau.setRenderMode(model.getRenderMode());
     hau.draw(worldRotationUpdate, textureArray);
 }
@@ -469,6 +470,7 @@ void drawWilliamModel(int shaderProgram, GLuint vao[], mat4 worldRotationUpdate,
     william.setShaderProgram(shaderProgram);
     william.setVao(vao[4]);
     william.setRotation(model.getRotation());
+    william.setShear(model.getShearing());
     william.setRenderMode(model.getRenderMode());
     william.draw(worldRotationUpdate, textureArray);
 }
@@ -481,6 +483,7 @@ void drawTaqiModel(int shaderProgram, GLuint vao[], mat4 worldRotationUpdate, GL
     taqi.setShaderProgram(shaderProgram);
     taqi.setVao(vao[4]);
     taqi.setRotation(model.getRotation());
+    taqi.setShear(model.getShearing());
     taqi.setRenderMode(model.getRenderMode());
     taqi.draw(worldRotationUpdate, textureArray);
 }
@@ -493,6 +496,7 @@ void drawRoyModel(int shaderProgram, GLuint vao[], mat4 worldRotationUpdate, GLu
     roy.setShaderProgram(shaderProgram);
     roy.setVao(vao[4]);
     roy.setRotation(model.getRotation());
+    roy.setShear(model.getShearing());
     roy.setRenderMode(model.getRenderMode());
     roy.draw(worldRotationUpdate, textureArray);
 }
@@ -505,6 +509,7 @@ void drawSwetangModel(int shaderProgram, GLuint vao[], mat4 worldRotationUpdate,
     swetang.setShaderProgram(shaderProgram);
     swetang.setVao(vao[4]);
     swetang.setRotation(model.getRotation());
+    swetang.setShear(model.getShearing());
     swetang.setRenderMode(model.getRenderMode());
     swetang.draw(worldRotationUpdate, textureArray);
 }
@@ -634,6 +639,20 @@ void updateInput(GLFWwindow* window, float dt, vec3& worldRotation, int shaderAr
             shaderType = shaderArray[0]; //Shader for color
         }
     }
+
+    //small move forward + shear
+    if ((glfwGetKey(window, GLFW_KEY_Z) == GLFW_PRESS) && !((glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS || glfwGetKey(window, GLFW_KEY_RIGHT_SHIFT) == GLFW_PRESS)))
+    {
+        focusedModel->UpdateShearingY(-0.05f);
+        (*focusedModel).z(-0.1f);
+    }
+    //small reverse + shear
+    if (glfwGetKey(window, GLFW_KEY_Z) == GLFW_PRESS && (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS || glfwGetKey(window, GLFW_KEY_RIGHT_SHIFT) == GLFW_PRESS))
+    {
+        focusedModel->UpdateShearingY(0.05f);
+        (*focusedModel).z(0.1f);
+    }
+
 }
 
 /// <summary>

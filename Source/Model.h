@@ -19,12 +19,14 @@ public:
 	vec3 getPosition() { return position; }
 	float getScaling() { return scaling; }
 	vec3 getRotation() { return rotation; }
+	vec3 getShearing() { return shearYZ; }
 	GLenum getRenderMode() { return renderMode; }
 	int getShaderProgram() { return shaderProgram; }
 
 	void setPosition(vec3 position) { this->position = position; }
 	void setSize(float scaling) { this->scaling = scaling; }
 	void setRotation(vec3 rotation) { this->rotation = rotation; }
+	void setShear(vec3 shearYZ) { this->shearYZ = shearYZ; }
 	void setRenderMode(GLenum renderMode) { this->renderMode = renderMode; }
 	void setShaderProgram(int shaderProgram) { this->shaderProgram = shaderProgram; }
 	void setVao(GLuint vao) { this->vao = vao; }
@@ -47,6 +49,8 @@ public:
 
 	void updateRotationY(float yValue) { this->rotation.y += yValue; }
 
+	void UpdateShearingY(float value) { this->shearYZ.z += value; }
+
 	virtual void draw(mat4 model, GLuint textureArray[]);
 	//virtual void drawLetter(mat4 worldRotationUpdate);
 	//virtual void drawDigit(mat4 worldRotationUpdate);
@@ -58,6 +62,8 @@ protected:
 	float scaling;
 	//Orientation of model in 3D world
 	vec3 rotation;
+
+	vec3 shearYZ;
 
 	GLenum renderMode;
 

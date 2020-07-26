@@ -1,8 +1,15 @@
 #include "Model.h"
 
+#define GLM_ENABLE_EXPERIMENTAL
+#include <glm/glm.hpp>  // GLM is an optimized math library with syntax to similar to OpenGL Shading Language
+#include <glm/gtc/matrix_transform.hpp> // include this to create transformation matrices
+#include <glm/gtc/type_ptr.hpp>
+#include <glm/gtx/transform2.hpp>
+
 Model::Model() {
 	this->position = vec3(0.0f, 0.0f, 0.0f);
 	this->scaling = 0.0f;
+	this->shearYZ = vec3(0.0f, 0.0f, 0.0f);
 	this->rotation = vec3(1.0f, 1.0f, 1.0f);
 	this->renderMode = GL_TRIANGLES;
 	this->shaderProgram = -1;
@@ -14,6 +21,7 @@ Model::Model(vec3 position, float scaling) {
 	this->position = position;
 	this->scaling = scaling;
 	this->rotation = vec3(1.0f, 1.0f, 1.0f);
+	this->shearYZ = vec3(0.0f, 0.0f, 0.0f);
 	this->renderMode = GL_TRIANGLES;
 	this->shaderProgram = -1;
 	this->vao = -1;
@@ -24,6 +32,7 @@ Model::Model(const Model& model) {
 	this->position = model.position;
 	this->scaling = model.scaling;
 	this->rotation = model.rotation;
+	this->shearYZ = model.shearYZ;
 	this->renderMode = model.renderMode;
 	this->shaderProgram = model.shaderProgram;
 	this->vao = model.vao;
@@ -49,8 +58,8 @@ void Model::drawPart(mat4 worldRotationUpdate,mat4 part, vec3 componentPosition)
 	GLuint worldMatrixLocation = glGetUniformLocation(this->shaderProgram, "worldMatrix");
 	mat4 rotationUpdate = rotate(mat4(1.0f), radians(this->rotation.y), vec3(0.0f, 1.0f, 0.0f));
 	mat4 scaleUpdate = scale(mat4(1.0f), vec3(1.0f + this->scaling));
-
-	mat4 groupMatrix = worldRotationUpdate * translate(mat4(1.0f), this->position) * rotationUpdate * scaleUpdate;
+	mat4 shearUpdate = shearY3D(mat4(1.0f), 0.0f, shearYZ.z);
+	mat4 groupMatrix = worldRotationUpdate * translate(mat4(1.0f), this->position) *  rotationUpdate * shearUpdate * scaleUpdate;
 	mat4 modelPart = groupMatrix * translate(mat4(1.0f), componentPosition) * part;
 
 	glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &modelPart[0][0]);
