@@ -133,15 +133,6 @@ void ViewController::update(int shaderType) {
     {
         cameraPosition -= cameraSideVector * dt * currentCameraSpeed;
     }
-	if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS)
-	{
-		float setRandNumX = 0.0;
-		float setRandNumZ = 0.0;
-		setRandNumX = rand() % 100 - 50;
-		setRandNumZ = rand() % 100 - 50;
-		vec3 newCamPos(setRandNumX, 10.0f, setRandNumZ);
-		cameraPosition = newCamPos;
-	}
 
 	
 
