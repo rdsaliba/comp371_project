@@ -44,6 +44,9 @@ public:
 	void x(float value) { this->position.x += value; }
 	void y(float value) { this->position.y += value; }
 	void z(float value) { this->position.z += value; }
+	
+	void xGrid(float value) { this->position.x = value; }
+	void zGrid(float value) { this->position.z = value; }
 
 	void updateRotationY(float yValue) { this->rotation.y += yValue; }
 
