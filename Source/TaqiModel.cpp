@@ -1,20 +1,15 @@
 #include "TaqiModel.h"
 #include "ModelUtilities.h"
-#include <iostream>
-
 using namespace ModelUtilities;
 
 TaqiModel::~TaqiModel() { Model::~Model(); }
 
-void TaqiModel::draw(mat4 worldRotationUpdate, GLuint textureArray[]) {
-	this->drawLetter(worldRotationUpdate, textureArray[0], textureArray[1]);
-	this->drawDigit(worldRotationUpdate, textureArray[0], textureArray[2]);
+void TaqiModel::draw(mat4 worldRotationUpdate) {
+	this->drawLetter(worldRotationUpdate);
+	this->drawDigit(worldRotationUpdate);
 }
 
-void TaqiModel::drawLetter(mat4 worldRotationUpdate, GLuint toggle, GLuint texture) {
-
-	setTexture(toggle, texture);
-
+void TaqiModel::drawLetter(mat4 worldRotationUpdate) {
 	mat4 component = createComponent(ComponentSize::SHORT, ComponentOrientation::HORIZONTAL);
 	vec3 componentPosition = getComponentPosition(component, ComponentType::BOTTOM, ComponentSize::SHORT, ModelType::LETTER, ComponentOrientation::HORIZONTAL);
 
@@ -42,9 +37,7 @@ void TaqiModel::drawLetter(mat4 worldRotationUpdate, GLuint toggle, GLuint textu
 	this->drawPart(worldRotationUpdate, component, componentPosition);
 }
 
-void TaqiModel::drawDigit(mat4 worldRotationUpdate, GLuint toggle, GLuint texture) {
-
-	setTexture(toggle, texture);
+void TaqiModel::drawDigit(mat4 worldRotationUpdate) {
 
 	//Right side of 4
 	mat4 component = createComponent(ComponentSize::LONG, ComponentOrientation::VERTICAL);
@@ -60,5 +53,4 @@ void TaqiModel::drawDigit(mat4 worldRotationUpdate, GLuint toggle, GLuint textur
 	component = createComponent(ComponentSize::SHORT, ComponentOrientation::VERTICAL);
 	componentPosition = getComponentPosition(component, ComponentType::TOP_LEFT, ComponentSize::SHORT, ModelType::DIGIT, ComponentOrientation::VERTICAL);
 	this->drawPart(worldRotationUpdate, component, componentPosition);
-
 }

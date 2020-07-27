@@ -4,15 +4,12 @@ using namespace ModelUtilities;
 
 WilliamModel::~WilliamModel() { Model::~Model(); }
 
-void WilliamModel::draw(mat4 worldRotationUpdate, GLuint textureArray[]) {
-	this->drawLetter(worldRotationUpdate, textureArray[0], textureArray[1]);
-	this->drawDigit(worldRotationUpdate, textureArray[0], textureArray[2]);
+void WilliamModel::draw(mat4 worldRotationUpdate) {
+	this->drawLetter(worldRotationUpdate);
+	this->drawDigit(worldRotationUpdate);
 }
 
-void WilliamModel::drawLetter(mat4 worldRotationUpdate, GLuint toggle, GLuint texture) {
-
-	setTexture(toggle, texture);
-
+void WilliamModel::drawLetter(mat4 worldRotationUpdate) {
 	//Bottom
 	mat4 component = createComponent(ComponentSize::MED, ComponentOrientation::HORIZONTAL);
 	vec3 componentPosition = getComponentPosition(component, ComponentType::BOTTOM, ComponentSize::MED, ModelType::LETTER, ComponentOrientation::HORIZONTAL);
@@ -24,10 +21,7 @@ void WilliamModel::drawLetter(mat4 worldRotationUpdate, GLuint toggle, GLuint te
 	this->drawPart(worldRotationUpdate, component, componentPosition);
 }
 
-void WilliamModel::drawDigit(mat4 worldRotationUpdate, GLuint toggle, GLuint texture) {
-
-	setTexture(toggle, texture);
-
+void WilliamModel::drawDigit(mat4 worldRotationUpdate) {
 	//Right
 	mat4 component = createComponent(ComponentSize::LONG, ComponentOrientation::VERTICAL);
 	vec3 componentPosition = getComponentPosition(component, ComponentType::RIGHT, ComponentSize::LONG, ModelType::DIGIT, ComponentOrientation::VERTICAL);
