@@ -34,19 +34,19 @@ void Axis::drawAxisLines(int shader, GLuint vao[], float gridUnit, mat4 worldRot
 
     GLuint worldMatrixLocation = glGetUniformLocation(shader, "worldMatrix");
     //X-axis
-    glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &axisMatrix[0][0]);
+    glProgramUniformMatrix4fv(shader, worldMatrixLocation, 1, GL_FALSE, &axisMatrix[0][0]);
     glDrawArrays(GL_LINES, 0, 2);
 
     //Y-axis
     glBindVertexArray(vao[2]);
     axisMatrix = worldRotationUpdate * glm::mat4(1.0f);
-    glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &axisMatrix[0][0]);
+    glProgramUniformMatrix4fv(shader, worldMatrixLocation, 1, GL_FALSE, &axisMatrix[0][0]);
     glDrawArrays(GL_LINES, 0, 2);
 
     //Z-axis
     glBindVertexArray(vao[3]);
     axisMatrix = worldRotationUpdate * glm::mat4(1.0f);
-    glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &axisMatrix[0][0]);
+    glProgramUniformMatrix4fv(shader, worldMatrixLocation, 1, GL_FALSE, &axisMatrix[0][0]);
     glDrawArrays(GL_LINES, 0, 2);
 }
 

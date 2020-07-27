@@ -190,10 +190,12 @@ const char* getTexturedVertexShaderSource()
         "uniform mat4 worldMatrix;"
         "uniform mat4 viewMatrix = mat4(1.0);"  // default value for view matrix (identity)
         "uniform mat4 projectionMatrix = mat4(1.0);"
+        "uniform mat4 lightSpaceMatrix;"
         ""
         "out vec3 vertexColor;"
         "out vec3 norm;"
         "out vec3 fragPos;"
+        "out vec4 fragPosLightSpace;"
         "out vec2 vertexUV;"
         ""
         "void main()"
@@ -202,6 +204,7 @@ const char* getTexturedVertexShaderSource()
         "   fragPos = vec3(worldMatrix * vec4(aPos, 1.0));"
         "   norm = mat3(transpose(inverse(worldMatrix))) * aNorm;"
         "   mat4 modelViewProjection = projectionMatrix * viewMatrix * worldMatrix;"
+        "   fragPosLightSpace = lightSpaceMatrix * vec4(fragPos, 1.0);"
         "   gl_Position = modelViewProjection * vec4(aPos.x, aPos.y, aPos.z, 1.0);"
         "   vertexUV = aUV;"
         "}";
@@ -217,14 +220,55 @@ const char* getTexturedFragmentShaderSource()
         "in vec3 vertexColor;"
         "in vec2 vertexUV;"
         "in vec3 norm;"
+        "in vec4 fragPosLightSpace;"
+        "uniform vec3 lightPos;"
         "uniform vec3 viewPos;"
         "uniform sampler2D textureSampler;"
-        ""
+        "uniform sampler2D shadowMap;"
+
+        "float ShadowCalculation(vec4 fragPosLSpace)"
+        "{"
+            // perform perspective divide
+            "vec3 projCoords = fragPosLSpace.xyz / fragPosLSpace.w;"
+            // transform to [0,1] range
+            "projCoords = projCoords * 0.5 + 0.5;"
+            // get closest depth value from light's perspective (using [0,1] range fragPosLight as coords)
+            "float closestDepth = texture(shadowMap, projCoords.xy).r;"
+            // get depth of current fragment from light's perspective
+            "float currentDepth = projCoords.z;"
+            // calculate bias (based on depth map resolution and slope)
+            "vec3 normal = normalize(norm);"
+            "vec3 lightDir = normalize(lightPos - fragPos);"
+            "float bias = max(0.05 * (1.0 - dot(normal, lightDir)), 0.005);"
+            // check whether current frag pos is in shadow
+            // float shadow = currentDepth - bias > closestDepth  ? 1.0 : 0.0;
+            // PCF
+            "float shadow = 0.0;"
+            "vec2 texelSize = 1.0 / textureSize(shadowMap, 0);"
+            "for (int x = -1; x <= 1; ++x)"
+            "{"
+            "for (int y = -1; y <= 1; ++y)"
+            "{"
+            "float pcfDepth = texture(shadowMap, projCoords.xy + vec2(x, y) * texelSize).r;"
+            "shadow += currentDepth - bias > pcfDepth ? 1.0 : 0.0;"
+            "}"
+            "}  "
+            "shadow /= 9.0;  "
+
+            // keep the shadow at 0.0 when outside the far_plane region of the light's frustum.
+            "if (projCoords.z > 1.0)"
+            "shadow = 0.0;"
+
+            "return shadow;"
+        "}"
+
+        
         "void main()"
         "{"
         "   vec3 color = vertexColor;"
-        "   vec3 lightPos = vec3(0.0f, 30.0f, 0.0f);"
+        "   vec3 lightColor = vec3(0.3);" //Bright White
         //ambiant
+        //"   vec3 lightPos = vec3(0.0f, 30.0f, 0.0f);" 
         "   vec3 ambient = 0.05 * color;"  //0.05
         //diffuse
         "   vec3 lightDir = normalize(lightPos - fragPos);"
@@ -236,10 +280,13 @@ const char* getTexturedFragmentShaderSource()
         "   float spec = 0.0;"
         "   vec3 reflectDir = reflect(-lightDir, normal);"
         "   spec = pow(max(dot(viewDir, reflectDir), 0.0), 32.0);"
-        "   vec3 specular = vec3(0.3) * spec;" // assuming bright white light color
+        "   vec3 specular = spec * lightColor; "
 
+        // calculate shadow
+        "   float shadow = ShadowCalculation(fragPosLightSpace);"
+        "   vec3 lighting = (ambient + (1.0 - shadow) * (diffuse + specular)) * color; "
         "   vec4 textureColor = texture( textureSampler, vertexUV );"
-        "   FragColor = textureColor * vec4(ambient + diffuse + specular, 1.0f);"
+        "   FragColor = textureColor * vec4(lighting, 1.0);"
         "}";
 }
 
@@ -540,7 +587,8 @@ void drawGroundGrid(int shader, GLuint vao[], float pointDisplacementUnit, mat4 
             for (int col = -49; col < 51; col++)
             {
                 glm::mat4 translationMatrix = worldRotationUpdate * glm::translate(glm::mat4(1.0f), glm::vec3(row, 0, col));
-                glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &translationMatrix[0][0]);
+                //glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &translationMatrix[0][0]);
+                glProgramUniformMatrix4fv(shader, worldMatrixLocation, 1, GL_FALSE, &translationMatrix[0][0]);
                 glDrawArrays(GL_TRIANGLES, 0, 6);
             }
         }
@@ -750,6 +798,7 @@ int main(int argc, char* argv[])
         glfwTerminate();
         return -1;
     }
+
     // configure depth map FBO
     // -----------------------
     const unsigned int SHADOW_WIDTH = 1024, SHADOW_HEIGHT = 1024;
@@ -907,19 +956,12 @@ int main(int argc, char* argv[])
     depthShaderProgram = compileAndLinkDepthShaders();
 
     ViewController view(window, WIDTH, HEIGHT, shaderProgram, shaderArray);
-    //ViewController view(window, WIDTH, HEIGHT, depthShaderProgram, shaderArray);
     viewController = &view;
 
     ModelController model;
     modelController = &model;
     modelController->initModels(shaderProgram, vaoArray[4], vboArray[4], sphere);
 
-    // Compile and link shaders here ...
-
-    //
-    //int shaderProgram = compileAndLinkShaders(); //REMOVE ????????????????????
-    //glUseProgram(shaderProgram);
-    //glUseProgram(depthShaderProgram);
 
     //Initiale Light
     vec3 lightPos = vec3(10.0f, 30.0f, 0.0f);
@@ -934,11 +976,14 @@ int main(int argc, char* argv[])
     glProgramUniform3fv(shaderProgram, glGetUniformLocation(shaderProgram, "lightPos"), 1, &lightPos[0]);
     glProgramUniformMatrix4fv(shaderProgram, glGetUniformLocation(shaderProgram, "lightSpaceMatrix"), 1, GL_FALSE, &lightSpaceMatrix[0][0]);
 
+    //glProgramUniform3fv(texturedShaderProgram, glGetUniformLocation(texturedShaderProgram, "lightPos"), 1, &lightPos[0]);
+    //glProgramUniformMatrix4fv(texturedShaderProgram, glGetUniformLocation(texturedShaderProgram, "lightSpaceMatrix"), 1, GL_FALSE, &lightSpaceMatrix[0][0]);
+
     glProgramUniformMatrix4fv(depthShaderProgram, glGetUniformLocation(depthShaderProgram, "lightSpaceMatrix"), 1, GL_FALSE, &lightSpaceMatrix[0][0]);
     glProgramUniform1i(depthShaderProgram, glGetUniformLocation(depthShaderProgram, "shadowMap"), 0/*depthMap*/);
 
    /* ViewController view(window, WIDTH, HEIGHT, shaderProgram);
-    viewController = &view;*/ //REMOVE???????????????
+    viewController = &view;*/ 
     
 
     glfwSetWindowSizeCallback(window, framebuffer_size_callback); //Handle window resizing
@@ -947,76 +992,10 @@ int main(int argc, char* argv[])
     
     viewController->initCamera();
 
-//     // Entering Main Loop
-//    while (!glfwWindowShouldClose(window))
-//    {
-//        worldRotationX = rotate(glm::mat4(1.0f), glm::radians(worldRotation.x), glm::vec3(1.0f, 0.0f, 0.0f));
-//        worldRotationY = rotate(glm::mat4(1.0f), glm::radians(worldRotation.y), glm::vec3(0.0f, 1.0f, 0.0f));
-//        worldRotationUpdate = worldRotationX * worldRotationY;
-//
-//        //Frame time calculation
-//        float dt = glfwGetTime() - lastFrameTime;
-//        lastFrameTime += dt;
-//        viewController->updateDt(dt);
-//
-//        //Get user inputs
-//        updateInput(window, dt, worldRotation, shaderArray);
-//
-//        // Each frame, reset color of each pixel to glClearColor
-//        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-//        // 1. render depth of scene to texture (from light's perspective)
-//        glUseProgram(depthShaderProgram);
-//        
-//       
-//        glViewport(0, 0, SHADOW_WIDTH, SHADOW_HEIGHT);
-//        glBindFramebuffer(GL_FRAMEBUFFER, depthMapFBO);
-//            glClear(GL_DEPTH_BUFFER_BIT);
-//            //Draw all objects
-//            drawGroundGrid(depthShaderProgram, vaoArray, gridUnit, worldRotationUpdate, textureArray);
-//            axis.drawAxisLines(depthShaderProgram, vaoArray, gridUnit, worldRotationUpdate);
-//modelController->drawModels(worldRotationUpdate, textureArray, depthShaderProgram);
-//            //MODELS
-//            //drawTaqiModel(depthShaderProgram, vaoArray, worldRotationUpdate);
-//            //drawHauModel(depthShaderProgram, vaoArray, worldRotationUpdate);
-//            //drawRoyModel(depthShaderProgram, vaoArray, worldRotationUpdate);
-//            //drawSwetangModel(depthShaderProgram, vaoArray, worldRotationUpdate);
-//            //drawWilliamModel(depthShaderProgram, vaoArray, worldRotationUpdate);
-//        glBindFramebuffer(GL_FRAMEBUFFER, 0);
-//
-//        // reset viewport
-//        glViewport(0, 0, WIDTH, HEIGHT);
-//        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-//
-//
-////<<<<<<< HEAD
-////        axis.drawAxisLines(shaderType, vaoArray, gridUnit, worldRotationUpdate);
-////        drawGroundGrid(shaderType, vaoArray, gridUnit, worldRotationUpdate, textureArray);
-////=======
-//        glUseProgram(shaderProgram);
-//        
-//        
-//        glActiveTexture(GL_TEXTURE0);
-//        glBindTexture(GL_TEXTURE_2D, depthMap);
-////        drawGroundGrid(shaderProgram, vaoArray, gridUnit, worldRotationUpdate);
-////        axis.drawAxisLines(shaderProgram, vaoArray, gridUnit, worldRotationUpdate);
-////>>>>>>> 84fa16e24e736df67ce9e2fd7ab131e97e31df0f
-//
-//        //MODELS
-//        //modelController->drawModels(worldRotationUpdate, textureArray, shaderType);
-//        
-//
-//        viewController->setFastCam(glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS || glfwGetKey(window, GLFW_KEY_RIGHT_SHIFT) == GLFW_PRESS); //Press shift to go faster
-//        viewController->update(shaderType);
-//                                                                                                                                           
-//        // End Frame
-//        glfwSwapBuffers(window);
-//        glfwPollEvents();
-//
-//        // Handle inputs
-//        if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
-//            glfwSetWindowShouldClose(window, true);
-//    }
-         // Entering Main Loop
+    // Toggle Shadow on/off
+    bool toggleShadow = false;
+
+     // Entering Main Loop
     while (!glfwWindowShouldClose(window))
     {
         worldRotationX = rotate(glm::mat4(1.0f), glm::radians(worldRotation.x), glm::vec3(1.0f, 0.0f, 0.0f));
@@ -1033,25 +1012,50 @@ int main(int argc, char* argv[])
 
         // Each frame, reset color of each pixel to glClearColor
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        // 1. render depth of scene to texture (from light's perspective)
+        glUseProgram(depthShaderProgram);
+        
+       
+        glViewport(0, 0, SHADOW_WIDTH, SHADOW_HEIGHT);
+        glBindFramebuffer(GL_FRAMEBUFFER, depthMapFBO);
+        glClear(GL_DEPTH_BUFFER_BIT);
+            
+        //Draw all objects
+        modelController->drawModels(worldRotationUpdate, textureArray, depthShaderProgram);
 
-        //glUseProgram(depthShaderProgram);
-        //  glViewport(0, 0, SHADOW_WIDTH, SHADOW_HEIGHT);
-        //glBindFramebuffer(GL_FRAMEBUFFER, depthMapFBO);
-        //glClear(GL_DEPTH_BUFFER_BIT);
 
-        //drawGroundGrid(depthShaderProgram, vaoArray, gridUnit, worldRotationUpdate, textureArray);
-        //axis.drawAxisLines(depthShaderProgram, vaoArray, gridUnit, worldRotationUpdate);
+        glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
-        axis.drawAxisLines(shaderType, vaoArray, gridUnit, worldRotationUpdate);
+        // reset viewport
+        glViewport(0, 0, WIDTH, HEIGHT);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+        glUseProgram(shaderType);
+              
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_2D, depthMap);
         drawGroundGrid(shaderType, vaoArray, gridUnit, worldRotationUpdate, textureArray);
+        axis.drawAxisLines(shaderType, vaoArray, gridUnit, worldRotationUpdate);
 
         //MODELS
         modelController->drawModels(worldRotationUpdate, textureArray, shaderType);
 
-        //glBindFramebuffer(GL_FRAMEBUFFER, 0);
-                // reset viewport
-        //glViewport(0, 0, WIDTH, HEIGHT);
-        //glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        //Toggle Shadow
+        if (glfwGetKey(window, GLFW_KEY_N) == GLFW_PRESS)
+        {
+            if (toggleShadow == true)
+            {
+                depthShaderProgram = compileAndLinkDepthShaders();
+                glProgramUniformMatrix4fv(depthShaderProgram, glGetUniformLocation(depthShaderProgram, "lightSpaceMatrix"), 1, GL_FALSE, &lightSpaceMatrix[0][0]);
+                toggleShadow = false;
+            }
+            else
+            {
+                depthShaderProgram = compileAndLinkDepthShaders();
+                glProgramUniformMatrix4fv(depthShaderProgram, glGetUniformLocation(depthShaderProgram, "lightSpaceMatrix"), 0, GL_FALSE, &lightSpaceMatrix[0][0]);
+                toggleShadow = true;
+            }
+        }
 
         viewController->setFastCam(glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS || glfwGetKey(window, GLFW_KEY_RIGHT_SHIFT) == GLFW_PRESS); //Press shift to go faster
         viewController->update(shaderType);
@@ -1064,6 +1068,7 @@ int main(int argc, char* argv[])
         if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
             glfwSetWindowShouldClose(window, true);
     }
+
     viewController->~ViewController();
     modelController->~ModelController();
     // Shutdown GLFW
