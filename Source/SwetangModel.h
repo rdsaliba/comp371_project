@@ -1,4 +1,6 @@
+#pragma once
 #include "Model.h"
+#include "Sphere.h"
 class SwetangModel : public Model {
 public:
 	SwetangModel() :Model() {};

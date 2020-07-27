@@ -3,6 +3,7 @@
 #include <algorithm>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/common.hpp>
+#include <vector>
 using namespace glm;
 namespace ModelUtilities{
 	//Constants for size standardization across the different models

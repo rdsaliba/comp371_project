@@ -1,136 +1,49 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <Filter Include="Source Files">
-      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
-      <Extensions>cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
-    </Filter>
-    <Filter Include="Resource Files">
-      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
-      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
-    </Filter>
-    <Filter Include="Resource Files\Shaders">
-      <UniqueIdentifier>{d8c6f640-d50d-4388-8a50-90686886c71a}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Resource Files\Scenes">
-      <UniqueIdentifier>{66439e2a-f58c-4c2a-aad1-3af2e58e4920}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Resource Files\Textures">
-      <UniqueIdentifier>{88876fa3-1e9f-4223-8d1d-570a59edf1cd}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Source Files\Header Files">
-      <UniqueIdentifier>{004674a0-611c-4803-b2a2-50b0f09f1c14}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Source Files\Class Files">
-      <UniqueIdentifier>{5fe91aac-1d7b-41cb-8b0f-849e81e7f4ea}</UniqueIdentifier>
-    </Filter>
+    <ClCompile Include="..\Source\Axis.cpp" />
+    <ClCompile Include="..\Source\ModelController.cpp" />
+    <ClCompile Include="..\Source\ViewController.cpp" />
+    <ClCompile Include="..\Source\Model.cpp" />
+    <ClCompile Include="..\Source\programmingAssignment.cpp" />
+    <ClCompile Include="..\Source\ModelUtilities.cpp" />
+    <ClCompile Include="..\Source\HauModel.cpp" />
+    <ClCompile Include="..\Source\RoyModel.cpp" />
+    <ClCompile Include="..\Source\TaqiModel.cpp" />
+    <ClCompile Include="..\Source\SwetangModel.cpp" />
+    <ClCompile Include="..\Source\WilliamModel.cpp" />
+    <ClCompile Include="..\Source\Sphere.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="..\Assets\Shaders\BlueColor.fragmentshader">
-      <Filter>Resource Files\Shaders</Filter>
-    </None>
-    <None Include="..\Assets\Shaders\PathLines.fragmentshader">
-      <Filter>Resource Files\Shaders</Filter>
-    </None>
-    <None Include="..\Assets\Shaders\PathLines.vertexshader">
-      <Filter>Resource Files\Shaders</Filter>
-    </None>
-    <None Include="..\Assets\Shaders\SolidColor.fragmentshader">
-      <Filter>Resource Files\Shaders</Filter>
-    </None>
-    <None Include="..\Assets\Shaders\SolidColor.vertexshader">
-      <Filter>Resource Files\Shaders</Filter>
-    </None>
-    <None Include="..\Assets\Scenes\CoordinateSystem.scene">
-      <Filter>Resource Files\Scenes</Filter>
-    </None>
-    <None Include="..\Assets\Scenes\StaticScene.scene">
-      <Filter>Resource Files\Scenes</Filter>
-    </None>
-    <None Include="..\Assets\Scenes\AnimatedScene.scene">
-      <Filter>Resource Files\Scenes</Filter>
-    </None>
-    <None Include="..\Assets\Scenes\AnimatedSceneWithParticles.scene">
-      <Filter>Resource Files\Scenes</Filter>
-    </None>
-    <None Include="..\Assets\Shaders\Texture.fragmentshader">
-      <Filter>Resource Files\Shaders</Filter>
-    </None>
-    <None Include="..\Assets\Shaders\Texture.vertexshader">
-      <Filter>Resource Files\Shaders</Filter>
-    </None>
+    <ClInclude Include="..\Source\Axis.h" />
+    <ClInclude Include="..\Source\ModelController.h" />
+    <ClInclude Include="..\Source\Structs.h" />
+    <ClInclude Include="..\Source\ViewController.h" />
+    <ClInclude Include="..\Source\Model.h" />
+    <ClInclude Include="..\Source\ModelUtilities.h" />
+    <ClInclude Include="..\Source\HauModel.h" />
+    <ClInclude Include="..\Source\RoyModel.h" />
+    <ClInclude Include="..\Source\stb_image.h" />
+    <ClInclude Include="..\Source\SwetangModel.h" />
+    <ClInclude Include="..\Source\TaqiModel.h" />
+    <ClInclude Include="..\Source\WilliamModel.h" />
+    <ClInclude Include="..\Source\Sphere.h" />
   </ItemGroup>
   <ItemGroup>
-    <Image Include="..\Assets\Textures\BillboardTest.bmp">
-      <Filter>Resource Files\Textures</Filter>
-    </Image>
-    <Image Include="..\Assets\Textures\Particle.png">
-      <Filter>Resource Files\Textures</Filter>
-    </Image>
+    <Image Include="..\Assets\Textures\BillboardTest.bmp" />
+    <Image Include="..\Assets\Textures\Particle.png" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\Source\programmingAssignment.cpp">
-      <Filter>Source Files\Class Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\Source\Model.cpp">
-      <Filter>Source Files\Class Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\Source\ModelUtilities.cpp">
-      <Filter>Source Files\Class Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\Source\HauModel.cpp">
-      <Filter>Source Files\Class Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\Source\Axis.cpp">
-      <Filter>Source Files\Class Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\Source\RoyModel.cpp">
-      <Filter>Source Files\Class Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\Source\TaqiModel.cpp">
-      <Filter>Source Files\Class Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\Source\SwetangModel.cpp">
-      <Filter>Source Files\Class Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\Source\WilliamModel.cpp">
-      <Filter>Source Files\Class Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\Source\ViewController.cpp">
-      <Filter>Source Files\Class Files</Filter>
-    </ClCompile>
-  </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="..\Source\Model.h">
-      <Filter>Source Files\Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Source\ModelUtilities.h">
-      <Filter>Source Files\Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Source\HauModel.h">
-      <Filter>Source Files\Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Source\Axis.h">
-      <Filter>Source Files\Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Source\RoyModel.h">
-      <Filter>Source Files\Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Source\TaqiModel.h">
-      <Filter>Source Files\Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Source\SwetangModel.h">
-      <Filter>Source Files\Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Source\WilliamModel.h">
-      <Filter>Source Files\Header Files</Filter>
-    </ClInclude>
-<<<<<<< HEAD
-    <ClInclude Include="..\Source\stb_image.h">
-=======
-    <ClInclude Include="..\Source\ViewController.h">
->>>>>>> 5430cd2080068d05124cde5819f71c7bf531cad2
-      <Filter>Source Files\Header Files</Filter>
-    </ClInclude>
+    <None Include="..\Assets\Scenes\AnimatedScene.scene" />
+    <None Include="..\Assets\Scenes\AnimatedSceneWithParticles.scene" />
+    <None Include="..\Assets\Scenes\CoordinateSystem.scene" />
+    <None Include="..\Assets\Scenes\StaticScene.scene" />
+    <None Include="..\Assets\Shaders\BlueColor.fragmentshader" />
+    <None Include="..\Assets\Shaders\PathLines.fragmentshader" />
+    <None Include="..\Assets\Shaders\PathLines.vertexshader" />
+    <None Include="..\Assets\Shaders\SolidColor.fragmentshader" />
+    <None Include="..\Assets\Shaders\SolidColor.vertexshader" />
+    <None Include="..\Assets\Shaders\Texture.fragmentshader" />
+    <None Include="..\Assets\Shaders\Texture.vertexshader" />
   </ItemGroup>
 </Project>
