@@ -46,18 +46,6 @@ GLuint loadTexture(const char* filename);
 const char* getTexturedVertexShaderSource();
 const char* getTexturedFragmentShaderSource();
 
-//UV coordinates with vertex data
-//struct TexturedColoredVertex
-//{
-//    //Position of vertex, color of vertex, UV coordinate for that vertex
-//    TexturedColoredVertex(vec3 _position, vec3 _color, vec3 _normal, vec2 _uv) : position(_position), color(_color), normal(_normal), uv(_uv) {}
-//
-//    vec3 position;
-//    vec3 color;
-//    vec3 normal;
-//    vec2 uv;
-//};
-
 void framebuffer_size_callback(GLFWwindow* window, int width, int height)
 {
     glViewport(0, 0, width, height);
@@ -559,16 +547,12 @@ void updateInput(GLFWwindow* window, float dt, vec3& worldRotation, int shaderAr
     {
         modelController->updateShearingY(-0.05f);
         modelController->updateZ(-0.1f);
-        //focusedModel->UpdateShearingY(-0.05f);
-        //(*focusedModel).z(-0.1f);
     }
     //small reverse + shear
     if (glfwGetKey(window, GLFW_KEY_Z) == GLFW_PRESS && (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS || glfwGetKey(window, GLFW_KEY_RIGHT_SHIFT) == GLFW_PRESS))
     {
         modelController->updateShearingY(0.05f);
         modelController->updateZ(0.1f);
-        //focusedModel->UpdateShearingY(0.05f);
-        //(*focusedModel).z(0.1f);
     }
 
 }
