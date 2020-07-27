@@ -1,22 +1,22 @@
 #include "ViewController.h"
 
 ViewController::ViewController() {
-	this->width = 1024;
-	this->height = 768;
+    this->width = 1024;
+    this->height = 768;
     this->projection_matrix = mat4(1.0f);
 	this->shaderProgram = -1;
     this->shaderArray[0] = -1;
     this->shaderArray[1] = -1;
 
-	this->fastCam = false;
-	this->cameraSpeed = 1.0f;
-	this->cameraFastSpeed = 2 * cameraSpeed;
-	this->cameraHorizontalAngle = 90.0f;
-	this->cameraVerticalAngle = 0.0f;
+    this->fastCam = false;
+    this->cameraSpeed = 1.0f;
+    this->cameraFastSpeed = 2 * cameraSpeed;
+    this->cameraHorizontalAngle = 90.0f;
+    this->cameraVerticalAngle = 0.0f;
 
-	this->cameraPosition = vec3(0.0f, 10.0f, 20.0f);
-	this->cameraLookAt = vec3(0.0f, 0.0f, 0.0f);
-	this->cameraUp = vec3(0.0f, 1.0f, 0.0f);
+    this->cameraPosition = vec3(0.0f, 10.0f, 20.0f);
+    this->cameraLookAt = vec3(0.0f, 0.0f, 0.0f);
+    this->cameraUp = vec3(0.0f, 1.0f, 0.0f);
 
     this->window = NULL;
     this->dt = 0;
@@ -27,6 +27,7 @@ ViewController::ViewController() {
     this->viewMatrix = mat4(1.0f);
 }
 
+
 ViewController::ViewController(GLFWwindow* window, int width, int height, int shaderProgram, int shaderArray[]) {
 	this->window = window;
 	this->width = width;
@@ -35,7 +36,7 @@ ViewController::ViewController(GLFWwindow* window, int width, int height, int sh
     this->shaderArray[0] = shaderArray[0];
     this->shaderArray[1] = shaderArray[1];
     this->projection_matrix = mat4(1.0f);
-	
+    
     this->fastCam = false;
     this->cameraSpeed = 1.0f;
     this->cameraFastSpeed = 2 * cameraSpeed;
@@ -55,7 +56,7 @@ ViewController::ViewController(GLFWwindow* window, int width, int height, int sh
 }
 
 ViewController::~ViewController() {
-	window = NULL;
+    window = NULL;
 }
 
 /// <summary>
@@ -64,8 +65,7 @@ ViewController::~ViewController() {
 void ViewController::initCamera() {
     //Set Projection
     this->projection_matrix = perspective(45.0f, (GLfloat)width / (GLfloat)height, 0.01f, 100.0f);
-    GLuint projectionMatrixLocation = glGetUniformLocation(shaderProgram, "projectionMatrix");
-    glUniformMatrix4fv(projectionMatrixLocation, 1, GL_FALSE, &projection_matrix[0][0]);
+    glProgramUniformMatrix4fv(shaderProgram, glGetUniformLocation(shaderProgram, "projectionMatrix"), 1, GL_FALSE, &projection_matrix[0][0]);
 
     //Start application with cursor in the center of the window
     mousePosX = width / 2.0;
@@ -77,6 +77,7 @@ void ViewController::initCamera() {
     setViewMatrix(shaderArray[0]);
     setViewMatrix(shaderArray[1]);
 }
+
 
 void ViewController::setViewMatrix(int shaderType){
 	glUseProgram(shaderType);
@@ -136,13 +137,9 @@ void ViewController::update(int shaderType) {
 
     // Set the view matrix for first person camera
     viewMatrix = lookAt(cameraPosition, cameraPosition + cameraLookAt, cameraUp);
-    
-    //
     glUseProgram(shaderProgram);
     GLuint vP = glGetUniformLocation(shaderProgram, "viewPos");
-    
     glUniformMatrix4fv(vP, 1, GL_FALSE, &cameraPosition[0]);
-    
     //Mouse Panning, Tilting and Zooming
     int pan = glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_RIGHT);
     int tilt = glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_MIDDLE);
