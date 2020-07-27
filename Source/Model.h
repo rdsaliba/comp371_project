@@ -45,6 +45,7 @@ public:
 	void y(float value) { this->position.y += value; }
 	void z(float value) { this->position.z += value; }
 	
+	//Random points on XZ plane which the Model can be located
 	void xGrid(float value) { this->position.x = value; }
 	void zGrid(float value) { this->position.z = value; }
 
