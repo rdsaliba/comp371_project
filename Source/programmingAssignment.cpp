@@ -551,6 +551,16 @@ void updateInput(GLFWwindow* window, float dt, vec3& worldRotation, int shaderAr
 	{
 		focusedModel->updateRotationY(5.0f);
 	}
+	//random location model
+	if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS)
+	{
+		float setRandNumX = 0.0;
+		float setRandNumZ = 0.0;
+		setRandNumX = rand() % 100 - 50;
+		setRandNumZ = rand() % 100 - 50;
+		(*focusedModel).xGrid(setRandNumX);
+		(*focusedModel).zGrid(setRandNumZ);
+	}
 
 	//Rendering mode
 	if (glfwGetKey(window, GLFW_KEY_P) == GLFW_PRESS)
