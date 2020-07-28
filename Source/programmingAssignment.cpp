@@ -595,35 +595,6 @@ void drawGroundGrid(int shader, GLuint vao[], float pointDisplacementUnit, mat4 
     }
 }
 
-
-/// <summary>
-/// Draws Axis lines centered at the origin
-/// </summary>
-/// <param name="shader"></param>
-/// <param name="vao"></param>
-/// <param name="gridUnit"></param>
-void drawAxisLines(int shader, GLuint vao[], float gridUnit, mat4 worldRotationUpdate) {
-    glBindVertexArray(vao[1]);
-    mat4 axisMatrix = worldRotationUpdate * mat4(1.0f);
-
-    GLuint worldMatrixLocation = glGetUniformLocation(shader, "worldMatrix");
-    //X-axis
-    glProgramUniformMatrix4fv(shader, worldMatrixLocation, 1, GL_FALSE, &axisMatrix[0][0]);
-    glDrawArrays(GL_LINES, 0, 2);
-
-    //Y-axis
-    glBindVertexArray(vao[2]);
-    axisMatrix = worldRotationUpdate * glm::mat4(1.0f);
-    glProgramUniformMatrix4fv(shader, worldMatrixLocation, 1, GL_FALSE, &axisMatrix[0][0]);
-    glDrawArrays(GL_LINES, 0, 2);
-
-    //Z-axis
-    glBindVertexArray(vao[3]);
-    axisMatrix = worldRotationUpdate * glm::mat4(1.0f);
-    glProgramUniformMatrix4fv(shader, worldMatrixLocation, 1, GL_FALSE, &axisMatrix[0][0]);
-    glDrawArrays(GL_LINES, 0, 2);
-}
-
 //Update through user input
 //void updateInput(GLFWwindow* window, float dt, vec3& worldRotation, GLuint& toggle)
 void updateInput(GLFWwindow* window, float dt, vec3& worldRotation, int shaderArray[])
@@ -982,9 +953,6 @@ int main(int argc, char* argv[])
     glProgramUniformMatrix4fv(depthShaderProgram, glGetUniformLocation(depthShaderProgram, "lightSpaceMatrix"), 1, GL_FALSE, &lightSpaceMatrix[0][0]);
     glProgramUniform1i(depthShaderProgram, glGetUniformLocation(depthShaderProgram, "shadowMap"), 0/*depthMap*/);
 
-   /* ViewController view(window, WIDTH, HEIGHT, shaderProgram);
-    viewController = &view;*/ 
-    
 
     glfwSetWindowSizeCallback(window, framebuffer_size_callback); //Handle window resizing
     glfwSetCursorEnterCallback(window, cursor_enter_callback); //Handle cursor leaving window event: Stop tracking mouse mouvement
