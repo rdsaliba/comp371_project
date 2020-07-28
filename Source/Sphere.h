@@ -8,7 +8,7 @@
 class Sphere {
 public:
 	Sphere();
-	Sphere(float radius, int sectorCtr, int stackCtr, int shaderProgram);
+	Sphere(float radius, int sectorCtr, int stackCtr, int shaderProgram, vec3 position);
 	~Sphere() {};
 
 	float getRadius() { return radius; }
@@ -17,6 +17,8 @@ public:
 
 	unsigned int getVerticesSize() const { return (unsigned int)vertices.size() * sizeof(TexturedColoredVertex); } 
 	unsigned int getVertexCount() const {return (unsigned int)vertices.size();}
+	TexturedColoredVertex* getVertices() { return vertices.data(); }
+	vec3 getPosition() { return position; }
 
 	void setRadius(float radius) { this->radius = radius; }
 	void setSectorCtr(int sectorCtr) { this->sectorCtr = sectorCtr; }
@@ -27,6 +29,11 @@ public:
 	void buildSphere();
 	void draw(int shaderProgram, mat4 sphere);
 
+	//Translation values
+	void x(float value) { this->position.x += value; }
+	void y(float value) { this->position.y += value; }
+	void z(float value) { this->position.z += value; }
+private:
 	float radius;
 	int sectorCtr;
 	int stackCtr;
@@ -34,8 +41,8 @@ public:
 	unsigned int vao;
 	unsigned int vbo;
 	vector<TexturedColoredVertex> vertices;
-
-	vec3 getVerticePosition(int currentStack, int currentSector);
-	vec2 getVerticeUV(int currentStack, int currentSector);
+	vec3 position;
+	vec3 getVertexPosition(int currentStack, int currentSector);
+	vec2 getVertexUV(int currentStack, int currentSector);
 	void computeFaceNormal(TexturedColoredVertex* v1, TexturedColoredVertex* v2, TexturedColoredVertex* v3, TexturedColoredVertex* v4);
 };

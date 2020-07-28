@@ -32,7 +32,7 @@ public:
 	void setShaderProgram(int shaderProgram) { this->shaderProgram = shaderProgram; }
 	void setVao(GLuint vao) { this->vao = vao; }
 	void setVbo(GLuint vbo) { this->vbo = vbo; }
-	void setSphere(Sphere sphere) { this->sphere = sphere; }
+	void setSphere(Sphere sphere);
 
 	void setTexture(GLuint toggle, GLuint texture)
 	{
@@ -41,13 +41,14 @@ public:
 			glBindTexture(GL_TEXTURE_2D, texture);
 		}
 	}
-	void updatePosition(vec3 moveVector);
-	void updateScaling(float value) { this->scaling += value; }
 
-	//Translation values
-	void x(float value) { this->position.x += value; }
-	void y(float value) { this->position.y += value; }
-	void z(float value) { this->position.z += value; }
+	void updatePosition(vec3 moveVector);
+	void updateScaling(float value);
+
+	//Translation values - Updates the position of a model and its depencies
+	void x(float value);
+	void y(float value);
+	void z(float value);
 
 	void updateRotationY(float yValue) { this->rotation.y += yValue; }
 

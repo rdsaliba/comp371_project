@@ -50,30 +50,60 @@ void Model::updatePosition(vec3 moveVector) {
 	this->position.z += moveVector.z;
 }
 
+//Translation values
+void Model::x(float value) { 
+	this->position.x += value;
+	this->sphere.x(value);
+}
+
+void Model::y(float value) {
+	this->position.y += value;
+	this->sphere.y(value * 2.0f); //2x multiplier to properly update sphere positioning relative to the model
+}
+void Model::z(float value) { 
+	this->position.z += value; 
+	this->sphere.z(value * 3.0f);
+}
+
+void Model::setSphere(Sphere sphere) {
+	sphere.x(this->position.x);
+	sphere.z(this->position.z);
+	this->sphere = sphere;
+}
+
+void Model::updateScaling(float value) {
+	this->scaling += value;
+	//Adjust the Y position of the sphere to ensure positioning relative to the model remains when changing a model's size 
+	this->sphere.y(value * 8.0f); 
+}
+
 void Model::draw(mat4 worldRotationUpdate, GLuint textureArray[]) {}
 
 void Model::drawPart(mat4 worldRotationUpdate,mat4 part, vec3 componentPosition) {
 	glBindVertexArray(this->vao);
 	glBindBuffer(GL_ARRAY_BUFFER, vbo);
 	GLuint worldMatrixLocation = glGetUniformLocation(this->shaderProgram, "worldMatrix");
+
 	mat4 rotationUpdate = rotate(mat4(1.0f), radians(this->rotation.y), vec3(0.0f, 1.0f, 0.0f));
 	mat4 scaleUpdate = scale(mat4(1.0f), vec3(1.0f + this->scaling));
 	mat4 shearUpdate = shearY3D(mat4(1.0f), 0.0f, shearYZ.z);
-	mat4 groupMatrix = worldRotationUpdate * translate(mat4(1.0f), this->position) *  rotationUpdate * shearUpdate * scaleUpdate;
+	mat4 groupMatrix = translate(mat4(1.0f), this->position) * rotationUpdate * shearUpdate * scaleUpdate;
+
 	mat4 modelPart = groupMatrix * translate(mat4(1.0f), componentPosition) * part;
-	modelPart = scale(mat4(1.0f), vec3(1.0f, 2.0f, 1.0f)) * modelPart;
+	modelPart = worldRotationUpdate * scale(mat4(1.0f), vec3(1.0f, 2.0f, 1.0f)) * modelPart;
 	glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &modelPart[0][0]);
-	//mesh.draw(shaderProgram);
 	glDrawArrays(this->renderMode, 0, 36);
 }
 
+/// <summary>
+/// Draws a model's surrounding sphere 
+/// </summary>
+/// <param name="worldRotationUpdate"></param>
 void Model::drawSphere(mat4 worldRotationUpdate) {
 	mat4 model(1.0f);
-	model = glm::translate(mat4(1.0f), vec3(0.0f, 8.0f, 0.0f)) * model;
-
 	mat4 rotationUpdate = rotate(mat4(1.0f), radians(this->rotation.y), vec3(0.0f, 1.0f, 0.0f));
 	mat4 scaleUpdate = scale(mat4(1.0f), vec3(1.0f + this->scaling));
-	mat4 groupMatrix = worldRotationUpdate * translate(mat4(1.0f), this->position) * rotationUpdate * scaleUpdate;
+	mat4 groupMatrix = worldRotationUpdate * translate(mat4(1.0f), this->sphere.getPosition()) * rotationUpdate * scaleUpdate;
 	model = groupMatrix * model;
 	this->sphere.draw(shaderProgram, model);
 }

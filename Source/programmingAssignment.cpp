@@ -880,13 +880,13 @@ int main(int argc, char* argv[])
     glVertexAttribPointer(3, 2, GL_FLOAT, GL_FALSE, sizeof(TexturedColoredVertex), (void*)offsetof(TexturedColoredVertex, uv)); //aUV in vertex shader
     glEnableVertexAttribArray(3);
 
-    //Sphere
-    Sphere sphere(5.5f, 100, 50, shaderProgram);
-    sphere.buildSphere();
+    //Initialize model sphere object
+    Sphere sphere(5.5f, 100, 50, shaderProgram, vec3(0.0f, 8.0f, 0.0f));
+    sphere.buildSphere(); //Generate all the vertices to send to gpu
 
     glBindVertexArray(vaoArray[6]);
     glBindBuffer(GL_ARRAY_BUFFER, vboArray[6]);
-    glBufferData(GL_ARRAY_BUFFER, sphere.getVerticesSize(), sphere.vertices.data(), GL_STATIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, sphere.getVerticesSize(), sphere.getVertices(), GL_STATIC_DRAW);
 
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(TexturedColoredVertex), (void*)0); //position
     glEnableVertexAttribArray(0);
