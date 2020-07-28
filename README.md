@@ -109,6 +109,23 @@ Up_arrow: rotation (CCW) about positive y axis by 5.0f
 Down_arrow: rotation (CCW) about negative y axis by 5.0f
 
 
+## Information on Classes
+programmingAssignment: main
+
+Axis: draws x, y, z axis
+
+ViewController: Handles initialization of camera and view matrix and process updates of the viewMatrix according to user inputs.
+
+ModelController: Handles initialization and  actions against the models rendered in the 3D world. Hold Reference to the currently focused model and applies transformations to the models based on user input.
+
+Model: Representation a 3D model to be rendered.
+
+[XXX]Model: Representation of 3D model [LETTER][DIGIT].
+
+Sphere: 3D model of a triangle mesh sphere that is draw above each individual model
+
+ModelUtilities: Set of utilities/helper functions to manipulate/transform the models in the 3D way in a standardized manner.
+
 # Learn OpenGL
 http://docs.gl/
 
