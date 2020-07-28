@@ -742,7 +742,6 @@ void updateInput(GLFWwindow* window, float dt, vec3& worldRotation, int shaderAr
         setRandNumZ = rand() % 100 - 50;
 
         modelController->randomPosition(vec3(setRandNumX, 0, setRandNumZ));
-        //sphere.setPosition(vec3(setRandNumX, 0, setRandNumZ));
     }
 }
 
