@@ -19,6 +19,7 @@ public:
 	unsigned int getVertexCount() const {return (unsigned int)vertices.size();}
 	TexturedColoredVertex* getVertices() { return vertices.data(); }
 	vec3 getPosition() { return position; }
+	void setPosition(vec3 position) { this->position = position; }
 
 	void setRadius(float radius) { this->radius = radius; }
 	void setSectorCtr(int sectorCtr) { this->sectorCtr = sectorCtr; }

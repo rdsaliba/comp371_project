@@ -24,7 +24,7 @@ public:
 	GLenum getRenderMode() { return renderMode; }
 	int getShaderProgram() { return shaderProgram; }
 
-	void setPosition(vec3 position) { this->position = position; }
+	void setPosition(vec3 position);
 	void setSize(float scaling) { this->scaling = scaling; }
 	void setRotation(vec3 rotation) { this->rotation = rotation; }
 	void setShear(vec3 shearYZ) { this->shearYZ = shearYZ; }

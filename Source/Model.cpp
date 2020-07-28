@@ -77,6 +77,12 @@ void Model::updateScaling(float value) {
 	this->sphere.y(value * 8.0f); 
 }
 
+void Model::setPosition(vec3 position) {
+	this->position = position;
+	float sphereY = this->sphere.getPosition().y;
+	this->sphere.setPosition(position + vec3(0.0f, sphereY, 0.0f));
+}
+
 void Model::draw(mat4 worldRotationUpdate, GLuint textureArray[]) {}
 
 void Model::drawPart(mat4 worldRotationUpdate,mat4 part, vec3 componentPosition) {

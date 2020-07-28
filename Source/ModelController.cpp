@@ -84,3 +84,7 @@ void ModelController::setModelsSphere(Sphere sphere) {
 		(*model)->setSphere(sphere);
 	}
 }
+
+void ModelController::randomPosition(vec3 value) {
+	focusedModel->setPosition(value); 
+}
