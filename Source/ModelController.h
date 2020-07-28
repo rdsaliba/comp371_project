@@ -31,7 +31,7 @@ public:
 	void updateZ(float z) { focusedModel->z(z); }
 	void updateRotationY(float rotation) { focusedModel->updateRotationY(rotation); }
 	void updateShearingY(float shear) { focusedModel->updateShearingY(shear); }
-	void randomPosition(vec3 value) { focusedModel->setPosition(value); }
+	void randomPosition(vec3 value);
 private:
 	vector<Model*> models;
 	int selectedModelIndex; 
