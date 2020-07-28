@@ -268,7 +268,7 @@ const char* getTexturedFragmentShaderSource()
         "   vec3 color = vertexColor;"
         "   vec3 lightColor = vec3(0.3);" //Bright White
         //ambiant
-        //"   vec3 lightPos = vec3(0.0f, 30.0f, 0.0f);" 
+        "   vec3 lightPos = vec3(0.0f, 30.0f, 0.0f);" ////////
         "   vec3 ambient = 0.05 * color;"  //0.05
         //diffuse
         "   vec3 lightDir = normalize(lightPos - fragPos);"
@@ -733,6 +733,17 @@ void updateInput(GLFWwindow* window, float dt, vec3& worldRotation, int shaderAr
         modelController->updateZ(0.1f);
     }
 
+    //random location model
+    if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS)
+    {
+        float setRandNumX = 0.0f;
+        float setRandNumZ = 0.0f;
+        setRandNumX = rand() % 100 - 50;
+        setRandNumZ = rand() % 100 - 50;
+
+        modelController->randomPosition(vec3(setRandNumX, 0, setRandNumZ));
+        //sphere.setPosition(vec3(setRandNumX, 0, setRandNumZ));
+    }
 }
 
 int main(int argc, char* argv[])
