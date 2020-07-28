@@ -109,6 +109,10 @@ Up_arrow: rotation (CCW) about positive y axis by 5.0f
 Down_arrow: rotation (CCW) about negative y axis by 5.0f
 
 ## Information on Classes
+programmingAssignment: main
+
+Axis: draws x, y, z axis
+
 ViewController: Handles initialization of camera and view matrix and process updates of the viewMatrix according to user inputs.
 
 ModelController: Handles initialization and  actions against the models rendered in the 3D world. Hold Reference to the currently focused model and applies transformations to the models based on user input.
