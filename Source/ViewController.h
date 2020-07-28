@@ -2,7 +2,7 @@
 #define GLEW_STATIC // This allows linking with Static Library on Windows, without DLL
 #include <GL/glew.h>    // Include GLEW - OpenGL Extension Wrangler
 #include <GLFW/glfw3.h> // GLFW provides a cross-platform interface for creating a graphical context,
-						// initializing OpenGL and binding inputs
+                        // initializing OpenGL and binding inputs
 
 #include <glm/glm.hpp>  // GLM is an optimized math library with syntax to similar to OpenGL Shading Language
 #include <glm/gtc/matrix_transform.hpp>
@@ -11,6 +11,7 @@
 using namespace glm;
 class ViewController {
 public:
+
 	ViewController();
 	ViewController(GLFWwindow* window, int width, int height, int shaderProgram, int shaderArray[]);
 	~ViewController();
@@ -23,8 +24,8 @@ public:
 	void setMousePosX(double mousePosX) { this->mousePosX = mousePosX; }
 	void setMousePosY(double mousePosY) { this->mousePosY = mousePosY; }
 
-	double getLastMousePosX() { return this->lastMousePosX; }
-	double getLastMousePosY() { return this->lastMousePosY; }
+    double getLastMousePosX() { return this->lastMousePosX; }
+    double getLastMousePosY() { return this->lastMousePosY; }
 
 	void initCamera();
 	void updateDt(float dt) { this->dt = dt; }

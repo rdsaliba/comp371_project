@@ -17,18 +17,14 @@
 #include <glm/glm.hpp>  // GLM is an optimized math library with syntax to similar to OpenGL Shading Language
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/common.hpp>
-#include "Model.h"
+#include "ModelController.h"
 #include "Axis.h"
-#include "HauModel.h"
-#include "RoyModel.h"
-#include "TaqiModel.h"
-#include "SwetangModel.h"
-#include "WilliamModel.h"
 #include "ViewController.h"
-
 //Library to load popular file formats and easy integration to project
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
+#include "Structs.h"
+#include "Sphere.h"
 
 using namespace std;
 using namespace glm;
@@ -36,19 +32,12 @@ using namespace glm;
 const GLuint WIDTH = 1024, HEIGHT = 768;
 glm::mat4 projection_matrix;
 
+int depthShaderProgram;
+
 float gridUnit = 1.0f;
-void modelFocusSwitch(int nextModel);
 int SELECTEDMODELINDEX = 1;
-Model* focusedModel = NULL;
 ViewController* viewController = NULL;
-Model models[] = {
-    Model(vec3(0.0f, 0.0f, 0.0f), 0.0f), //axis lines
-    TaqiModel(vec3(-45.0f, 0.0f, -45.0f), 0.0f), //Taqi (Q4)
-    HauModel(vec3(45.0f, 0.0f, -45.0f), 0.0f), //Hau (U6)
-    RoyModel(vec3(-45.0f, 0.0f, 45.0f), 0.0f), //Roy (Y8)
-    SwetangModel(vec3(0.0f, 0.0f, 0.0f), 0.0f), //Swetang (E0)
-    WilliamModel(vec3(45.0f, 0.0f, 45.0f), 0.0f) //William (L9)
-};
+ModelController* modelController = NULL;
 
 GLuint toggle = 0; //0 = off, 1 = on
 GLuint textureArray[4] = {}; //Contains toggle (on/off), box texture, metal texture, and tiled texture
@@ -58,18 +47,6 @@ int shaderType; //Color or texture
 GLuint loadTexture(const char* filename);
 const char* getTexturedVertexShaderSource();
 const char* getTexturedFragmentShaderSource();
-
-//UV coordinates with vertex data
-struct TexturedColoredVertex
-{
-    //Position of vertex, color of vertex, UV coordinate for that vertex
-    TexturedColoredVertex(vec3 _position, vec3 _color, vec3 _normal, vec2 _uv) : position(_position), color(_color), normal(_normal), uv(_uv) {}
-
-    vec3 position;
-    vec3 color;
-    vec3 normal;
-    vec2 uv;
-};
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height)
 {
@@ -104,10 +81,13 @@ const char* getVertexShaderSource()
         "uniform mat4 worldMatrix;"
         "uniform mat4 viewMatrix = mat4(1.0);" //default value for view matrix (identity)
         "uniform mat4 projectionMatrix = mat4(1.0);"
+        "uniform mat4 lightSpaceMatrix;"
         ""
         "out vec3 vertexColor;"
         "out vec3 norm;"
         "out vec3 fragPos;"
+        "out vec4 fragPosLightSpace;"
+
         "void main()"
         "{"
         "   vertexColor = aColor;"
@@ -116,6 +96,7 @@ const char* getVertexShaderSource()
         "   norm = mat3(transpose(inverse(worldMatrix))) * aNorm;"
         //"   norm = aNorm;"
         "   mat4 modelViewProjection = projectionMatrix * viewMatrix * worldMatrix;"
+        "   fragPosLightSpace = lightSpaceMatrix * vec4(fragPos, 1.0);"
         "   gl_Position = modelViewProjection * vec4(aPos.x, aPos.y, aPos.z, 1.0);"
         "}";
 }
@@ -130,15 +111,51 @@ const char* getFragmentShaderSource()
            "in vec3 fragPos;"
            "in vec3 vertexColor;"
            "in vec3 norm;"
-           
-
+           "in vec4 fragPosLightSpace;"
+           "uniform vec3 lightPos;"
            "uniform vec3 viewPos;"
+           "uniform sampler2D shadowMap;"
+            
+        "float ShadowCalculation(vec4 fragPosLSpace)"
+        "{"
+            // perform perspective divide
+            "vec3 projCoords = fragPosLSpace.xyz / fragPosLSpace.w;"
+            // transform to [0,1] range
+            "projCoords = projCoords * 0.5 + 0.5;"
+            // get closest depth value from light's perspective (using [0,1] range fragPosLight as coords)
+            "float closestDepth = texture(shadowMap, projCoords.xy).r;"
+            // get depth of current fragment from light's perspective
+            "float currentDepth = projCoords.z;"
+            // calculate bias (based on depth map resolution and slope)
+            "vec3 normal = normalize(norm);"
+            "vec3 lightDir = normalize(lightPos - fragPos);"
+            "float bias = max(0.05 * (1.0 - dot(normal, lightDir)), 0.005);"
+            // check whether current frag pos is in shadow
+            // float shadow = currentDepth - bias > closestDepth  ? 1.0 : 0.0;
+            // PCF
+            "float shadow = 0.0;"
+            "vec2 texelSize = 1.0 / textureSize(shadowMap, 0);"
+            "for (int x = -1; x <= 1; ++x)"
+            "{"
+                "for (int y = -1; y <= 1; ++y)"
+                "{"
+                    "float pcfDepth = texture(shadowMap, projCoords.xy + vec2(x, y) * texelSize).r;"
+                    "shadow += currentDepth - bias > pcfDepth ? 1.0 : 0.0;"
+                "}"
+            "}  "
+            "shadow /= 9.0;  "
 
+            // keep the shadow at 0.0 when outside the far_plane region of the light's frustum.
+            "if (projCoords.z > 1.0)"
+                "shadow = 0.0;"
+
+            "return shadow;"
+         "}"
 
            "void main()"
            "{"
            "   vec3 color = vertexColor;"
-           "   vec3 lightPos = vec3(0.0f, 30.0f, 0.0f);"
+           "   vec3 lightColor = vec3(0.3);" //Bright White
            // ambient
            "   vec3 ambient = 0.05 * color;"  //0.05
            // diffuse
@@ -151,8 +168,11 @@ const char* getFragmentShaderSource()
            "   float spec = 0.0;"
            "   vec3 reflectDir = reflect(-lightDir, normal);"
            "   spec = pow(max(dot(viewDir, reflectDir), 0.0), 32.0);"
-           "   vec3 specular = vec3(0.3) * spec;" // assuming bright white light color
-           "   FragColor = vec4(ambient + diffuse + specular, 1.0);"
+           "   vec3 specular = spec * lightColor; "
+           // calculate shadow
+           "   float shadow = ShadowCalculation(fragPosLightSpace);"
+           "   vec3 lighting = (ambient + (1.0 - shadow) * (diffuse + specular)) * color; "
+           "   FragColor = vec4(lighting, 1.0);"
            " }";
 }
 
@@ -170,10 +190,12 @@ const char* getTexturedVertexShaderSource()
         "uniform mat4 worldMatrix;"
         "uniform mat4 viewMatrix = mat4(1.0);"  // default value for view matrix (identity)
         "uniform mat4 projectionMatrix = mat4(1.0);"
+        "uniform mat4 lightSpaceMatrix;"
         ""
         "out vec3 vertexColor;"
         "out vec3 norm;"
         "out vec3 fragPos;"
+        "out vec4 fragPosLightSpace;"
         "out vec2 vertexUV;"
         ""
         "void main()"
@@ -182,6 +204,7 @@ const char* getTexturedVertexShaderSource()
         "   fragPos = vec3(worldMatrix * vec4(aPos, 1.0));"
         "   norm = mat3(transpose(inverse(worldMatrix))) * aNorm;"
         "   mat4 modelViewProjection = projectionMatrix * viewMatrix * worldMatrix;"
+        "   fragPosLightSpace = lightSpaceMatrix * vec4(fragPos, 1.0);"
         "   gl_Position = modelViewProjection * vec4(aPos.x, aPos.y, aPos.z, 1.0);"
         "   vertexUV = aUV;"
         "}";
@@ -197,14 +220,55 @@ const char* getTexturedFragmentShaderSource()
         "in vec3 vertexColor;"
         "in vec2 vertexUV;"
         "in vec3 norm;"
+        "in vec4 fragPosLightSpace;"
+        "uniform vec3 lightPos;"
         "uniform vec3 viewPos;"
         "uniform sampler2D textureSampler;"
-        ""
+        "uniform sampler2D shadowMap;"
+
+        "float ShadowCalculation(vec4 fragPosLSpace)"
+        "{"
+            // perform perspective divide
+            "vec3 projCoords = fragPosLSpace.xyz / fragPosLSpace.w;"
+            // transform to [0,1] range
+            "projCoords = projCoords * 0.5 + 0.5;"
+            // get closest depth value from light's perspective (using [0,1] range fragPosLight as coords)
+            "float closestDepth = texture(shadowMap, projCoords.xy).r;"
+            // get depth of current fragment from light's perspective
+            "float currentDepth = projCoords.z;"
+            // calculate bias (based on depth map resolution and slope)
+            "vec3 normal = normalize(norm);"
+            "vec3 lightDir = normalize(lightPos - fragPos);"
+            "float bias = max(0.05 * (1.0 - dot(normal, lightDir)), 0.005);"
+            // check whether current frag pos is in shadow
+            // float shadow = currentDepth - bias > closestDepth  ? 1.0 : 0.0;
+            // PCF
+            "float shadow = 0.0;"
+            "vec2 texelSize = 1.0 / textureSize(shadowMap, 0);"
+            "for (int x = -1; x <= 1; ++x)"
+            "{"
+            "for (int y = -1; y <= 1; ++y)"
+            "{"
+            "float pcfDepth = texture(shadowMap, projCoords.xy + vec2(x, y) * texelSize).r;"
+            "shadow += currentDepth - bias > pcfDepth ? 1.0 : 0.0;"
+            "}"
+            "}  "
+            "shadow /= 9.0;  "
+
+            // keep the shadow at 0.0 when outside the far_plane region of the light's frustum.
+            "if (projCoords.z > 1.0)"
+            "shadow = 0.0;"
+
+            "return shadow;"
+        "}"
+
+        
         "void main()"
         "{"
         "   vec3 color = vertexColor;"
-        "   vec3 lightPos = vec3(0.0f, 30.0f, 0.0f);"
+        "   vec3 lightColor = vec3(0.3);" //Bright White
         //ambiant
+        "   vec3 lightPos = vec3(0.0f, 30.0f, 0.0f);" ////////
         "   vec3 ambient = 0.05 * color;"  //0.05
         //diffuse
         "   vec3 lightDir = normalize(lightPos - fragPos);"
@@ -216,10 +280,13 @@ const char* getTexturedFragmentShaderSource()
         "   float spec = 0.0;"
         "   vec3 reflectDir = reflect(-lightDir, normal);"
         "   spec = pow(max(dot(viewDir, reflectDir), 0.0), 32.0);"
-        "   vec3 specular = vec3(0.3) * spec;" // assuming bright white light color
+        "   vec3 specular = spec * lightColor; "
 
+        // calculate shadow
+        "   float shadow = ShadowCalculation(fragPosLightSpace);"
+        "   vec3 lighting = (ambient + (1.0 - shadow) * (diffuse + specular)) * color; "
         "   vec4 textureColor = texture( textureSampler, vertexUV );"
-        "   FragColor = textureColor * vec4(ambient + diffuse + specular, 1.0f);"
+        "   FragColor = textureColor * vec4(lighting, 1.0);"
         "}";
 }
 
@@ -291,6 +358,87 @@ void setWorldMatrix(int shaderProgram, mat4 worldMatrix)
     glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &worldMatrix[0][0]);
 }
 
+const char* getDepthVertexShaderSource()
+{
+    //Vertex Shader
+    return
+        "#version 330 core\n"
+        "layout (location=0) in vec3 aPos;"
+
+        "uniform mat4 lightSpaceMatrix;"
+        "uniform mat4 worldMatrix;"
+        " void main()"
+        " {"
+        "   gl_Position = lightSpaceMatrix * worldMatrix * vec4(aPos, 1.0);"
+        " }";
+}
+
+const char* getDepthFragmentShaderSource()
+{
+    //Fragment Shaders here
+    return
+        "#version 330 core\n"
+        "out vec4 FragColor;"
+        "void main()"
+        "{"
+        "}";
+}
+
+int compileAndLinkDepthShaders()
+{
+    // compile and link shader program
+    // return shader program id
+    // ------------------------------------
+
+    // vertex shader
+    int vertexShader = glCreateShader(GL_VERTEX_SHADER);
+    const char* vertexShaderSource = getDepthVertexShaderSource();
+    glShaderSource(vertexShader, 1, &vertexShaderSource, NULL);
+    glCompileShader(vertexShader);
+
+    // check for shader compile errors
+    int success;
+    char infoLog[512];
+    glGetShaderiv(vertexShader, GL_COMPILE_STATUS, &success);
+    if (!success)
+    {
+        glGetShaderInfoLog(vertexShader, 512, NULL, infoLog);
+        std::cerr << "ERROR::SHADER::VERTEX::COMPILATION_FAILED\n" << infoLog << std::endl;
+    }
+
+    // fragment shader
+    int fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
+    const char* fragmentShaderSource = getDepthFragmentShaderSource();
+    glShaderSource(fragmentShader, 1, &fragmentShaderSource, NULL);
+    glCompileShader(fragmentShader);
+
+    // check for shader compile errors
+    glGetShaderiv(fragmentShader, GL_COMPILE_STATUS, &success);
+    if (!success)
+    {
+        glGetShaderInfoLog(fragmentShader, 512, NULL, infoLog);
+        std::cerr << "ERROR::SHADER::FRAGMENT::COMPILATION_FAILED\n" << infoLog << std::endl;
+    }
+
+    // link shaders
+    int shaderProgram = glCreateProgram();
+    glAttachShader(shaderProgram, vertexShader);
+    glAttachShader(shaderProgram, fragmentShader);
+    glLinkProgram(shaderProgram);
+
+    // check for linking errors
+    glGetProgramiv(shaderProgram, GL_LINK_STATUS, &success);
+    if (!success) {
+        glGetProgramInfoLog(shaderProgram, 512, NULL, infoLog);
+        std::cerr << "ERROR::SHADER::PROGRAM::LINKING_FAILED\n" << infoLog << std::endl;
+    }
+
+    glDeleteShader(vertexShader);
+    glDeleteShader(fragmentShader);
+
+    return shaderProgram;
+}
+
 // Textured Cube model
 const TexturedColoredVertex texturedCubeVertexArray[] = {  // position, color, normal, UV coordinates
     TexturedColoredVertex(vec3(-0.5f,-0.5f,-0.5f), vec3(1.0f, 0.0f, 0.0f), vec3(-1.0f, 0.0f, 0.0f), vec2(0.0f, 0.0f)), //left - red
@@ -345,7 +493,7 @@ const TexturedColoredVertex texturedCubeVertexArray[] = {  // position, color, n
 //Square plane
 const TexturedColoredVertex texturedGroundVertexArray[] = {  // position, color, normal, UV coordinates
 
-    TexturedColoredVertex(vec3(0.0f, 0.0f, -1.0f), vec3(122.0f/255.0f, 122.0f / 255.0f, 122.0f / 255.0f), vec3(0.0f, 1.0f, 0.0f), vec2(1.0f, 1.0f)), // top - yellow
+    TexturedColoredVertex(vec3(0.0f, 0.0f, -1.0f), vec3(122.0f/255.0f, 122.0f / 255.0f, 122.0f / 255.0f), vec3(0.0f, 1.0f, 0.0f), vec2(1.0f, 1.0f)), 
     TexturedColoredVertex(vec3(-1.0f, 0.0f,-1.0f), vec3(122.0f / 255.0f, 122.0f / 255.0f, 122.0f / 255.0f), vec3(0.0f, 1.0f, 0.0f), vec2(1.0f, 0.0f)),
     TexturedColoredVertex(vec3(0.0f, 0.0f, 0.0f), vec3(122.0f / 255.0f, 122.0f / 255.0f, 122.0f / 255.0f), vec3(0.0f, 1.0f, 0.0f), vec2(0.0f, 0.0f)),
 
@@ -365,6 +513,8 @@ vec3 gridVertexArray[] = {
     glm::vec3(gridUnit, 0.0f, gridUnit),
     glm::vec3(0.0f, 1.0f, 0.0f),vec3(0.0f, 1.0f, 0.0f),
 
+
+
     glm::vec3(0.0f, 0.0f, gridUnit),
     glm::vec3(0.0f, 1.0f, 0.0f),vec3(0.0f, 1.0f, 0.0f),
 
@@ -373,6 +523,8 @@ vec3 gridVertexArray[] = {
 
     glm::vec3(5 * gridUnit, 0.0f, 0.0f),
     glm::vec3(1.0f, 0.0f, 0.0f),vec3(0.0f, 1.0f, 0.0f),
+
+
 
 
     glm::vec3(0.0f, 0.0f, 0.0f),
@@ -395,13 +547,12 @@ vec3 gridVertexArray[] = {
 /// <param name="xDisplacement"></param>
 /// <param name="yDisplacement"></param>
 /// <param name="zDisplacement"></param>
-void drawGridSquare(GLuint worldMatrixLocation, float xDisplacement, float yDisplacement, float zDisplacement, float gridUnit, mat4 worldRotationUpdate, GLuint textureArray[]) {
+void drawGridSquare(int shader, GLuint worldMatrixLocation, float xDisplacement, float yDisplacement, float zDisplacement, float gridUnit, mat4 worldRotationUpdate, GLuint textureArray[]) {
 
     glm::mat4 translationMatrix = worldRotationUpdate * glm::translate(glm::mat4(1.0f), glm::vec3(xDisplacement, yDisplacement, zDisplacement)); 
-    glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &translationMatrix[0][0]);
+    glProgramUniformMatrix4fv(shader, worldMatrixLocation, 1, GL_FALSE, &translationMatrix[0][0]);
     glDrawArrays(GL_LINE_LOOP, 0, 4);
 }
-
 
 /// <summary>
 /// Generates ground grid
@@ -413,17 +564,17 @@ void drawGroundGrid(int shader, GLuint vao[], float pointDisplacementUnit, mat4 
     mat4 worldMatrix = worldRotationUpdate * mat4(1.0f);
     GLuint worldMatrixLocation = glGetUniformLocation(shader, "worldMatrix");
 
+
     //Ground without texture
     if (textureArray[0] == 0)
     {
         glBindVertexArray(vao[0]);
         for (int row = -50; row < 50; row++) {
             for (int col = -50; col < 50; col++) {
-                drawGridSquare(worldMatrixLocation, col * pointDisplacementUnit, 0.0f, row * pointDisplacementUnit, pointDisplacementUnit, worldRotationUpdate, textureArray);
+                drawGridSquare(shader, worldMatrixLocation, col * pointDisplacementUnit, 0.0f, row * pointDisplacementUnit, pointDisplacementUnit, worldRotationUpdate, textureArray);
             }
         }
     }
-
     //Ground with texture
     else if (textureArray[0] == 1)
     {
@@ -431,84 +582,18 @@ void drawGroundGrid(int shader, GLuint vao[], float pointDisplacementUnit, mat4 
 
         glBindVertexArray(vao[5]);
 
-        for (int row = -49; row < 51; row++) 
+        for (int row = -49; row < 51; row++)
         {
-            for (int col = -49; col < 51; col++) 
+            for (int col = -49; col < 51; col++)
             {
                 glm::mat4 translationMatrix = worldRotationUpdate * glm::translate(glm::mat4(1.0f), glm::vec3(row, 0, col));
-                glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &translationMatrix[0][0]);
+                //glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &translationMatrix[0][0]);
+                glProgramUniformMatrix4fv(shader, worldMatrixLocation, 1, GL_FALSE, &translationMatrix[0][0]);
                 glDrawArrays(GL_TRIANGLES, 0, 6);
             }
         }
     }
 }
-
-/// <summary>
-/// Draws Hau's model (U6)
-/// </summary>
-/// <param name="shader"></param>
-/// <param name="vao"></param>
-void drawHauModel(int shader, GLuint vao[], mat4 worldRotationUpdate, GLuint textureArray[]) {
-    //Model model(models[2]);
-    //HauModel hau(model);
-    //hau.draw(worldRotationUpdate);
-    Model model = models[2];
-    HauModel hau(model.getPosition(), model.getScaling());
-    hau.setShaderProgram(shader);
-    hau.setVao(vao[4]);
-    hau.setRotation(model.getRotation());
-    hau.setRenderMode(model.getRenderMode());
-    hau.draw(worldRotationUpdate, textureArray);
-}
-
-//WILLIAM'S MODEL ("L9")
-void drawWilliamModel(int shaderProgram, GLuint vao[], mat4 worldRotationUpdate, GLuint textureArray[])
-{
-    Model model = models[5];
-    WilliamModel william(model.getPosition(), model.getScaling());
-    william.setShaderProgram(shaderProgram);
-    william.setVao(vao[4]);
-    william.setRotation(model.getRotation());
-    william.setRenderMode(model.getRenderMode());
-    william.draw(worldRotationUpdate, textureArray);
-}
-
-//TAQI'S MODEL ("Q4")
-void drawTaqiModel(int shaderProgram, GLuint vao[], mat4 worldRotationUpdate, GLuint textureArray[])
-{
-    Model model = models[1];
-    TaqiModel taqi(model.getPosition(), model.getScaling());
-    taqi.setShaderProgram(shaderProgram);
-    taqi.setVao(vao[4]);
-    taqi.setRotation(model.getRotation());
-    taqi.setRenderMode(model.getRenderMode());
-    taqi.draw(worldRotationUpdate, textureArray);
-}
-
-//ROY'S MODEL ("Y8")
-void drawRoyModel(int shaderProgram, GLuint vao[], mat4 worldRotationUpdate, GLuint textureArray[])
-{
-    Model model = models[3];
-    RoyModel roy(model.getPosition(), model.getScaling());
-    roy.setShaderProgram(shaderProgram);
-    roy.setVao(vao[4]);
-    roy.setRotation(model.getRotation());
-    roy.setRenderMode(model.getRenderMode());
-    roy.draw(worldRotationUpdate, textureArray);
-}
-
-//Swetang Model "E0"
-void drawSwetangModel(int shaderProgram, GLuint vao[], mat4 worldRotationUpdate, GLuint textureArray[])
-{
-    Model model = models[4];
-    SwetangModel swetang(model.getPosition(), model.getScaling());
-    swetang.setShaderProgram(shaderProgram);
-    swetang.setVao(vao[4]);
-    swetang.setRotation(model.getRotation());
-    swetang.setRenderMode(model.getRenderMode());
-    swetang.draw(worldRotationUpdate, textureArray);
-}
-
 
 //Update through user input
 //void updateInput(GLFWwindow* window, float dt, vec3& worldRotation, GLuint& toggle)
@@ -517,75 +602,75 @@ void updateInput(GLFWwindow* window, float dt, vec3& worldRotation, int shaderAr
     //Scale
     if (glfwGetKey(window, GLFW_KEY_U) == GLFW_PRESS)
     {
-        (*focusedModel).updateScaling(0.1f);
+        modelController->updateScaling(0.1f);
     }
     if (glfwGetKey(window, GLFW_KEY_J) == GLFW_PRESS)
     {
-        (*focusedModel).updateScaling(-0.1f);
+        modelController->updateScaling(-0.1f);
     }
 
     //Position
     if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS && (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS || glfwGetKey(window, GLFW_KEY_RIGHT_SHIFT) == GLFW_PRESS))
     {
-        (*focusedModel).x(-0.1f);
+        modelController->updateX(-0.1f);
     }
     if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS && (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS || glfwGetKey(window, GLFW_KEY_RIGHT_SHIFT) == GLFW_PRESS))
     {
-        (*focusedModel).x(0.1f);
+        modelController->updateX(0.1f);
     }
     if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS && (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS || glfwGetKey(window, GLFW_KEY_RIGHT_SHIFT) == GLFW_PRESS))
     {
-        (*focusedModel).y(0.1f);
+        modelController->updateY(0.1f);
     }
     if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS && (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS || glfwGetKey(window, GLFW_KEY_RIGHT_SHIFT) == GLFW_PRESS))
     {
-        (*focusedModel).y(-0.1f);
+        modelController->updateY(-0.1f);
     }
 
     //rotation
     if (glfwGetKey(window, GLFW_KEY_A) && !((glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS || glfwGetKey(window, GLFW_KEY_RIGHT_SHIFT) == GLFW_PRESS)) == GLFW_PRESS)
     {
-        focusedModel->updateRotationY(-5.0f);
+        modelController->updateRotationY(-5.0f);
     }
     if (glfwGetKey(window, GLFW_KEY_D) && !((glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS || glfwGetKey(window, GLFW_KEY_RIGHT_SHIFT) == GLFW_PRESS)) == GLFW_PRESS)
     {
-        focusedModel->updateRotationY(5.0f);
+        modelController->updateRotationY(5.0f);
     }
 
     //Rendering mode
     if (glfwGetKey(window, GLFW_KEY_P) == GLFW_PRESS)
     {
-        focusedModel->setRenderMode(GL_POINTS);
+        modelController->updateRenderMode(GL_POINTS);
     }
     if (glfwGetKey(window, GLFW_KEY_L) == GLFW_PRESS)
     {
-        focusedModel->setRenderMode(GL_LINES);
+        modelController->updateRenderMode(GL_LINES);
     }
     if (glfwGetKey(window, GLFW_KEY_T) == GLFW_PRESS)
     {
-        focusedModel->setRenderMode(GL_TRIANGLES);
+        modelController->updateRenderMode(GL_TRIANGLES);
     }
 
     //Focused model selection
     if (glfwGetKey(window, GLFW_KEY_1) == GLFW_PRESS)
     {
-        modelFocusSwitch(1);
+        modelController->modelFocusSwitch(1);
     }
     if (glfwGetKey(window, GLFW_KEY_2) == GLFW_PRESS)
     {
-        modelFocusSwitch(2);
+        modelController->modelFocusSwitch(2);
     }
     if (glfwGetKey(window, GLFW_KEY_3) == GLFW_PRESS)
     {
-        modelFocusSwitch(3);
+        modelController->modelFocusSwitch(3);
     }
     if (glfwGetKey(window, GLFW_KEY_4) == GLFW_PRESS)
     {
-        modelFocusSwitch(4);
+        modelController->modelFocusSwitch(4);
     }
     if (glfwGetKey(window, GLFW_KEY_5) == GLFW_PRESS)
     {
-        modelFocusSwitch(5);
+        modelController->modelFocusSwitch(5);
     }
 
 
@@ -634,24 +719,31 @@ void updateInput(GLFWwindow* window, float dt, vec3& worldRotation, int shaderAr
             shaderType = shaderArray[0]; //Shader for color
         }
     }
-}
 
-/// <summary>
-/// Swaps model being controlled by user
-/// </summary>
-/// <param name="nextModel">Index of selected model to focus movement on</param>
-void modelFocusSwitch(int nextModel)
-{
-    //Don't update anything if model to switch to is current model
-    if (SELECTEDMODELINDEX == nextModel) {
-        return;
+    //small move forward + shear
+    if ((glfwGetKey(window, GLFW_KEY_Z) == GLFW_PRESS) && !((glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS || glfwGetKey(window, GLFW_KEY_RIGHT_SHIFT) == GLFW_PRESS)))
+    {
+        modelController->updateShearingY(-0.05f);
+        modelController->updateZ(-0.1f);
     }
-    //Update pointer to the selected model
-    focusedModel = &models[nextModel];
-    SELECTEDMODELINDEX = nextModel;
+    //small reverse + shear
+    if (glfwGetKey(window, GLFW_KEY_Z) == GLFW_PRESS && (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS || glfwGetKey(window, GLFW_KEY_RIGHT_SHIFT) == GLFW_PRESS))
+    {
+        modelController->updateShearingY(0.05f);
+        modelController->updateZ(0.1f);
+    }
 
+    //random location model
+    if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS)
+    {
+        float setRandNumX = 0.0f;
+        float setRandNumZ = 0.0f;
+        setRandNumX = rand() % 100 - 50;
+        setRandNumZ = rand() % 100 - 50;
+
+        modelController->randomPosition(vec3(setRandNumX, 0, setRandNumZ));
+    }
 }
-
 
 int main(int argc, char* argv[])
 {
@@ -688,6 +780,30 @@ int main(int argc, char* argv[])
         return -1;
     }
 
+    // configure depth map FBO
+    // -----------------------
+    const unsigned int SHADOW_WIDTH = 1024, SHADOW_HEIGHT = 1024;
+    unsigned int depthMapFBO;
+    glGenFramebuffers(1, &depthMapFBO);
+    // create depth texture
+    unsigned int depthMap;
+    glGenTextures(1, &depthMap);
+    glBindTexture(GL_TEXTURE_2D, depthMap);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, SHADOW_WIDTH, SHADOW_HEIGHT, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
+    float borderColor[] = { 1.0, 1.0, 1.0, 1.0 };
+    glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, borderColor);
+    // attach depth texture as FBO's depth buffer
+    glBindFramebuffer(GL_FRAMEBUFFER, depthMapFBO);
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, depthMap, 0);
+    glDrawBuffer(GL_NONE);
+    glReadBuffer(GL_NONE);
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+
     // Load Textures
     #if defined(PLATFORM_OSX)
         GLuint boxTextureID = loadTexture("Textures/box_texture.png");
@@ -719,7 +835,7 @@ int main(int argc, char* argv[])
     setProjectionMatrix(shaderArray[0], projectionMatrix);
     setProjectionMatrix(shaderArray[1], projectionMatrix);
 
-    const int geometryCount = 6; //number of models to load
+    const int geometryCount = 8; //number of models to load
     GLuint vaoArray[geometryCount], vboArray[geometryCount];
     glGenVertexArrays(geometryCount, &vaoArray[0]);
     glGenBuffers(geometryCount, &vboArray[0]);
@@ -749,36 +865,53 @@ int main(int argc, char* argv[])
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(TexturedColoredVertex), (void*)0); //position
     glEnableVertexAttribArray(0);
 
-    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(TexturedColoredVertex), (void*)sizeof(glm::vec3)); //color
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(TexturedColoredVertex), (void*)offsetof(TexturedColoredVertex, color)); //color
     glEnableVertexAttribArray(1);
 
-    glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, sizeof(TexturedColoredVertex), (void*)(2 * sizeof(glm::vec3))); //normal
+    glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, sizeof(TexturedColoredVertex), (void*)offsetof(TexturedColoredVertex, normal)); //normal
     glEnableVertexAttribArray(2);
 
-    glVertexAttribPointer(3, 2, GL_FLOAT, GL_FALSE, sizeof(TexturedColoredVertex), (void*)(3 * sizeof(vec3))); //aUV in vertex shader
+    glVertexAttribPointer(3, 2, GL_FLOAT, GL_FALSE, sizeof(TexturedColoredVertex), (void*)offsetof(TexturedColoredVertex, uv)); //aUV in vertex shader
     glEnableVertexAttribArray(3);
-
-    models[1].setVbo(vboArray[4]);
-    models[2].setVbo(vboArray[4]);
-    models[3].setVbo(vboArray[4]);
-    models[4].setVbo(vboArray[4]);
-    models[5].setVbo(vboArray[4]);
 
     //Ground textured Grid
     glBindVertexArray(vaoArray[5]);
     glBindBuffer(GL_ARRAY_BUFFER, vboArray[5]);
     glBufferData(GL_ARRAY_BUFFER, sizeof(texturedGroundVertexArray), texturedGroundVertexArray, GL_STATIC_DRAW);
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(TexturedColoredVertex), (void*)0);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(TexturedColoredVertex), (void*)0); //position
     glEnableVertexAttribArray(0);
 
-    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(TexturedColoredVertex), (void*)sizeof(glm::vec3));
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(TexturedColoredVertex), (void*)offsetof(TexturedColoredVertex, color)); //color
     glEnableVertexAttribArray(1);
 
-    glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, sizeof(TexturedColoredVertex), (void*)(2 * sizeof(vec3))); 
+    glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, sizeof(TexturedColoredVertex), (void*)offsetof(TexturedColoredVertex, normal)); //normal
     glEnableVertexAttribArray(2);
 
-    glVertexAttribPointer(3, 2, GL_FLOAT, GL_FALSE, sizeof(TexturedColoredVertex), (void*)(3 * sizeof(vec3))); 
+    glVertexAttribPointer(3, 2, GL_FLOAT, GL_FALSE, sizeof(TexturedColoredVertex), (void*)offsetof(TexturedColoredVertex, uv)); //aUV in vertex shader
     glEnableVertexAttribArray(3);
+
+    //Initialize model sphere object
+    Sphere sphere(5.5f, 100, 50, shaderProgram, vec3(0.0f, 8.0f, 0.0f));
+    sphere.buildSphere(); //Generate all the vertices to send to gpu
+
+    glBindVertexArray(vaoArray[6]);
+    glBindBuffer(GL_ARRAY_BUFFER, vboArray[6]);
+    glBufferData(GL_ARRAY_BUFFER, sphere.getVerticesSize(), sphere.getVertices(), GL_STATIC_DRAW);
+
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(TexturedColoredVertex), (void*)0); //position
+    glEnableVertexAttribArray(0);
+
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(TexturedColoredVertex), (void*)offsetof(TexturedColoredVertex, color)); //color
+    glEnableVertexAttribArray(1);
+
+    glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, sizeof(TexturedColoredVertex), (void*)offsetof(TexturedColoredVertex, normal)); //normal
+    glEnableVertexAttribArray(2);
+
+    glVertexAttribPointer(3, 2, GL_FLOAT, GL_FALSE, sizeof(TexturedColoredVertex), (void*)offsetof(TexturedColoredVertex, uv)); //aUV in vertex shader
+    glEnableVertexAttribArray(3);
+
+    sphere.setVao(vaoArray[6]);
+    sphere.setVbo(vboArray[6]);
 
     // Variables to be used later in tutorial
     float angle = 0;
@@ -793,7 +926,6 @@ int main(int argc, char* argv[])
     glfwGetCursorPos(window, &lastMousePosX, &lastMousePosY);
 
 
-    focusedModel = &models[1];
     //Enable hidden surface removal
     glEnable(GL_CULL_FACE);
     glEnable(GL_DEPTH_TEST);
@@ -802,13 +934,44 @@ int main(int argc, char* argv[])
     mat4 worldRotationY;
     mat4 worldRotationUpdate;
 
+    depthShaderProgram = compileAndLinkDepthShaders();
+
     ViewController view(window, WIDTH, HEIGHT, shaderProgram, shaderArray);
     viewController = &view;
+
+    ModelController model;
+    modelController = &model;
+    modelController->initModels(shaderProgram, vaoArray[4], vboArray[4], sphere);
+
+
+    //Initiale Light
+    vec3 lightPos = vec3(10.0f, 30.0f, 0.0f);
+    glm::mat4 lightProjection, lightView;
+    glm::mat4 lightSpaceMatrix;
+    float near_plane = 1.0f, far_plane = 75.0f;
+    lightProjection = glm::perspective(glm::radians(45.0f), (GLfloat)SHADOW_WIDTH / (GLfloat)SHADOW_HEIGHT, near_plane, far_plane); //Light with an angle
+    //lightProjection = glm::ortho(-30.0f, 30.0f, -30.0f, 30.0f, near_plane, far_plane); //Light fromt the top
+    lightView = glm::lookAt(lightPos, glm::vec3(0.0, 0.0, 0.0), glm::vec3(0.0, 1.0, 0.0));
+    lightSpaceMatrix = lightProjection * lightView;
+
+    glProgramUniform3fv(shaderProgram, glGetUniformLocation(shaderProgram, "lightPos"), 1, &lightPos[0]);
+    glProgramUniformMatrix4fv(shaderProgram, glGetUniformLocation(shaderProgram, "lightSpaceMatrix"), 1, GL_FALSE, &lightSpaceMatrix[0][0]);
+
+    //glProgramUniform3fv(texturedShaderProgram, glGetUniformLocation(texturedShaderProgram, "lightPos"), 1, &lightPos[0]);
+    //glProgramUniformMatrix4fv(texturedShaderProgram, glGetUniformLocation(texturedShaderProgram, "lightSpaceMatrix"), 1, GL_FALSE, &lightSpaceMatrix[0][0]);
+
+    glProgramUniformMatrix4fv(depthShaderProgram, glGetUniformLocation(depthShaderProgram, "lightSpaceMatrix"), 1, GL_FALSE, &lightSpaceMatrix[0][0]);
+    glProgramUniform1i(depthShaderProgram, glGetUniformLocation(depthShaderProgram, "shadowMap"), 0/*depthMap*/);
+
 
     glfwSetWindowSizeCallback(window, framebuffer_size_callback); //Handle window resizing
     glfwSetCursorEnterCallback(window, cursor_enter_callback); //Handle cursor leaving window event: Stop tracking mouse mouvement
     glfwSetCursorPosCallback(window, cursor_position_callback); //Handle cursor mouvement event: Update ViewController's mouse position
+    
     viewController->initCamera();
+
+    // Toggle Shadow on/off
+    bool toggleShadow = false;
 
      // Entering Main Loop
     while (!glfwWindowShouldClose(window))
@@ -827,16 +990,50 @@ int main(int argc, char* argv[])
 
         // Each frame, reset color of each pixel to glClearColor
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        // 1. render depth of scene to texture (from light's perspective)
+        glUseProgram(depthShaderProgram);
+        
+       
+        glViewport(0, 0, SHADOW_WIDTH, SHADOW_HEIGHT);
+        glBindFramebuffer(GL_FRAMEBUFFER, depthMapFBO);
+        glClear(GL_DEPTH_BUFFER_BIT);
+            
+        //Draw all objects
+        modelController->drawModels(worldRotationUpdate, textureArray, depthShaderProgram);
 
-        axis.drawAxisLines(shaderType, vaoArray, gridUnit, worldRotationUpdate);
+
+        glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+        // reset viewport
+        glViewport(0, 0, WIDTH, HEIGHT);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+        glUseProgram(shaderType);
+              
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_2D, depthMap);
         drawGroundGrid(shaderType, vaoArray, gridUnit, worldRotationUpdate, textureArray);
+        axis.drawAxisLines(shaderType, vaoArray, gridUnit, worldRotationUpdate);
 
         //MODELS
-        drawTaqiModel(shaderType, vaoArray, worldRotationUpdate, textureArray);
-        drawHauModel(shaderType, vaoArray, worldRotationUpdate, textureArray);
-        drawRoyModel(shaderType, vaoArray, worldRotationUpdate, textureArray);
-        drawSwetangModel(shaderType, vaoArray, worldRotationUpdate, textureArray);
-        drawWilliamModel(shaderType, vaoArray, worldRotationUpdate, textureArray);
+        modelController->drawModels(worldRotationUpdate, textureArray, shaderType);
+
+        //Toggle Shadow
+        if (glfwGetKey(window, GLFW_KEY_N) == GLFW_PRESS)
+        {
+            if (toggleShadow == true)
+            {
+                depthShaderProgram = compileAndLinkDepthShaders();
+                glProgramUniformMatrix4fv(depthShaderProgram, glGetUniformLocation(depthShaderProgram, "lightSpaceMatrix"), 1, GL_FALSE, &lightSpaceMatrix[0][0]);
+                toggleShadow = false;
+            }
+            else
+            {
+                depthShaderProgram = compileAndLinkDepthShaders();
+                glProgramUniformMatrix4fv(depthShaderProgram, glGetUniformLocation(depthShaderProgram, "lightSpaceMatrix"), 0, GL_FALSE, &lightSpaceMatrix[0][0]);
+                toggleShadow = true;
+            }
+        }
 
         viewController->setFastCam(glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS || glfwGetKey(window, GLFW_KEY_RIGHT_SHIFT) == GLFW_PRESS); //Press shift to go faster
         viewController->update(shaderType);
@@ -850,6 +1047,8 @@ int main(int argc, char* argv[])
             glfwSetWindowShouldClose(window, true);
     }
 
+    viewController->~ViewController();
+    modelController->~ModelController();
     // Shutdown GLFW
     glfwTerminate();
 
