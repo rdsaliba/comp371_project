@@ -42,23 +42,31 @@ H: home button
 
 X: texture toggle
 
+N: shadow toggle
+
 ### Model Controls:
 
-U: scale up
+U: scale up by 0.1f
 
-J: scale down
+J: scale down by 0.1f
 
-shift_A: move left
+shift_A: move left (x direction) by 0.1f
 
-shift_D: move right
+shift_D: move right (y direction) by 0.1f
 
-shift_W: move up
+shift_W: move up (y direction) by 0.1f
 
-shift_S: move down
+shift_S: move down (y direction) by 0.1f
 
 A: rotate left 5 degrees about Y axis
 
 D: rotate right 5 degrees about Y axis
+
+Z: translate in the negative Z direction by 0.1f, and shear by -0.05f
+
+shift_Z: translate in the positive Z direction by 0.1f, and shear by 0.05f
+
+spacebar: randomly reposition model on the grid
 
 
 P: points rendering mode
@@ -92,13 +100,13 @@ Left_mouse_button: Zoom in/out
 
 ### World Orientation Controls:
 
-Left_arrow: rotation (CCW) about positive x axis
+Left_arrow: rotation (CCW) about positive x axis by 5.0f
 
-Right_arrow: rotation (CCW) about negative x axis
+Right_arrow: rotation (CCW) about negative x axis by 5.0f
 
-Up_arrow: rotation (CCW) about positive y axis 
+Up_arrow: rotation (CCW) about positive y axis by 5.0f
 
-Down_arrow: rotation (CCW) about negative y axis 
+Down_arrow: rotation (CCW) about negative y axis by 5.0f
 
 
 # Learn OpenGL
