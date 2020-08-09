@@ -168,6 +168,9 @@ mat4 CubeModel::computeRotationMatrix() {
 		case RubiksMove::D_PRIME:
 		case RubiksMove::F:
 		case RubiksMove::B_PRIME:
+		case RubiksMove::MV:
+		case RubiksMove::MVS:
+		case RubiksMove::MH_PRIME:
 			//rotationAngle = -1.0f;
 			rotationAngle -= (rotationSpeed * dt);
 			currentMoveRotationAngle -= (rotationSpeed * dt);
@@ -179,6 +182,9 @@ mat4 CubeModel::computeRotationMatrix() {
 		case RubiksMove::D:
 		case RubiksMove::F_PRIME:
 		case RubiksMove::B:
+		case RubiksMove::MV_PRIME:
+		case RubiksMove::MVS_PRIME:
+		case RubiksMove::MH:
 			//rotationAngle = 1.0f;
 			rotationAngle += (rotationSpeed * dt);
 			currentMoveRotationAngle += (rotationSpeed * dt);

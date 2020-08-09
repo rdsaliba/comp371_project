@@ -138,6 +138,24 @@ void ModelController::useRubiksCube(RubiksMove move) {
 		case RubiksMove::R_PRIME:
 			rubiksCube->RPrime();
 			break;
+		case RubiksMove::MV:
+			rubiksCube->MV();
+			break;
+		case RubiksMove::MV_PRIME:
+			rubiksCube->MVPrime();
+			break;
+		case RubiksMove::MVS:
+			rubiksCube->MVS();
+			break;
+		case RubiksMove::MVS_PRIME:
+			rubiksCube->MVSPrime();
+			break;
+		case RubiksMove::MH:
+			rubiksCube->MH();
+			break;
+		case RubiksMove::MH_PRIME:
+			rubiksCube->MHPrime();
+			break;
 		}
 	}
 }

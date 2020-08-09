@@ -785,6 +785,19 @@ void updateInput(GLFWwindow* window, float dt, vec3& worldRotation, int shaderAr
         else
             modelController->useRubiksCube(RubiksMove::D);
     }
+
+    if (glfwGetKey(window, GLFW_KEY_KP_8))
+        modelController->useRubiksCube(RubiksMove::MV);
+    if (glfwGetKey(window, GLFW_KEY_KP_2))
+        modelController->useRubiksCube(RubiksMove::MV_PRIME);
+    if (glfwGetKey(window, GLFW_KEY_KP_7))
+        modelController->useRubiksCube(RubiksMove::MVS_PRIME);
+    if (glfwGetKey(window, GLFW_KEY_KP_9))
+        modelController->useRubiksCube(RubiksMove::MVS);
+    if (glfwGetKey(window, GLFW_KEY_KP_4))
+        modelController->useRubiksCube(RubiksMove::MH_PRIME);
+    if (glfwGetKey(window, GLFW_KEY_KP_6))
+        modelController->useRubiksCube(RubiksMove::MH);
 }
 
 int main(int argc, char* argv[])

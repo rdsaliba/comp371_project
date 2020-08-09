@@ -37,6 +37,12 @@ public:
 	void BPrime();
 	void R();
 	void RPrime();
+	void MV();
+	void MVPrime();
+	void MVS();
+	void MVSPrime();
+	void MH();
+	void MHPrime();
 
 	vec3 computeRotationVector();
 	bool computeSolveState();

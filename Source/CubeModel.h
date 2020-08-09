@@ -16,7 +16,10 @@ enum CubePosition{
 	TOP,
 	BOTTOM,
 	FRONT,
-	BACK
+	BACK,
+	MID_V,
+	MID_H,
+	MID_VS
 };
 
 enum class RubiksMove {
@@ -33,7 +36,13 @@ enum class RubiksMove {
 	R,
 	R_PRIME,
 	NONE,
-	COMPLETE
+	COMPLETE,
+	MH,
+	MH_PRIME,
+	MV,
+	MV_PRIME,
+	MVS,
+	MVS_PRIME
 };
 
 class CubeModel : public Model {

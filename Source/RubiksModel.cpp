@@ -177,6 +177,8 @@ vector<CubePosition> RubiksModel::getComponentPosition(int x, int y, int z) {
 	case 1:
 		positions.push_back(CubePosition::RIGHT);
 		break;
+	case 0:
+		positions.push_back(CubePosition::MID_V);
 	}
 	
 	switch (y) {
@@ -186,6 +188,8 @@ vector<CubePosition> RubiksModel::getComponentPosition(int x, int y, int z) {
 	case 1:
 		positions.push_back(CubePosition::TOP);
 		break;
+	case 0:
+		positions.push_back(CubePosition::MID_H);
 	}
 
 	switch (z) {
@@ -195,6 +199,8 @@ vector<CubePosition> RubiksModel::getComponentPosition(int x, int y, int z) {
 	case 1:
 		positions.push_back(CubePosition::FRONT);
 		break;
+	case 0:
+		positions.push_back(CubePosition::MID_VS);
 	}
 	
 	return positions;
@@ -298,6 +304,8 @@ vec3 RubiksModel::computeRotationVector() {
 		//currentActionAngle -= (rotationSpeed * dt);
 	case RubiksMove::L_PRIME:
 	case RubiksMove::R:
+	case RubiksMove::MV:
+	case RubiksMove::MV_PRIME:
 		//currentActionAngle = 45.0f;
 		//currentActionAngle += (rotationSpeed * dt);
 		rotationVector.x = 1.0f;
@@ -306,12 +314,16 @@ vec3 RubiksModel::computeRotationVector() {
 	case RubiksMove::D_PRIME:
 	case RubiksMove::U_PRIME:
 	case RubiksMove::D:
+	case RubiksMove::MH:
+	case RubiksMove::MH_PRIME:
 		rotationVector.y = 1.0f;
 		break;
 	case RubiksMove::F:
 	case RubiksMove::B_PRIME:
 	case RubiksMove::F_PRIME:
 	case RubiksMove::B:
+	case RubiksMove::MVS:
+	case RubiksMove::MVS_PRIME:
 		rotationVector.z = 1.0f;
 		break;
 
@@ -419,6 +431,41 @@ void RubiksModel::RPrime() {
 	updatRotatedLayerCubes(rCubes, rCubes);
 }
 
+void RubiksModel::MV() {
+	vector<CubeModel*> mvCubes = getFaceCubes(CubePosition::MID_V);
+	vector<CubeModel*> mvReverseCubes = reverseCubeModelVector(mvCubes);
+
+	updatRotatedLayerCubes(mvCubes, mvReverseCubes);
+}
+
+void RubiksModel::MVPrime() {
+	vector<CubeModel*> mvCubes = getFaceCubes(CubePosition::MID_V);
+	updatRotatedLayerCubes(mvCubes, mvCubes);
+}
+
+void RubiksModel::MVS() {
+	vector<CubeModel*> mvsCubes = getFaceCubes(CubePosition::MID_VS);
+	vector<CubeModel*> mvsReverseCubes = reverseCubeModelVector(mvsCubes);
+
+	updatRotatedLayerCubes(mvsCubes, mvsReverseCubes);
+}
+
+void RubiksModel::MVSPrime() {
+	vector<CubeModel*> mvsCubes = getFaceCubes(CubePosition::MID_VS);
+	updatRotatedLayerCubes(mvsCubes, mvsCubes);
+}
+
+void RubiksModel::MH() {
+	vector<CubeModel*> mhCubes = getFaceCubes(CubePosition::MID_H);
+	vector<CubeModel*> mhReverseCubes = reverseCubeModelVector(mhCubes);
+
+	updatRotatedLayerCubes(mhCubes, mhReverseCubes);
+}
+
+void RubiksModel::MHPrime() {
+	vector<CubeModel*> mhCubes = getFaceCubes(CubePosition::MID_H);
+	updatRotatedLayerCubes(mhCubes, mhCubes);
+}
 /// <summary>
 	/// Creates a vector of CubeModel* that is the reverse order of a given vector
 	/// </summary>
