@@ -1,5 +1,6 @@
 #include "ModelController.h"
 #include "ModelUtilities.h"
+#include "RubiksModel.h"
 using namespace ModelUtilities;
 ModelController::ModelController() {
 	focusedModel = NULL;
@@ -8,7 +9,8 @@ ModelController::ModelController() {
 }
 
 ModelController::~ModelController() {
-	focusedModel = NULL;
+	delete focusedModel;
+	delete rubiksCube;
 }
 
 void ModelController::addModel(Model* model) {
@@ -16,14 +18,16 @@ void ModelController::addModel(Model* model) {
 }
 
 void ModelController::initModels(int shaderProgram, unsigned int vao, unsigned int vbo, Sphere sphere) {
-	Model* axisModel = new Model(vec3(0.0f, 0.0f, 0.0f), 0.0f); //axis lines
+	RubiksModel* rubiksModel = new RubiksModel(vec3(0.0f, 0.0f, 0.0f), 0.0f); //axis lines
 	TaqiModel* taqi = new TaqiModel(vec3(-40.0f, 0.0f, -40.0f), 0.0f); //Taqi (Q4)
 	HauModel* hau = new HauModel(vec3(40.0f, 0.0f, -40.0f), 0.0f); //Hau (U6)
 	RoyModel* roy = new RoyModel(vec3(-40.0f, 0.0f, 40.0f), 0.0f); //Roy (Y8)
 	SwetangModel* swetang = new SwetangModel(vec3(0.0f, 0.0f, 0.0f), 0.0f); //Swetang (E0)
 	WilliamModel* william = new WilliamModel(vec3(40.0f, 0.0f, 40.0f), 0.0f); //William (L9)
 
-	models.push_back(axisModel);
+	rubiksCube = rubiksModel;
+
+	models.push_back(rubiksModel);
 	models.push_back(taqi);
 	models.push_back(hau);
 	models.push_back(roy);
@@ -35,9 +39,11 @@ void ModelController::initModels(int shaderProgram, unsigned int vao, unsigned i
 	setModelsVBO(vbo);
 	setModelsSphere(sphere);
 	modelFocusSwitch(4);
+	rubiksModel->buildCubes();
 }
 
 void ModelController::drawModels(mat4 worldRotationUpdate, GLuint textureArray[], int shaderProgram) {
+	rubiksCube->setDt(dt);
 	for (vector<Model*>::iterator model = models.begin(); model != models.end(); ++model)
 	{
 		(*model)->setShaderProgram(shaderProgram);
@@ -87,4 +93,51 @@ void ModelController::setModelsSphere(Sphere sphere) {
 
 void ModelController::randomPosition(vec3 value) {
 	focusedModel->setPosition(value); 
+}
+
+void ModelController::useRubiksCube(RubiksMove move) {
+	//rubiksCube->queueMove(move);
+	if (!rubiksCube->getIsTurning()) {
+		rubiksCube->queueMove(move);
+		rubiksCube->updateActionState();
+
+		switch (move) {
+		case RubiksMove::L:
+			rubiksCube->L();
+			break;
+		case RubiksMove::L_PRIME:
+			rubiksCube->LPrime();
+			break;
+		case RubiksMove::U:
+			rubiksCube->U();
+			break;
+		case RubiksMove::U_PRIME:
+			rubiksCube->UPrime();
+			break;
+		case RubiksMove::D:
+			rubiksCube->D();
+			break;
+		case RubiksMove::D_PRIME:
+			rubiksCube->DPrime();
+			break;
+		case RubiksMove::F:
+			rubiksCube->F();
+			break;
+		case RubiksMove::F_PRIME:
+			rubiksCube->FPrime();
+			break;
+		case RubiksMove::B:
+			rubiksCube->B();
+			break;
+		case RubiksMove::B_PRIME:
+			rubiksCube->BPrime();
+			break;
+		case RubiksMove::R:
+			rubiksCube->R();
+			break;
+		case RubiksMove::R_PRIME:
+			rubiksCube->RPrime();
+			break;
+		}
+	}
 }

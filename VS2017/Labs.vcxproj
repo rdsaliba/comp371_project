@@ -117,7 +117,9 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\Source\Axis.cpp" />
+    <ClCompile Include="..\Source\CubeModel.cpp" />
     <ClCompile Include="..\Source\ModelController.cpp" />
+    <ClCompile Include="..\Source\RubiksModel.cpp" />
     <ClCompile Include="..\Source\Sphere.cpp" />
     <ClCompile Include="..\Source\ViewController.cpp" />
     <ClCompile Include="..\Source\Model.cpp" />
@@ -131,7 +133,9 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\Source\Axis.h" />
+    <ClInclude Include="..\Source\CubeModel.h" />
     <ClInclude Include="..\Source\ModelController.h" />
+    <ClInclude Include="..\Source\RubiksModel.h" />
     <ClInclude Include="..\Source\Sphere.h" />
     <ClInclude Include="..\Source\Structs.h" />
     <ClInclude Include="..\Source\ViewController.h" />
