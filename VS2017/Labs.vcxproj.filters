@@ -13,6 +13,8 @@
     <ClCompile Include="..\Source\SwetangModel.cpp" />
     <ClCompile Include="..\Source\WilliamModel.cpp" />
     <ClCompile Include="..\Source\Sphere.cpp" />
+    <ClCompile Include="..\Source\CubeModel.cpp" />
+    <ClCompile Include="..\Source\RubiksModel.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\Source\Axis.h" />
@@ -28,6 +30,8 @@
     <ClInclude Include="..\Source\TaqiModel.h" />
     <ClInclude Include="..\Source\WilliamModel.h" />
     <ClInclude Include="..\Source\Sphere.h" />
+    <ClInclude Include="..\Source\CubeModel.h" />
+    <ClInclude Include="..\Source\RubiksModel.h" />
   </ItemGroup>
   <ItemGroup>
     <Image Include="..\Assets\Textures\BillboardTest.bmp" />

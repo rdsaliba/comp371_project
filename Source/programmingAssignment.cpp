@@ -743,6 +743,61 @@ void updateInput(GLFWwindow* window, float dt, vec3& worldRotation, int shaderAr
 
         modelController->randomPosition(vec3(setRandNumX, 0, setRandNumZ));
     }
+
+    if (glfwGetKey(window, GLFW_KEY_I)){
+        if (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS || glfwGetKey(window, GLFW_KEY_RIGHT_SHIFT) == GLFW_PRESS)
+            modelController->useRubiksCube(RubiksMove::L_PRIME);
+        else
+            modelController->useRubiksCube(RubiksMove::L);
+    }
+
+    if (glfwGetKey(window, GLFW_KEY_O)){
+        if(glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS || glfwGetKey(window, GLFW_KEY_RIGHT_SHIFT) == GLFW_PRESS)
+            modelController->useRubiksCube(RubiksMove::R_PRIME);
+        else
+            modelController->useRubiksCube(RubiksMove::R);
+    }
+
+    if (glfwGetKey(window, GLFW_KEY_N)){
+        if(glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS || glfwGetKey(window, GLFW_KEY_RIGHT_SHIFT) == GLFW_PRESS)
+            modelController->useRubiksCube(RubiksMove::U_PRIME);
+        else
+            modelController->useRubiksCube(RubiksMove::U);
+    }
+
+    if (glfwGetKey(window, GLFW_KEY_F)) {
+        if (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS || glfwGetKey(window, GLFW_KEY_RIGHT_SHIFT) == GLFW_PRESS)
+            modelController->useRubiksCube(RubiksMove::F_PRIME);
+        else
+            modelController->useRubiksCube(RubiksMove::F);
+    }
+
+    if (glfwGetKey(window, GLFW_KEY_Y)) {
+        if (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS || glfwGetKey(window, GLFW_KEY_RIGHT_SHIFT) == GLFW_PRESS)
+            modelController->useRubiksCube(RubiksMove::B_PRIME);
+        else
+            modelController->useRubiksCube(RubiksMove::B);
+    }
+
+    if (glfwGetKey(window, GLFW_KEY_M)) {
+        if (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS || glfwGetKey(window, GLFW_KEY_RIGHT_SHIFT) == GLFW_PRESS)
+            modelController->useRubiksCube(RubiksMove::D_PRIME);
+        else
+            modelController->useRubiksCube(RubiksMove::D);
+    }
+
+    if (glfwGetKey(window, GLFW_KEY_KP_8))
+        modelController->useRubiksCube(RubiksMove::MV);
+    if (glfwGetKey(window, GLFW_KEY_KP_2))
+        modelController->useRubiksCube(RubiksMove::MV_PRIME);
+    if (glfwGetKey(window, GLFW_KEY_KP_7))
+        modelController->useRubiksCube(RubiksMove::MVS_PRIME);
+    if (glfwGetKey(window, GLFW_KEY_KP_9))
+        modelController->useRubiksCube(RubiksMove::MVS);
+    if (glfwGetKey(window, GLFW_KEY_KP_4))
+        modelController->useRubiksCube(RubiksMove::MH_PRIME);
+    if (glfwGetKey(window, GLFW_KEY_KP_6))
+        modelController->useRubiksCube(RubiksMove::MH);
 }
 
 int main(int argc, char* argv[])
@@ -984,6 +1039,7 @@ int main(int argc, char* argv[])
         float dt = glfwGetTime() - lastFrameTime;
         lastFrameTime += dt;
         viewController->updateDt(dt);
+        modelController->setDt(dt);
 
         //Get user inputs
         updateInput(window, dt, worldRotation, shaderArray);
