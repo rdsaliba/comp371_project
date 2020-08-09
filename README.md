@@ -32,6 +32,45 @@ This OpenGL application contains a simple virtual scene consisting of 5 models. 
 
 ## Controls
 
+## Rubiks Cube:
+Rubiks Cube Notation info:
+The faces of a rubiks cube are commonly referred to by the first letter of each face in this manner:
+  
+  L = Left 
+  
+  R = Right
+  
+  U = Up
+  
+  D = Down
+  
+  F = Front
+  
+  B = Back
+ 
+-Each face can be rotated in a clockwise or counterclockwise direction. 
+
+-A clockwise rotation (based on the face where the rotation is applied on) is denoted by the letter   associated with said face.
+
+-A counterclockwise rotation is denoted by the letter and a ' (e.g.: L' = counterclockwise rotation on the Left face).
+
+-Like mentionned above, the direction of a rotation is based on the face in question, thus opposite faces rotate clockwise in opposite directions (e.g.: L = R')
+ 
+### Rubiks Cube Controls:
+lower case input will trigger a clockwise rotation of the desired face while uppercase (shift + [key]) will trigger a counterclockwise rotation
+
+i/I: L/L'
+
+o/O: R/R'
+
+f/F: F/F'
+
+y/Y: B/B'
+
+n/N: U/U'
+
+m/M: D/D' 
+
 ### General Controls:
 
 ESC: close window
