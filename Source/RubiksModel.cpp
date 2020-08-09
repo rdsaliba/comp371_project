@@ -76,7 +76,37 @@ vector<CubeModel*> RubiksModel::getFaceCubes(CubePosition face) {
 		}
 	}
 
-	return faceCubes;
+	return getOrderedFaceCubes(faceCubes);
+}
+
+vector<CubeModel*> RubiksModel::getOrderedFaceCubes(vector<CubeModel*> faceCubes) {
+	vector<CubeModel*> orderedFaceCubes;
+	bool hasLeft = false, hasBack = false;
+	int index = computeLowestFaceIndex(faceCubes, -1);
+	//int lowestIndex = cubes.size(); //start with an index value higher than any possible value to ensure getting through all indexes 
+	while (index != cubes.size()) {
+		for (vector<CubeModel*>::iterator cube = faceCubes.begin(); cube != faceCubes.end(); ++cube) {
+			if ((*cube)->getId() == index) {
+				orderedFaceCubes.push_back(*cube);
+				faceCubes.erase(cube);
+				break;
+			}
+		}
+		index = computeLowestFaceIndex(faceCubes, index);
+	}
+	return orderedFaceCubes;
+}
+
+
+int RubiksModel::computeLowestFaceIndex(vector<CubeModel*> faceCubes, int lowestIndex) {
+	int currentLowestIndex = cubes.size();
+	int anId;
+	for (vector<CubeModel*>::reverse_iterator cube = faceCubes.rbegin(); cube != faceCubes.rend(); ++cube) {
+		anId = (*cube)->getId();
+		if (anId < currentLowestIndex && anId > lowestIndex)
+			currentLowestIndex = anId;
+	}
+	return currentLowestIndex;
 }
 
 vector<CubeModel*> RubiksModel::getCubesByType(CubeType cubeType, vector<CubeModel*> cubes) {
@@ -229,6 +259,7 @@ void RubiksModel::updatRotatedLayerCubes(vector<CubeModel*> oldCubes, vector<Cub
 	vec3 rotationVector = computeRotationVector();
 	for (int i = 0; i < size; i++) {
 		cube = oldCubes[i];
+		temp.setId(cube->getId());
 		temp.setPosition(cube->getPosition());
 		temp.setRelativePositions(cube->getRelativePositions());
 		tempOldCubes.push_back(temp);
@@ -246,6 +277,7 @@ void RubiksModel::updatRotatedLayerCubes(vector<CubeModel*> oldCubes, vector<Cub
 		cube = newCubes[i];
 		/*cube->setRelativePositions(temp.getRelativePositions());
 		cube->setIsTurning(true);*/
+		cube->setId(temp.getId());
 		cube->setRelativePositions(temp.getRelativePositions());
 		cube->setNextPosition(temp.getPosition());
 		//cube->setPosition(temp.getPosition());
@@ -341,26 +373,26 @@ void RubiksModel::UPrime() {
 
 void RubiksModel::D() {
 	vector<CubeModel*> dCubes = getFaceCubes(CubePosition::BOTTOM);
-	updatRotatedLayerCubes(dCubes, dCubes);
-}
-
-void RubiksModel::DPrime() {
-	vector<CubeModel*> dCubes = getFaceCubes(CubePosition::BOTTOM);
 	vector<CubeModel*> dReverseCubes = reverseCubeModelVector(dCubes);
 
 	updatRotatedLayerCubes(dCubes, dReverseCubes);
 }
 
-void RubiksModel::F() {
-	vector<CubeModel*> fCubes = getFaceCubes(CubePosition::FRONT);
-	updatRotatedLayerCubes(fCubes, fCubes);
+void RubiksModel::DPrime() {
+	vector<CubeModel*> dCubes = getFaceCubes(CubePosition::BOTTOM);
+	updatRotatedLayerCubes(dCubes, dCubes);
 }
 
-void RubiksModel::FPrime() {
+void RubiksModel::F() {
 	vector<CubeModel*> fCubes = getFaceCubes(CubePosition::FRONT);
 	vector<CubeModel*> fReverseCubes = reverseCubeModelVector(fCubes);
 
 	updatRotatedLayerCubes(fCubes, fReverseCubes);
+}
+
+void RubiksModel::FPrime() {
+	vector<CubeModel*> fCubes = getFaceCubes(CubePosition::FRONT);
+	updatRotatedLayerCubes(fCubes, fCubes);
 }
 
 void RubiksModel::B() {
@@ -377,14 +409,14 @@ void RubiksModel::BPrime() {
 
 void RubiksModel::R() {
 	vector<CubeModel*> rCubes = getFaceCubes(CubePosition::RIGHT);
-	updatRotatedLayerCubes(rCubes, rCubes);
+	vector<CubeModel*> rReverseCubes = reverseCubeModelVector(rCubes);
+
+	updatRotatedLayerCubes(rCubes, rReverseCubes);
 }
 
 void RubiksModel::RPrime() {
 	vector<CubeModel*> rCubes = getFaceCubes(CubePosition::RIGHT);
-	vector<CubeModel*> rReverseCubes = reverseCubeModelVector(rCubes);
-
-	updatRotatedLayerCubes(rCubes, rReverseCubes);
+	updatRotatedLayerCubes(rCubes, rCubes);
 }
 
 /// <summary>

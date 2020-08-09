@@ -10,6 +10,7 @@ public:
 	void buildCubes();
 
 	vector<CubeModel*> getFaceCubes(CubePosition face);
+	vector<CubeModel*> getOrderedFaceCubes(vector<CubeModel*> faceCubes);
 	vector<CubeModel*> getCubesByType(CubeType cubeType, vector<CubeModel*> cubes);
 	RubiksMove getCurrentMove() { return currentMove; }
 	float getDt() { return dt; }
@@ -18,6 +19,7 @@ public:
 	void setDt(float dt) { this->dt = dt; }
 	void setIsTurning(bool isTurning) { this->isTurning = isTurning; }
 
+	int computeLowestFaceIndex(vector<CubeModel*> faceCubes, int lowestIndex);
 	void updateActionState();
 	void completeCurrentAction();
 	void queueMove(RubiksMove move) { moveBuffer.push_back(move); }

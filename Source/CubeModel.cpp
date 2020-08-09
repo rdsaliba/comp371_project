@@ -162,23 +162,23 @@ mat4 CubeModel::computeRotationMatrix() {
 	float rotationSpeed = 20.0f;
 	if (isTurning) {
 		switch (currentMove) {
-		case RubiksMove::R_PRIME:
-		case RubiksMove::L:
-		case RubiksMove::U_PRIME:
-		case RubiksMove::D:
-		case RubiksMove::F_PRIME:
-		case RubiksMove::B:
+		case RubiksMove::R:
+		case RubiksMove::L_PRIME:
+		case RubiksMove::U:
+		case RubiksMove::D_PRIME:
+		case RubiksMove::F:
+		case RubiksMove::B_PRIME:
 			//rotationAngle = -1.0f;
 			rotationAngle -= (rotationSpeed * dt);
 			currentMoveRotationAngle -= (rotationSpeed * dt);
 			//rotationVector.x = 1.0f;
 			break;
-		case RubiksMove::L_PRIME:
-		case RubiksMove::R:
-		case RubiksMove::U:
-		case RubiksMove::D_PRIME:
-		case RubiksMove::F:
-		case RubiksMove::B_PRIME:
+		case RubiksMove::L:
+		case RubiksMove::R_PRIME:
+		case RubiksMove::U_PRIME:
+		case RubiksMove::D:
+		case RubiksMove::F_PRIME:
+		case RubiksMove::B:
 			//rotationAngle = 1.0f;
 			rotationAngle += (rotationSpeed * dt);
 			currentMoveRotationAngle += (rotationSpeed * dt);

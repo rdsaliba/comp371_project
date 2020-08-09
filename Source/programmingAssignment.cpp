@@ -744,28 +744,46 @@ void updateInput(GLFWwindow* window, float dt, vec3& worldRotation, int shaderAr
         modelController->randomPosition(vec3(setRandNumX, 0, setRandNumZ));
     }
 
-    if (glfwGetKey(window, GLFW_KEY_I) && !((glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS || glfwGetKey(window, GLFW_KEY_RIGHT_SHIFT) == GLFW_PRESS))) {
-        modelController->useRubiksCube(RubiksMove::L_PRIME);
+    if (glfwGetKey(window, GLFW_KEY_I)){
+        if (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS || glfwGetKey(window, GLFW_KEY_RIGHT_SHIFT) == GLFW_PRESS)
+            modelController->useRubiksCube(RubiksMove::L_PRIME);
+        else
+            modelController->useRubiksCube(RubiksMove::L);
     }
 
-    if (glfwGetKey(window, GLFW_KEY_I) == GLFW_PRESS && (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS || glfwGetKey(window, GLFW_KEY_RIGHT_SHIFT) == GLFW_PRESS)) {
-        modelController->useRubiksCube(RubiksMove::L);
+    if (glfwGetKey(window, GLFW_KEY_O)){
+        if(glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS || glfwGetKey(window, GLFW_KEY_RIGHT_SHIFT) == GLFW_PRESS)
+            modelController->useRubiksCube(RubiksMove::R_PRIME);
+        else
+            modelController->useRubiksCube(RubiksMove::R);
     }
 
-    if (glfwGetKey(window, GLFW_KEY_O) && !((glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS || glfwGetKey(window, GLFW_KEY_RIGHT_SHIFT) == GLFW_PRESS))) {
-        modelController->useRubiksCube(RubiksMove::R_PRIME);
+    if (glfwGetKey(window, GLFW_KEY_N)){
+        if(glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS || glfwGetKey(window, GLFW_KEY_RIGHT_SHIFT) == GLFW_PRESS)
+            modelController->useRubiksCube(RubiksMove::U_PRIME);
+        else
+            modelController->useRubiksCube(RubiksMove::U);
     }
 
-    if (glfwGetKey(window, GLFW_KEY_O) == GLFW_PRESS && (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS || glfwGetKey(window, GLFW_KEY_RIGHT_SHIFT) == GLFW_PRESS)) {
-        modelController->useRubiksCube(RubiksMove::R);
+    if (glfwGetKey(window, GLFW_KEY_F)) {
+        if (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS || glfwGetKey(window, GLFW_KEY_RIGHT_SHIFT) == GLFW_PRESS)
+            modelController->useRubiksCube(RubiksMove::F_PRIME);
+        else
+            modelController->useRubiksCube(RubiksMove::F);
     }
 
-    if (glfwGetKey(window, GLFW_KEY_K) && !((glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS || glfwGetKey(window, GLFW_KEY_RIGHT_SHIFT) == GLFW_PRESS))) {
-        modelController->useRubiksCube(RubiksMove::U);
+    if (glfwGetKey(window, GLFW_KEY_Y)) {
+        if (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS || glfwGetKey(window, GLFW_KEY_RIGHT_SHIFT) == GLFW_PRESS)
+            modelController->useRubiksCube(RubiksMove::B_PRIME);
+        else
+            modelController->useRubiksCube(RubiksMove::B);
     }
 
-    if (glfwGetKey(window, GLFW_KEY_K) == GLFW_PRESS && (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS || glfwGetKey(window, GLFW_KEY_RIGHT_SHIFT) == GLFW_PRESS)) {
-        modelController->useRubiksCube(RubiksMove::U_PRIME);
+    if (glfwGetKey(window, GLFW_KEY_M)) {
+        if (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS || glfwGetKey(window, GLFW_KEY_RIGHT_SHIFT) == GLFW_PRESS)
+            modelController->useRubiksCube(RubiksMove::D_PRIME);
+        else
+            modelController->useRubiksCube(RubiksMove::D);
     }
 }
 
