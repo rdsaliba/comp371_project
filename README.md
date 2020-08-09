@@ -48,10 +48,13 @@ The faces of a rubiks cube are commonly referred to by the first letter of each 
   
   B = Back
  
- -Each face can be rotated in a clockwise or counterclockwise direction. 
- -A clockwise rotation (based on the face where the rotation is applied on) is denoted by the letter   associated with said face.
- -A counterclockwise rotation is denoted by the letter and a ' (e.g.: L' = counterclockwise rotation on the Left face).
- -Like mentionned above, the direction of a rotation is based on the face in question, thus opposite faces rotate clockwise in opposite directions (e.g.: L = R')
+-Each face can be rotated in a clockwise or counterclockwise direction. 
+
+-A clockwise rotation (based on the face where the rotation is applied on) is denoted by the letter   associated with said face.
+
+-A counterclockwise rotation is denoted by the letter and a ' (e.g.: L' = counterclockwise rotation on the Left face).
+
+-Like mentionned above, the direction of a rotation is based on the face in question, thus opposite faces rotate clockwise in opposite directions (e.g.: L = R')
  
 ### Rubiks Cube Controls:
 lower case input will trigger a clockwise rotation of the desired face while uppercase (shift + [key]) will trigger a counterclockwise rotation
