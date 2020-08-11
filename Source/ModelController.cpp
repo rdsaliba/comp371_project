@@ -11,6 +11,8 @@ ModelController::ModelController() {
 ModelController::~ModelController() {
 	delete focusedModel;
 	delete rubiksCube;
+	for (int i = 0; i < models.size(); i++)
+		delete models[i];
 }
 
 void ModelController::addModel(Model* model) {
@@ -18,7 +20,7 @@ void ModelController::addModel(Model* model) {
 }
 
 void ModelController::initModels(int shaderProgram, unsigned int vao, unsigned int vbo, Sphere sphere) {
-	RubiksModel* rubiksModel = new RubiksModel(vec3(0.0f, 0.0f, 0.0f), 0.0f); //axis lines
+	RubiksModel* rubiksModel = new RubiksModel(vec3(0.0f, 2.0f, 0.0f), 0.0f); //axis lines
 	TaqiModel* taqi = new TaqiModel(vec3(-40.0f, 0.0f, -40.0f), 0.0f); //Taqi (Q4)
 	HauModel* hau = new HauModel(vec3(40.0f, 0.0f, -40.0f), 0.0f); //Hau (U6)
 	RoyModel* roy = new RoyModel(vec3(-40.0f, 0.0f, 40.0f), 0.0f); //Roy (Y8)

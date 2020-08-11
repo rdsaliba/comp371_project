@@ -1103,8 +1103,7 @@ int main(int argc, char* argv[])
             glfwSetWindowShouldClose(window, true);
     }
 
-    viewController->~ViewController();
-    modelController->~ModelController();
+    delete modelController;
     // Shutdown GLFW
     glfwTerminate();
 

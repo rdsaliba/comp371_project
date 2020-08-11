@@ -55,20 +55,17 @@ public:
 	CubeType getType() { return type; }
 	int getId() { return id; }
 	vector<CubePosition> getRelativePositions() { return relativePositions; }
-	mat4 getRotationMatrix() { return rotationMatrix; }
-	mat4 getActionRotationMatrix() { return actionRotationMatrix; }
 	bool getIsTurning() { return isTurning; }
 	float getRotationAngle() { return rotationAngle; }
 	float getDt() { return dt; }
 	vec3 getRotationVector() { return rotationVector; }
 	RubiksMove getCurrentMove() { return currentMove; }
 	vec3 getNextPosition() { return nextPosition; }
+	vec3 getRubiksCubePostion() { return rubiksCubePosition; }
 
 	void setType(CubeType type) { this->type = type; }
 	void setId(int id) { this->id = id; }
 	void setRelativePositions(vector<CubePosition> relativePositions) { this->relativePositions = relativePositions; }
-	void setRotationMatrix(mat4 rotationMatrix) { this->rotationMatrix = rotationMatrix; }
-	void setActionRotationMatrix(mat4 actionRotationMatrix) { this->actionRotationMatrix = actionRotationMatrix; }
 	void setIsTurning(bool isTurning) { this->isTurning = isTurning; }
 	void setRotationAngle(float rotationAngle) { this->rotationAngle = rotationAngle; }
 	void setDt(float dt) { this->dt = dt; }
@@ -76,29 +73,27 @@ public:
 	void setCurrentMove(RubiksMove currentMove) { this->currentMove = currentMove; }
 	void setCurrentAction(RubiksMove currentMove, vec3 rotationVector);
 	void setNextPosition(vec3 nextPosition) { this->nextPosition = nextPosition; }
+	void setRubiksCubePosition(vec3 rubiksCubePosition) { this->rubiksCubePosition = rubiksCubePosition; }
 
 	mat4 computeSingleCubeRotation();
-	//mat4 computeRotationMatrices();
 	mat4 computeRotationMatrix();
 	bool equal(CubeModel cube);
-	//void updateActionRotationMatrix();
 	virtual void draw(mat4 worldRotationUpdate, GLuint textureArray[]);
 private:
+	int id;
 	CubeType type;
-	mat4 rotationMatrix;
-	mat4 actionRotationMatrix;
 	bool isTurning;
 	float rotationAngle;
-	float currentMoveRotationAngle;
 	float baseRotationAngle;
-	vec3 rv;
 	vec3 rotationVector;
 	vector<CubePosition> relativePositions; 
-	int id;
 	float dt;
 	RubiksMove currentMove;
 	vector<RubiksMove> moveList;
 	vector<float> rotationAngleList;
 	vector<vec3> rotationVectorList;
 	vec3 nextPosition;
+	vec3 rubiksCubePosition;
+
+	void completeAction();
 };

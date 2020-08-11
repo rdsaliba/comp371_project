@@ -53,7 +53,6 @@ private:
 	vector<int> centerIndices;
 	vector<RubiksMove> moveBuffer;
 	RubiksMove currentMove;
-	vector<CubeModel*> activeLayer;
 	vector<CubeModel> rotatedLayer;
 	float currentActionAngle;
 	float dt;
@@ -64,6 +63,5 @@ private:
 	CubeModel* initCubeComponent(float x, float y, float z);
 	vector<CubePosition> getComponentPosition(int x, int y, int z);
 	void updatRotatedLayerCubes(vector<CubeModel*> oldCubes, vector<CubeModel*> workingCubes);
-	//mat4 computeRotationMatrix();
 	vector<CubeModel*> reverseCubeModelVector(vector<CubeModel*> cubeVector);
 };
