@@ -1,0 +1,65 @@
+800 x 800 image size /9 (image divided in 9)
+
+- (near) habspic https://www.habseyesontheprize.com/prospects/2018/10/1/17920444/three-headed-monster-jesperi-kotkaniemi-nick-suzuki-ryan-poehling-montreal-canadiens-centre-core
+- (left) rezero
+- (far) earth https://wallup.net/superb-3d-earth/
+- (right) wolf https://wallpapercave.com/white-wolf-wallpaper
+
+
+
+27 pics/cubes:
+
+x0 = leftmost cube, y0 = lowest cube, z0 = farthest cube (back of rubix)
+
+image 
+1 = top left
+2 = top mid
+3 = top right
+
+4 = mid left
+5 = mid mid
+6 = mid right
+
+7 = low left
+8 = low mid
+9 = low right
+
+Back cubes:
+x0, y0, z0 (includes the following cube faces: bottom, far, left)
+x1, y0, z0 (bottom, far)
+x2, y0, z0 (bottom, far, right)
+
+x0, y1, z0 (far, left)
+x1, y1, z0 (far)
+x2, y1, z0 (far, right)
+
+x0, y2, z0 (far, top, left)
+x1, y2, z0 (far, top)
+x2, y2, z0 (far, top, right)
+
+Middle cubes:
+x0, y0, z1 (bottom, left)
+x1, y0, z1 (bottom)
+x2, y0, z1 (bottom, right)
+
+x0, y1, z1 (left)
+x1, y1, z1 
+x2, y1, z1 (right)
+
+x0, y2, z1 (top, left)
+x1, y2, z1 (top)
+x2, y2, z1 (top, right)
+
+Front cubes:
+x0, y0, z2 (bottom, left, near)
+x1, y0, z2 (bottom, near)
+x2, y0, z2 (bottom, right, near)
+
+x0, y1, z2 (left, near)
+x1, y1, z2 (near)
+x2, y1, z2 (right, near)
+
+x0, y2, z2 (top, left, near)
+x1, y2, z2 (top, near)
+x2, y2, z2 (top, right, near)
+

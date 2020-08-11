@@ -82,7 +82,7 @@ public:
 	mat4 computeRotationMatrix();
 	bool equal(CubeModel cube);
 	//void updateActionRotationMatrix();
-	virtual void draw(mat4 worldRotationUpdate, GLuint textureArray[]);
+	virtual void draw(mat4 worldRotationUpdate, GLuint textureArray);
 private:
 	CubeType type;
 	mat4 rotationMatrix;

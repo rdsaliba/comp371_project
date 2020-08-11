@@ -226,9 +226,11 @@ bool CubeModel::equal(CubeModel cube) {
 	return true;
 }
 
-void CubeModel::draw(mat4 worldRotationUpdate, GLuint textureArray[]) {
+void CubeModel::draw(mat4 worldRotationUpdate, GLuint textureArray) {
 	glBindVertexArray(this->vao);
 	glBindBuffer(GL_ARRAY_BUFFER, vbo);
+	glBindTexture(GL_TEXTURE_2D, textureArray);
+
 	GLuint worldMatrixLocation = glGetUniformLocation(this->shaderProgram, "worldMatrix");
 
 	mat4 rotationUpdate = computeSingleCubeRotation();//rotate(mat4(1.0f), radians(this->baseRotationAngle), rv);

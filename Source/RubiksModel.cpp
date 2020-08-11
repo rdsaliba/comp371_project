@@ -486,17 +486,28 @@ void RubiksModel::draw(mat4 worldRotationUpdate, GLuint textureArray[]) {
 	//if (isTurning) {
 	//	mat4 rotationMatrix = this->computeRotationMatrix();
 	//}
+	int i = 1;
 	bool turning = false;
 	for (vector<CubeModel*>::iterator aCube = cubes.begin(); aCube != cubes.end(); ++aCube) {
+		
 		(*aCube)->setShaderProgram(this->getShaderProgram());
 	/*	if ((*aCube)->getIsTurning()) {
 			(*aCube)->setActionRotationMatrix(rotationMatrix);
 		}*/
 		(*aCube)->setDt(dt);
-		(*aCube)->draw(worldRotationUpdate, textureArray);
+		if (i < 28)
+		{
+			(*aCube)->draw(worldRotationUpdate, textureArray[i]);
+		}
+		else
+		{
+			//(*aCube)->draw(worldRotationUpdate, textureArray[4]);
+		}
+		
 		if ((*aCube)->getIsTurning()) {
 			turning = true;
 		}
+		i++;
 	}
 
 	if (!turning) {
