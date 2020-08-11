@@ -47,6 +47,14 @@ The faces of a rubiks cube are commonly referred to by the first letter of each 
   F = Front
   
   B = Back
+  
+  (M = Middle For the sake of this project, M slices have been divided into 3 distinct layers)
+  
+  MV = Middle Vertical (original M slice)
+  
+  MV_S = Middle Vertical Sideway (akin to an F rotation, but on the middle layer)
+  
+  MH = Middle Horizontal (akin to an U rotation, but on the middle layer)
  
 -Each face can be rotated in a clockwise or counterclockwise direction. 
 
@@ -69,7 +77,19 @@ y/Y: B/B'
 
 n/N: U/U'
 
-m/M: D/D' 
+m/M: D/D'
+
+keypad_8: MV
+
+keypad_2: MV'
+
+keypad_9: MVS
+
+keypad_7: MVS'
+
+keypad_6: MH
+
+keypad_4: MH'
 
 ### General Controls:
 
