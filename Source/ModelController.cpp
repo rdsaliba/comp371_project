@@ -99,7 +99,8 @@ void ModelController::randomPosition(vec3 value) {
 }
 
 void ModelController::scrambleGenerator() {
-	int moveCtr = rand() % 10;
+	srand(glfwGetTime()); //generate new seed to ensure scrambles are different
+	int moveCtr = rand() % 10 + 3; //10 maximum moves, 3 moves minimum
 	isScrambling = true;
 	for (int i = 0; i < moveCtr; i++) {
 		RubiksMove move = static_cast<RubiksMove>(rand() % 20);
