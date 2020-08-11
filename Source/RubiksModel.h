@@ -15,6 +15,8 @@ public:
 	RubiksMove getCurrentMove() { return currentMove; }
 	float getDt() { return dt; }
 	bool getIsTurning() { return isTurning; }
+	vector<RubiksMove> getMoveBuffer() { return moveBuffer; }
+	int moveBufferSize() { return moveBuffer.size(); }
 
 	void setDt(float dt) { this->dt = dt; }
 	void setIsTurning(bool isTurning) { this->isTurning = isTurning; }
@@ -23,6 +25,7 @@ public:
 	void updateActionState();
 	void completeCurrentAction();
 	void queueMove(RubiksMove move) { moveBuffer.push_back(move); }
+	RubiksMove dequeueMove();
 
 	//Cube manipulation/rotation functions, using rubiks cube notation
 	void L();

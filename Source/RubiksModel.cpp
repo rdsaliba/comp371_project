@@ -234,6 +234,13 @@ CubeModel* RubiksModel::initCubeComponent(float x, float y, float z) {
 	return aCube;
 }
 
+RubiksMove RubiksModel::dequeueMove() {
+	//currentMove = moveBuffer.front();
+	//moveBuffer.erase(moveBuffer.begin());
+	
+	return moveBuffer.front();
+}
+
 void RubiksModel::updateActionState() {
 	isTurning = true;
 	currentMove = moveBuffer.front();

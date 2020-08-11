@@ -22,7 +22,7 @@ enum CubePosition{
 	MID_VS
 };
 
-enum class RubiksMove {
+enum RubiksMove {
 	L,
 	L_PRIME,
 	U,

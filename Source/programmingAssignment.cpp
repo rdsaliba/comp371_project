@@ -798,6 +798,9 @@ void updateInput(GLFWwindow* window, float dt, vec3& worldRotation, int shaderAr
         modelController->useRubiksCube(RubiksMove::MH_PRIME);
     if (glfwGetKey(window, GLFW_KEY_KP_6))
         modelController->useRubiksCube(RubiksMove::MH);
+
+    if (glfwGetKey(window, GLFW_KEY_KP_0))
+        modelController->scrambleGenerator();
 }
 
 int main(int argc, char* argv[])
@@ -1040,9 +1043,10 @@ int main(int argc, char* argv[])
         lastFrameTime += dt;
         viewController->updateDt(dt);
         modelController->setDt(dt);
-
+  
         //Get user inputs
         updateInput(window, dt, worldRotation, shaderArray);
+        modelController->scramble();
 
         // Each frame, reset color of each pixel to glClearColor
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -1056,7 +1060,6 @@ int main(int argc, char* argv[])
             
         //Draw all objects
         modelController->drawModels(worldRotationUpdate, textureArray, depthShaderProgram);
-
 
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
@@ -1073,7 +1076,6 @@ int main(int argc, char* argv[])
 
         //MODELS
         modelController->drawModels(worldRotationUpdate, textureArray, shaderType);
-
         //Toggle Shadow
         if (glfwGetKey(window, GLFW_KEY_N) == GLFW_PRESS)
         {

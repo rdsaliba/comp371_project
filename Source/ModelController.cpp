@@ -6,6 +6,7 @@ ModelController::ModelController() {
 	focusedModel = NULL;
 	models = vector<Model*>();
 	selectedModelIndex = -1;
+	isScrambling = false;
 }
 
 ModelController::~ModelController() {
@@ -97,12 +98,34 @@ void ModelController::randomPosition(vec3 value) {
 	focusedModel->setPosition(value); 
 }
 
+void ModelController::scrambleGenerator() {
+	int moveCtr = rand() % 10;
+	isScrambling = true;
+	for (int i = 0; i < moveCtr; i++) {
+		RubiksMove move = static_cast<RubiksMove>(rand() % 20);
+		scrambleList.push_back(move);
+	}
+}
+
+void ModelController::scramble() {
+	if (isScrambling) {
+		if (scrambleList.size() > 0){
+			if (!rubiksCube->getIsTurning()) {
+				useRubiksCube(scrambleList.front());
+				scrambleList.erase(scrambleList.begin());
+			}
+		}
+		else {
+			isScrambling = false;
+		}
+	}
+}
+
 void ModelController::useRubiksCube(RubiksMove move) {
-	//rubiksCube->queueMove(move);
 	if (!rubiksCube->getIsTurning()) {
 		rubiksCube->queueMove(move);
 		rubiksCube->updateActionState();
-
+	
 		switch (move) {
 		case RubiksMove::L:
 			rubiksCube->L();

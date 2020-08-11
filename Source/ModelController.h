@@ -21,12 +21,14 @@ public:
 	void initModels(int shaderProgram, unsigned int vao, unsigned int vbo, Sphere sphere);
 	void drawModels(mat4 worldRotationUpdate, GLuint textureArray[], int shaderProgram);
 	void modelFocusSwitch(int nextModel);
+	bool getIsScrambling() { return isScrambling; }
 
 	void setModelsShaderProgram(int shaderProgram);
 	void setModelsVAO(unsigned int vao);
 	void setModelsVBO(unsigned int vbo);
 	void setModelsSphere(Sphere sphere);
 	void setDt(float dt) { this->dt = dt; }
+	void setIsScrambling(bool isScrambling) { this->isScrambling = isScrambling; }
 
 	//Functions to update the currently selected model
 	void updateScaling(float scaling) { focusedModel->updateScaling(scaling); }
@@ -38,9 +40,13 @@ public:
 	void updateShearingY(float shear) { focusedModel->updateShearingY(shear); }
 	void randomPosition(vec3 value);
 	void useRubiksCube(RubiksMove move);
+	void scrambleGenerator();
+	void scramble();
 private:
 	vector<Model*> models;
 	RubiksModel* rubiksCube;
 	int selectedModelIndex;
 	float dt;
+	bool isScrambling;
+	vector<RubiksMove> scrambleList;
 };
