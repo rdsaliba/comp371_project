@@ -15,6 +15,8 @@ public:
 	RubiksMove getCurrentMove() { return currentMove; }
 	float getDt() { return dt; }
 	bool getIsTurning() { return isTurning; }
+	vector<RubiksMove> getMoveBuffer() { return moveBuffer; }
+	int moveBufferSize() { return moveBuffer.size(); }
 
 	void setDt(float dt) { this->dt = dt; }
 	void setIsTurning(bool isTurning) { this->isTurning = isTurning; }
@@ -23,6 +25,7 @@ public:
 	void updateActionState();
 	void completeCurrentAction();
 	void queueMove(RubiksMove move) { moveBuffer.push_back(move); }
+	RubiksMove dequeueMove();
 
 	//Cube manipulation/rotation functions, using rubiks cube notation
 	void L();
@@ -53,7 +56,6 @@ private:
 	vector<int> centerIndices;
 	vector<RubiksMove> moveBuffer;
 	RubiksMove currentMove;
-	vector<CubeModel*> activeLayer;
 	vector<CubeModel> rotatedLayer;
 	float currentActionAngle;
 	float dt;
@@ -64,6 +66,5 @@ private:
 	CubeModel* initCubeComponent(float x, float y, float z);
 	vector<CubePosition> getComponentPosition(int x, int y, int z);
 	void updatRotatedLayerCubes(vector<CubeModel*> oldCubes, vector<CubeModel*> workingCubes);
-	//mat4 computeRotationMatrix();
 	vector<CubeModel*> reverseCubeModelVector(vector<CubeModel*> cubeVector);
 };

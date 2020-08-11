@@ -6,11 +6,14 @@ ModelController::ModelController() {
 	focusedModel = NULL;
 	models = vector<Model*>();
 	selectedModelIndex = -1;
+	isScrambling = false;
 }
 
 ModelController::~ModelController() {
-	delete focusedModel;
-	delete rubiksCube;
+	focusedModel = NULL;
+	rubiksCube = NULL;
+	for (int i = 0; i < models.size(); i++)
+		delete models[i];
 }
 
 void ModelController::addModel(Model* model) {
@@ -18,7 +21,7 @@ void ModelController::addModel(Model* model) {
 }
 
 void ModelController::initModels(int shaderProgram, unsigned int vao, unsigned int vbo, Sphere sphere) {
-	RubiksModel* rubiksModel = new RubiksModel(vec3(0.0f, 0.0f, 0.0f), 0.0f); //axis lines
+	RubiksModel* rubiksModel = new RubiksModel(vec3(0.0f, 2.0f, 0.0f), 0.0f); //axis lines
 	TaqiModel* taqi = new TaqiModel(vec3(-40.0f, 0.0f, -40.0f), 0.0f); //Taqi (Q4)
 	HauModel* hau = new HauModel(vec3(40.0f, 0.0f, -40.0f), 0.0f); //Hau (U6)
 	RoyModel* roy = new RoyModel(vec3(-40.0f, 0.0f, 40.0f), 0.0f); //Roy (Y8)
@@ -95,12 +98,35 @@ void ModelController::randomPosition(vec3 value) {
 	focusedModel->setPosition(value); 
 }
 
+void ModelController::scrambleGenerator() {
+	srand(glfwGetTime()); //generate new seed to ensure scrambles are different
+	int moveCtr = rand() % 10 + 3; //10 maximum moves, 3 moves minimum
+	isScrambling = true;
+	for (int i = 0; i < moveCtr; i++) {
+		RubiksMove move = static_cast<RubiksMove>(rand() % 20);
+		scrambleList.push_back(move);
+	}
+}
+
+void ModelController::scramble() {
+	if (isScrambling) {
+		if (scrambleList.size() > 0){
+			if (!rubiksCube->getIsTurning()) {
+				useRubiksCube(scrambleList.front());
+				scrambleList.erase(scrambleList.begin());
+			}
+		}
+		else {
+			isScrambling = false;
+		}
+	}
+}
+
 void ModelController::useRubiksCube(RubiksMove move) {
-	//rubiksCube->queueMove(move);
 	if (!rubiksCube->getIsTurning()) {
 		rubiksCube->queueMove(move);
 		rubiksCube->updateActionState();
-
+	
 		switch (move) {
 		case RubiksMove::L:
 			rubiksCube->L();

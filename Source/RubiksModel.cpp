@@ -20,9 +20,8 @@ RubiksModel::RubiksModel(vec3 position, float size) :Model(position, size) {
 };
 
 RubiksModel::~RubiksModel() {
-	for (vector<CubeModel*>::iterator aCube = cubes.begin(); aCube != cubes.end(); ++aCube) {
-		delete (*aCube);
-	}
+	for (int i = 0; i < cubes.size(); i++)
+		delete cubes[i];
 }
 
 /// <summary>
@@ -51,8 +50,6 @@ bool RubiksModel::computeSolveState() {
 			if (currentPositions[i] != solutionPositions[i])
 				return false;
 		}
-		/*if (!(*cube)->equal((*solutionCube)))
-			return false;*/
 	}
 
 	for (vector<CubeModel*>::iterator cube = cubes.begin(); cube != cubes.end(); ++cube) {
@@ -83,7 +80,6 @@ vector<CubeModel*> RubiksModel::getOrderedFaceCubes(vector<CubeModel*> faceCubes
 	vector<CubeModel*> orderedFaceCubes;
 	bool hasLeft = false, hasBack = false;
 	int index = computeLowestFaceIndex(faceCubes, -1);
-	//int lowestIndex = cubes.size(); //start with an index value higher than any possible value to ensure getting through all indexes 
 	while (index != cubes.size()) {
 		for (vector<CubeModel*>::iterator cube = faceCubes.begin(); cube != faceCubes.end(); ++cube) {
 			if ((*cube)->getId() == index) {
@@ -133,6 +129,7 @@ void RubiksModel::buildCubes() {
 				aCube = initCubeComponent((float)x, (float)y, (float)z);
 				aCube->setRelativePositions(getComponentPosition(x, y, z));
 				aCube->setId(index);
+				aCube->setRubiksCubePosition(this->position);
 				//Find centers
 				if ( (((x == y) || (x == z)) && (x == 0)) || (((y == x) || (y == z)) && (y == 0))) {
 					type = CubeType::CENTER;
@@ -151,7 +148,7 @@ void RubiksModel::buildCubes() {
 						type = CubeType::CORE;
 					}
 				}
- 			
+ 				
 				aCube->setType(type);
 				cubes.push_back(aCube);
 				CubeModel solutionCube(aCube);
@@ -237,6 +234,13 @@ CubeModel* RubiksModel::initCubeComponent(float x, float y, float z) {
 	return aCube;
 }
 
+RubiksMove RubiksModel::dequeueMove() {
+	//currentMove = moveBuffer.front();
+	//moveBuffer.erase(moveBuffer.begin());
+	
+	return moveBuffer.front();
+}
+
 void RubiksModel::updateActionState() {
 	isTurning = true;
 	currentMove = moveBuffer.front();
@@ -260,8 +264,6 @@ void RubiksModel::updatRotatedLayerCubes(vector<CubeModel*> oldCubes, vector<Cub
 	vector<CubeModel> tempOldCubes;
 	CubeModel temp;
 	CubeModel* cube = NULL;
-	activeLayer = oldCubes;
-	/*mat4 rotationMatrix = computeRotationMatrix();*/
 	vec3 rotationVector = computeRotationVector();
 	for (int i = 0; i < size; i++) {
 		cube = oldCubes[i];
@@ -270,7 +272,6 @@ void RubiksModel::updatRotatedLayerCubes(vector<CubeModel*> oldCubes, vector<Cub
 		temp.setRelativePositions(cube->getRelativePositions());
 		tempOldCubes.push_back(temp);
 	}
-	
 
 	for (int i = 2; i >= 0; i--) {
 		for (int j = i; j < size; j += 3) {
@@ -281,17 +282,10 @@ void RubiksModel::updatRotatedLayerCubes(vector<CubeModel*> oldCubes, vector<Cub
 	for (int i = 0; i < size; i++) {
 		temp = tempOldCubes[i];
 		cube = newCubes[i];
-		/*cube->setRelativePositions(temp.getRelativePositions());
-		cube->setIsTurning(true);*/
 		cube->setId(temp.getId());
 		cube->setRelativePositions(temp.getRelativePositions());
 		cube->setNextPosition(temp.getPosition());
-		//cube->setPosition(temp.getPosition());
 		cube->setIsTurning(true);
-		//cube->setActionRotationMatrix(rotationMatrix);
-		//cube->setRotationAngle(currentActionAngle);
-		/*cube->setRotationVector(rotationVector);
-		cube->setCurrentMove(currentMove);*/
 		cube->setCurrentAction(currentMove, rotationVector);
 	}
 }
@@ -300,14 +294,10 @@ vec3 RubiksModel::computeRotationVector() {
 	switch (currentMove) {
 	case RubiksMove::R_PRIME:
 	case RubiksMove::L:
-		//currentActionAngle = -45.0f;
-		//currentActionAngle -= (rotationSpeed * dt);
 	case RubiksMove::L_PRIME:
 	case RubiksMove::R:
 	case RubiksMove::MV:
 	case RubiksMove::MV_PRIME:
-		//currentActionAngle = 45.0f;
-		//currentActionAngle += (rotationSpeed * dt);
 		rotationVector.x = 1.0f;
 		break;
 	case RubiksMove::U:
@@ -324,40 +314,18 @@ vec3 RubiksModel::computeRotationVector() {
 	case RubiksMove::B:
 	case RubiksMove::MVS:
 	case RubiksMove::MVS_PRIME:
-		rotationVector.z = 1.0f;
+		rotationVector.z = 1.0f ;
 		break;
 
 	}
 	return rotationVector;
 }
-//
-//mat4 RubiksModel::computeRotationMatrix() {
-//	vec3 rotationVector(0.0f);
-//	float rotationSpeed = 0.5f;
-//	switch (currentMove) {
-//	case ModelUtilities::RubiksMove::R_PRIME:
-//	case ModelUtilities::RubiksMove::L:
-//		currentActionAngle = -1.0f;
-//		//currentActionAngle -= (rotationSpeed * dt);
-//		rotationVector.x = 1.0f;
-//		break;
-//	case ModelUtilities::RubiksMove::L_PRIME:
-//	case ModelUtilities::RubiksMove::R:
-//		currentActionAngle = 1.0f;
-//		//currentActionAngle += (rotationSpeed * dt);
-//		rotationVector.x = 1.0f;
-//		break;
-//	}
-//
-//	return rotate(mat4(1.0f), radians(currentActionAngle), rotationVector);
-//}
 
 /// <summary>
 /// Performs a clockwise rotation of the left side of the rubiks cube
 /// </summary>
 void RubiksModel::L() {
 	vector<CubeModel*> oldCubes = getFaceCubes(CubePosition::LEFT);
-	activeLayer = oldCubes;
 	updatRotatedLayerCubes(oldCubes, oldCubes);
 }
 
@@ -482,18 +450,18 @@ vector<CubeModel*> RubiksModel::reverseCubeModelVector(vector<CubeModel*> cubeVe
 }
 
 void RubiksModel::draw(mat4 worldRotationUpdate, GLuint textureArray[]) {
+
 	//mat4 rotationMatrix(0.0f);
 	//if (isTurning) {
 	//	mat4 rotationMatrix = this->computeRotationMatrix();
 	//}
 	int i = 1;
+
 	bool turning = false;
+
 	for (vector<CubeModel*>::iterator aCube = cubes.begin(); aCube != cubes.end(); ++aCube) {
 		
 		(*aCube)->setShaderProgram(this->getShaderProgram());
-	/*	if ((*aCube)->getIsTurning()) {
-			(*aCube)->setActionRotationMatrix(rotationMatrix);
-		}*/
 		(*aCube)->setDt(dt);
 		if (i < 28)
 		{
@@ -505,7 +473,7 @@ void RubiksModel::draw(mat4 worldRotationUpdate, GLuint textureArray[]) {
 		}
 		
 		if ((*aCube)->getIsTurning()) {
-			turning = true;
+			turning = true; //If there is at least 1 cube that is still turning, then the rubiks cube is still turning
 		}
 		i++;
 	}
@@ -513,11 +481,4 @@ void RubiksModel::draw(mat4 worldRotationUpdate, GLuint textureArray[]) {
 	if (!turning) {
 		completeCurrentAction();
 	}
-	/*if (abs(currentActionAngle) > 90.0f) {
-		for (vector<CubeModel*>::iterator aCube = cubes.begin(); aCube != cubes.end(); ++aCube) {
-			(*aCube)->isTurning = false;
-			(*aCube)->setRotationMatrix(rotationMatrix);
-		}
-		completeCurrentAction();
-	}*/
 }
