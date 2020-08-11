@@ -25,7 +25,7 @@ public:
 	void updateActionState();
 	void completeCurrentAction();
 	void queueMove(RubiksMove move) { moveBuffer.push_back(move); }
-	RubiksMove dequeueMove();
+	RubiksMove nextMove();
 
 	//Cube manipulation/rotation functions, using rubiks cube notation
 	void L();

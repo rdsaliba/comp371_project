@@ -16,10 +16,21 @@ ModelController::~ModelController() {
 		delete models[i];
 }
 
+/// <summary>
+/// Adds Models to the list of models handled
+/// </summary>
+/// <param name="model"></param>
 void ModelController::addModel(Model* model) {
 	models.push_back(model);
 }
 
+/// <summary>
+/// Initializes the models with their initial positions along with other shared attributes
+/// </summary>
+/// <param name="shaderProgram">Shader to assign to models</param>
+/// <param name="vao"></param>
+/// <param name="vbo"></param>
+/// <param name="sphere">Sphere floating on each letter/digit models</param>
 void ModelController::initModels(int shaderProgram, unsigned int vao, unsigned int vbo, Sphere sphere) {
 	RubiksModel* rubiksModel = new RubiksModel(vec3(0.0f, 2.0f, 0.0f), 0.0f); //axis lines
 	TaqiModel* taqi = new TaqiModel(vec3(-40.0f, 0.0f, -40.0f), 0.0f); //Taqi (Q4)
@@ -45,6 +56,12 @@ void ModelController::initModels(int shaderProgram, unsigned int vao, unsigned i
 	rubiksModel->buildCubes();
 }
 
+/// <summary>
+/// Draws/render all models handled by the controller
+/// </summary>
+/// <param name="worldRotationUpdate">change in scene rotation value</param>
+/// <param name="textureArray">The textures to be applied on the models</param>
+/// <param name="shaderProgram">Shader to use to render the models</param>
 void ModelController::drawModels(mat4 worldRotationUpdate, GLuint textureArray[], int shaderProgram) {
 	rubiksCube->setDt(dt);
 	for (vector<Model*>::iterator model = models.begin(); model != models.end(); ++model)
@@ -66,6 +83,10 @@ void ModelController::modelFocusSwitch(int nextModel) {
 	focusedModel = models[nextModel];
 }
 
+/// <summary>
+/// Assigns a shader to to all handled models
+/// </summary>
+/// <param name="shaderProgram"></param>
 void ModelController::setModelsShaderProgram(int shaderProgram) {
 	for(vector<Model*>::iterator model = models.begin(); model != models.end(); ++model)
 	{
@@ -87,6 +108,10 @@ void ModelController::setModelsVBO(unsigned int vbo) {
 	}
 }
 
+/// <summary>
+/// Sets the mesh sphere object onto the models. 
+/// </summary>
+/// <param name="sphere"></param>
 void ModelController::setModelsSphere(Sphere sphere) {
 	for (vector<Model*>::iterator model = models.begin(); model != models.end(); ++model)
 	{
@@ -94,10 +119,17 @@ void ModelController::setModelsSphere(Sphere sphere) {
 	}
 }
 
+/// <summary>
+/// Sets the Position of the focused model to a random location on the ground grid
+/// </summary>
+/// <param name="value"></param>
 void ModelController::randomPosition(vec3 value) {
 	focusedModel->setPosition(value); 
 }
 
+/// <summary>
+/// Generates a random list of moves to scramble the rubiks cube
+/// </summary>
 void ModelController::scrambleGenerator() {
 	srand(glfwGetTime()); //generate new seed to ensure scrambles are different
 	int moveCtr = rand() % 10 + 3; //10 maximum moves, 3 moves minimum
@@ -108,6 +140,9 @@ void ModelController::scrambleGenerator() {
 	}
 }
 
+/// <summary>
+/// Applies the scramble moves onto the rubiks cube
+/// </summary>
 void ModelController::scramble() {
 	if (isScrambling) {
 		if (scrambleList.size() > 0){
@@ -122,6 +157,11 @@ void ModelController::scramble() {
 	}
 }
 
+/// <summary>
+/// Executes a move on a layer of the rubiks cube.
+/// Note: In this case a "move" refers to a rotation used to solve the rubiks cube rather than a manipulation of the 3D model in the scene.
+/// </summary>
+/// <param name="move">Move to apply onto the rubiks cube</param>
 void ModelController::useRubiksCube(RubiksMove move) {
 	if (!rubiksCube->getIsTurning()) {
 		rubiksCube->queueMove(move);

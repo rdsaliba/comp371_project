@@ -37,14 +37,24 @@ CubeModel::CubeModel(CubeModel* cube) {
 
 CubeModel::~CubeModel() {}
 
+/// <summary>
+/// Puts the cube in the active state, resetting any values that could have been modified by the previous active state
+/// </summary>
+/// <param name="currentMove">New action move to be applied on the cube</param>
+/// <param name="rotationVector">axis to rotate the cube around for the current action</param>
 void CubeModel::setCurrentAction(RubiksMove currentMove, vec3 rotationVector) {
 	this->currentMove = currentMove;
 	this->rotationVector = rotationVector;
 	this->rotationAngle = 0.0f;
 }
 
+/// <summary>
+/// Computes rotation bound to a single cube (i.e.: orientation of the cube within the 3D scene, not dependent on current active action)
+/// </summary>
+/// <returns>Rotation matrix to orient the cube within the 3D scene</returns>
 mat4 CubeModel::computeSingleCubeRotation() {
 	mat4 rm;
+	//Generates a rotation a rotation matrix made of each action previously applied onto the cube to determine its current orientation
 	if (moveList.size() > 0) {
 		vector<RubiksMove>::iterator aMove = moveList.begin();
 		vector<vec3>::iterator rotationV = rotationVectorList.begin();
@@ -52,13 +62,17 @@ mat4 CubeModel::computeSingleCubeRotation() {
 
 		rm = rotate(mat4(1.0f), radians((*angle)), (*rotationV));
 		for (++aMove, ++rotationV, ++angle; aMove != moveList.end(); ++aMove, ++rotationV, ++angle) {
-			rm = rotate(mat4(1.0f), radians((*angle)), (*rotationV)) * rm;
+			rm = rotate(mat4(1.0f), radians((*angle)), (*rotationV)) * rm; //apply the rotations in the order the move were performed
 		}
 		return rm;
 	}else
-		return rotate(mat4(1.0f), radians(this->rotation.y), vec3(0.0f, 1.0f, 0.0f));
+		return rotate(mat4(1.0f), radians(this->rotation.y), vec3(0.0f, 1.0f, 0.0f)); //If no action has been applied, return a default matrix
 }
 
+/// <summary>
+/// Calculates the current layer rotation matrix to perform action rotation as a group (i.e.: the layer to be rotated) rather than individual rotation
+/// </summary>
+/// <returns>Matrix containing the displacement values</returns>
 mat4 CubeModel::computeRotationMatrix() {
 	float rotationSpeed = 20.0f;
 	if (isTurning) {
@@ -72,7 +86,7 @@ mat4 CubeModel::computeRotationMatrix() {
 		case RubiksMove::MV:
 		case RubiksMove::MVS:
 		case RubiksMove::MH_PRIME:
-			rotationAngle -= (rotationSpeed * dt);
+			rotationAngle -= (rotationSpeed * dt); //multiply rotation speed by dt to allow smooth rotation synced with refresh rate
 			break;
 		case RubiksMove::L:
 		case RubiksMove::R_PRIME:
@@ -121,26 +135,40 @@ bool CubeModel::equal(CubeModel cube) {
 	return true;
 }
 
+/// <summary>
+/// Does computation necessary when a cube passes from active to idle state
+/// </summary>
 void CubeModel::completeAction() {
 	float alignmentOffset;
+
+	//Since rotation angle is a float and its value is updated with fractional non-constant dt values
+	//We compute an alignment value to get the rotation angle as close as possible to a 90 degree turn on completion
+	//Behaves as a "snapback" alignment of the layer
 	if (rotationAngle > 0) {
 		alignmentOffset = 90.0f - rotationAngle;
 	}
 	else {
 		alignmentOffset = abs(rotationAngle) - 90.0f;
 	}
-	rotationAngle += alignmentOffset;
+	rotationAngle += alignmentOffset; 
 
 	isTurning = false;
-	position = nextPosition;
-	floor(rotationAngle);
+	//Only assign the resulting position values (x,y,z) onto the cube upon rotation completion to prevent orientation rendering issues
+	position = nextPosition; 
+	floor(rotationAngle); //additional rotation snapback to ensure we round to an integer value
 
+	//Update the previously executed/completed action lists
 	rotationAngleList.push_back(this->rotationAngle);
 	rotationVectorList.push_back(this->rotationVector);
 	moveList.push_back(this->currentMove);
 	this->rotationAngle = 0.0f;
 }
 
+/// <summary>
+/// Generates the 3D model of the cube in the scene
+/// </summary>
+/// <param name="worldRotationUpdate"></param>
+/// <param name="textureArray"></param>
 void CubeModel::draw(mat4 worldRotationUpdate, GLuint textureArray[]) {
 	glBindVertexArray(this->vao);
 	glBindBuffer(GL_ARRAY_BUFFER, vbo);
