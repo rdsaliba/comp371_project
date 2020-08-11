@@ -9,8 +9,8 @@ ModelController::ModelController() {
 }
 
 ModelController::~ModelController() {
-	delete focusedModel;
-	delete rubiksCube;
+	focusedModel = NULL;
+	rubiksCube = NULL;
 	for (int i = 0; i < models.size(); i++)
 		delete models[i];
 }

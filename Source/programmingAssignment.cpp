@@ -1103,7 +1103,6 @@ int main(int argc, char* argv[])
             glfwSetWindowShouldClose(window, true);
     }
 
-    delete modelController;
     // Shutdown GLFW
     glfwTerminate();
 
