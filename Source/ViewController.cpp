@@ -38,7 +38,7 @@ ViewController::ViewController(GLFWwindow* window, int width, int height, int sh
     this->projection_matrix = mat4(1.0f);
     
     this->fastCam = false;
-    this->cameraSpeed = 1.0f;
+    this->cameraSpeed = 7.0f;
     this->cameraFastSpeed = 2 * cameraSpeed;
     this->cameraHorizontalAngle = 90.0f;
     this->cameraVerticalAngle = 0.0f;

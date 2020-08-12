@@ -40,7 +40,7 @@ ViewController* viewController = NULL;
 ModelController* modelController = NULL;
 
 GLuint toggle = 0; //0 = off, 1 = on
-GLuint textureArray[28] = {}; //Contains toggle (on/off), box texture, metal texture, and tiled texture
+GLuint textureArray[31] = {}; //Contains toggle (on/off), box texture, metal texture, and tiled texture
 int shaderType; //Color or texture
 
 //Forward declarations
@@ -443,45 +443,21 @@ int compileAndLinkDepthShaders()
 // Textured Cube model
 const TexturedColoredVertex texturedCubeVertexArray[] = {  // position, color, normal, UV coordinates
 
-    //TexturedColoredVertex(vec3(-0.5f,-0.5f,-0.5f), vec3(1.0f, 0.0f, 0.0f), vec3(-1.0f, 0.0f, 0.0f), vec2(0.0f, 1.0f)), //left - red
-    //TexturedColoredVertex(vec3(-0.5f,-0.5f, 0.5f), vec3(1.0f, 0.0f, 0.0f), vec3(-1.0f, 0.0f, 0.0f), vec2(1.0f, 1.0f)),
-    //TexturedColoredVertex(vec3(-0.5f, 0.5f, 0.5f), vec3(1.0f, 0.0f, 0.0f), vec3(-1.0f, 0.0f, 0.0f), vec2(1.0f, 0.0f)),
-
-    //TexturedColoredVertex(vec3(-0.5f,-0.5f,-0.5f), vec3(1.0f, 0.0f, 0.0f), vec3(-1.0f, 0.0f, 0.0f), vec2(0.0f, 1.0f)),
-    //TexturedColoredVertex(vec3(-0.5f, 0.5f, 0.5f), vec3(1.0f, 0.0f, 0.0f), vec3(-1.0f, 0.0f, 0.0f), vec2(1.0f, 0.0f)),
-    //TexturedColoredVertex(vec3(-0.5f, 0.5f,-0.5f), vec3(1.0f, 0.0f, 0.0f), vec3(-1.0f, 0.0f, 0.0f), vec2(0.0f, 0.0f)),
-
     TexturedColoredVertex(vec3(-0.5f,-0.5f,-0.5f), vec3(1.0f, 0.0f, 0.0f), vec3(-1.0f, 0.0f, 0.0f), vec2(0.0f, 1.0f)), //left - red
-    TexturedColoredVertex(vec3(-0.5f,-0.5f, 0.5f), vec3(1.0f, 0.0f, 0.0f), vec3(-1.0f, 0.0f, 0.0f), vec2(0.34f, 1.0f)),
-    TexturedColoredVertex(vec3(-0.5f, 0.5f, 0.5f), vec3(1.0f, 0.0f, 0.0f), vec3(-1.0f, 0.0f, 0.0f), vec2(0.34f, 0.5f)),
+    TexturedColoredVertex(vec3(-0.5f,-0.5f, 0.5f), vec3(1.0f, 0.0f, 0.0f), vec3(-1.0f, 0.0f, 0.0f), vec2(0.33f, 1.0f)),
+    TexturedColoredVertex(vec3(-0.5f, 0.5f, 0.5f), vec3(1.0f, 0.0f, 0.0f), vec3(-1.0f, 0.0f, 0.0f), vec2(0.33f, 0.5f)),
 
     TexturedColoredVertex(vec3(-0.5f,-0.5f,-0.5f), vec3(1.0f, 0.0f, 0.0f), vec3(-1.0f, 0.0f, 0.0f), vec2(0.0f, 1.0f)),
-    TexturedColoredVertex(vec3(-0.5f, 0.5f, 0.5f), vec3(1.0f, 0.0f, 0.0f), vec3(-1.0f, 0.0f, 0.0f), vec2(0.34f, 0.5f)),
+    TexturedColoredVertex(vec3(-0.5f, 0.5f, 0.5f), vec3(1.0f, 0.0f, 0.0f), vec3(-1.0f, 0.0f, 0.0f), vec2(0.33f, 0.5f)),
     TexturedColoredVertex(vec3(-0.5f, 0.5f,-0.5f), vec3(1.0f, 0.0f, 0.0f), vec3(-1.0f, 0.0f, 0.0f), vec2(0.0f, 0.5f)),
 
-    //TexturedColoredVertex(vec3(0.5f, 0.5f,-0.5f), vec3(0.0f, 0.0f, 1.0f), vec3(0.0f, 0.0f, -1.0f), vec2(0.0f, 0.0f)), // far - blue
-    //TexturedColoredVertex(vec3(-0.5f,-0.5f,-0.5f), vec3(0.0f, 0.0f, 1.0f), vec3(0.0f, 0.0f, -1.0f), vec2(1.0f, 1.0f)),
-    //TexturedColoredVertex(vec3(-0.5f, 0.5f,-0.5f), vec3(0.0f, 0.0f, 1.0f), vec3(0.0f, 0.0f, -1.0f), vec2(1.0f, 0.0f)),
-
-    //TexturedColoredVertex(vec3(0.5f, 0.5f,-0.5f), vec3(0.0f, 0.0f, 1.0f), vec3(0.0f, 0.0f, -1.0f), vec2(0.0f, 0.0f)),
-    //TexturedColoredVertex(vec3(0.5f,-0.5f,-0.5f), vec3(0.0f, 0.0f, 1.0f), vec3(0.0f, 0.0f, -1.0f), vec2(0.0f, 1.0f)),
-    //TexturedColoredVertex(vec3(-0.5f,-0.5f,-0.5f), vec3(0.0f, 0.0f, 1.0f), vec3(0.0f, 0.0f, -1.0f), vec2(1.0f, 1.0f)),
-
-    TexturedColoredVertex(vec3(0.5f, 0.5f,-0.5f), vec3(0.0f, 0.0f, 1.0f), vec3(0.0f, 0.0f, -1.0f), vec2(0.34f, 0.0f)), // far - blue
+    TexturedColoredVertex(vec3(0.5f, 0.5f,-0.5f), vec3(0.0f, 0.0f, 1.0f), vec3(0.0f, 0.0f, -1.0f), vec2(0.33f, 0.0f)), // far - blue
     TexturedColoredVertex(vec3(-0.5f,-0.5f,-0.5f), vec3(0.0f, 0.0f, 1.0f), vec3(0.0f, 0.0f, -1.0f), vec2(0.67f, 0.5f)),
     TexturedColoredVertex(vec3(-0.5f, 0.5f,-0.5f), vec3(0.0f, 0.0f, 1.0f), vec3(0.0f, 0.0f, -1.0f), vec2(0.67f, 0.0f)),
 
-    TexturedColoredVertex(vec3(0.5f, 0.5f,-0.5f), vec3(0.0f, 0.0f, 1.0f), vec3(0.0f, 0.0f, -1.0f), vec2(0.34f, 0.0f)),
-    TexturedColoredVertex(vec3(0.5f,-0.5f,-0.5f), vec3(0.0f, 0.0f, 1.0f), vec3(0.0f, 0.0f, -1.0f), vec2(0.34f, 0.5f)),
+    TexturedColoredVertex(vec3(0.5f, 0.5f,-0.5f), vec3(0.0f, 0.0f, 1.0f), vec3(0.0f, 0.0f, -1.0f), vec2(0.33f, 0.0f)),
+    TexturedColoredVertex(vec3(0.5f,-0.5f,-0.5f), vec3(0.0f, 0.0f, 1.0f), vec3(0.0f, 0.0f, -1.0f), vec2(0.33f, 0.5f)),
     TexturedColoredVertex(vec3(-0.5f,-0.5f,-0.5f), vec3(0.0f, 0.0f, 1.0f), vec3(0.0f, 0.0f, -1.0f), vec2(0.67f, 0.5f)),
-
-    //TexturedColoredVertex(vec3(0.5f,-0.5f, 0.5f), vec3(0.0f, 1.0f, 1.0f), vec3(0.0f, -1.0f, 0.0f), vec2(1.0f, 1.0f)), // bottom - turquoise
-    //TexturedColoredVertex(vec3(-0.5f,-0.5f,-0.5f), vec3(0.0f, 1.0f, 1.0f), vec3(0.0f, -1.0f, 0.0f), vec2(0.0f, 0.0f)),
-    //TexturedColoredVertex(vec3(0.5f,-0.5f,-0.5f), vec3(0.0f, 1.0f, 1.0f), vec3(0.0f, -1.0f, 0.0f), vec2(1.0f, 0.0f)),
-
-    //TexturedColoredVertex(vec3(0.5f,-0.5f, 0.5f), vec3(0.0f, 1.0f, 1.0f), vec3(0.0f, -1.0f, 0.0f), vec2(1.0f, 1.0f)),
-    //TexturedColoredVertex(vec3(-0.5f,-0.5f, 0.5f), vec3(0.0f, 1.0f, 1.0f), vec3(0.0f, -1.0f, 0.0f), vec2(0.0f, 1.0f)),
-    //TexturedColoredVertex(vec3(-0.5f,-0.5f,-0.5f), vec3(0.0f, 1.0f, 1.0f), vec3(0.0f, -1.0f, 0.0f), vec2(0.0f, 0.0f)),
 
     TexturedColoredVertex(vec3(0.5f,-0.5f, 0.5f), vec3(0.0f, 1.0f, 1.0f), vec3(0.0f, -1.0f, 0.0f), vec2(1.0f, 0.5f)), // bottom - turquoise
     TexturedColoredVertex(vec3(-0.5f,-0.5f,-0.5f), vec3(0.0f, 1.0f, 1.0f), vec3(0.0f, -1.0f, 0.0f), vec2(0.67f, 0.0f)),
@@ -491,36 +467,19 @@ const TexturedColoredVertex texturedCubeVertexArray[] = {  // position, color, n
     TexturedColoredVertex(vec3(-0.5f,-0.5f, 0.5f), vec3(0.0f, 1.0f, 1.0f), vec3(0.0f, -1.0f, 0.0f), vec2(0.67f, 0.5f)),
     TexturedColoredVertex(vec3(-0.5f,-0.5f,-0.5f), vec3(0.0f, 1.0f, 1.0f), vec3(0.0f, -1.0f, 0.0f), vec2(0.67f, 0.0f)),
 
-    //TexturedColoredVertex(vec3(-0.5f, 0.5f, 0.5f), vec3(0.0f, 1.0f, 0.0f), vec3(0.0f, 0.0f, 1.0f), vec2(0.0f, 0.0f)), // near - green
-    //TexturedColoredVertex(vec3(-0.5f,-0.5f, 0.5f), vec3(0.0f, 1.0f, 0.0f), vec3(0.0f, 0.0f, 1.0f), vec2(0.0f, 1.0f)),
-    //TexturedColoredVertex(vec3(0.5f,-0.5f, 0.5f), vec3(0.0f, 1.0f, 0.0f), vec3(0.0f, 0.0f, 1.0f), vec2(1.0f, 1.0f)),
-
-    //TexturedColoredVertex(vec3(0.5f, 0.5f, 0.5f), vec3(0.0f, 1.0f, 0.0f), vec3(0.0f, 0.0f, 1.0f), vec2(1.0f, 0.0f)),
-    //TexturedColoredVertex(vec3(-0.5f, 0.5f, 0.5f), vec3(0.0f, 1.0f, 0.0f), vec3(0.0f, 0.0f, 1.0f), vec2(0.0f, 0.0f)),
-    //TexturedColoredVertex(vec3(0.5f,-0.5f, 0.5f), vec3(0.0f, 1.0f, 0.0f), vec3(0.0f, 0.0f, 1.0f), vec2(1.0f, 1.0f)),
-
-    TexturedColoredVertex(vec3(-0.5f, 0.5f, 0.5f), vec3(0.0f, 1.0f, 0.0f), vec3(0.0f, 0.0f, 1.0f), vec2(0.34f, 0.5f)), // near - green
-    TexturedColoredVertex(vec3(-0.5f,-0.5f, 0.5f), vec3(0.0f, 1.0f, 0.0f), vec3(0.0f, 0.0f, 1.0f), vec2(0.34f, 1.0f)),
+    TexturedColoredVertex(vec3(-0.5f, 0.5f, 0.5f), vec3(0.0f, 1.0f, 0.0f), vec3(0.0f, 0.0f, 1.0f), vec2(0.33f, 0.5f)), // near - green
+    TexturedColoredVertex(vec3(-0.5f,-0.5f, 0.5f), vec3(0.0f, 1.0f, 0.0f), vec3(0.0f, 0.0f, 1.0f), vec2(0.33f, 1.0f)),
     TexturedColoredVertex(vec3(0.5f,-0.5f, 0.5f), vec3(0.0f, 1.0f, 0.0f), vec3(0.0f, 0.0f, 1.0f), vec2(0.67f, 1.0f)),
 
     TexturedColoredVertex(vec3(0.5f, 0.5f, 0.5f), vec3(0.0f, 1.0f, 0.0f), vec3(0.0f, 0.0f, 1.0f), vec2(0.67f, 0.5f)),
-    TexturedColoredVertex(vec3(-0.5f, 0.5f, 0.5f), vec3(0.0f, 1.0f, 0.0f), vec3(0.0f, 0.0f, 1.0f), vec2(0.34f, 0.5f)),
+    TexturedColoredVertex(vec3(-0.5f, 0.5f, 0.5f), vec3(0.0f, 1.0f, 0.0f), vec3(0.0f, 0.0f, 1.0f), vec2(0.33f, 0.5f)),
     TexturedColoredVertex(vec3(0.5f,-0.5f, 0.5f), vec3(0.0f, 1.0f, 0.0f), vec3(0.0f, 0.0f, 1.0f), vec2(0.67f, 1.0f)),
 
-
-    //TexturedColoredVertex(vec3(0.5f, 0.5f, 0.5f), vec3(1.0f, 0.0f, 1.0f), vec3(1.0f, 0.0f, 0.0f), vec2(0.0f, 0.0f)), // right - purple
-    //TexturedColoredVertex(vec3(0.5f,-0.5f,-0.5f), vec3(1.0f, 0.0f, 1.0f), vec3(1.0f, 0.0f, 0.0f), vec2(1.0f, 1.0f)),
-    //TexturedColoredVertex(vec3(0.5f, 0.5f,-0.5f), vec3(1.0f, 0.0f, 1.0f), vec3(1.0f, 0.0f, 0.0f), vec2(1.0f, 0.0f)),
-
-    //TexturedColoredVertex(vec3(0.5f,-0.5f,-0.5f), vec3(1.0f, 0.0f, 1.0f), vec3(1.0f, 0.0f, 0.0f), vec2(1.0f, 1.0f)),
-    //TexturedColoredVertex(vec3(0.5f, 0.5f, 0.5f), vec3(1.0f, 0.0f, 1.0f), vec3(1.0f, 0.0f, 0.0f), vec2(0.0f, 0.0f)),
-    //TexturedColoredVertex(vec3(0.5f,-0.5f, 0.5f), vec3(1.0f, 0.0f, 1.0f), vec3(1.0f, 0.0f, 0.0f), vec2(0.0f, 1.0f)),
-
     TexturedColoredVertex(vec3(0.5f, 0.5f, 0.5f), vec3(1.0f, 0.0f, 1.0f), vec3(1.0f, 0.0f, 0.0f), vec2(0.0f, 0.0f)), // right - purple
-    TexturedColoredVertex(vec3(0.5f,-0.5f,-0.5f), vec3(1.0f, 0.0f, 1.0f), vec3(1.0f, 0.0f, 0.0f), vec2(0.34f, 0.5f)),
-    TexturedColoredVertex(vec3(0.5f, 0.5f,-0.5f), vec3(1.0f, 0.0f, 1.0f), vec3(1.0f, 0.0f, 0.0f), vec2(0.34f, 0.0f)),
+    TexturedColoredVertex(vec3(0.5f,-0.5f,-0.5f), vec3(1.0f, 0.0f, 1.0f), vec3(1.0f, 0.0f, 0.0f), vec2(0.33f, 0.5f)),
+    TexturedColoredVertex(vec3(0.5f, 0.5f,-0.5f), vec3(1.0f, 0.0f, 1.0f), vec3(1.0f, 0.0f, 0.0f), vec2(0.33f, 0.0f)),
 
-    TexturedColoredVertex(vec3(0.5f,-0.5f,-0.5f), vec3(1.0f, 0.0f, 1.0f), vec3(1.0f, 0.0f, 0.0f), vec2(0.34f, 0.5f)),
+    TexturedColoredVertex(vec3(0.5f,-0.5f,-0.5f), vec3(1.0f, 0.0f, 1.0f), vec3(1.0f, 0.0f, 0.0f), vec2(0.33f, 0.5f)),
     TexturedColoredVertex(vec3(0.5f, 0.5f, 0.5f), vec3(1.0f, 0.0f, 1.0f), vec3(1.0f, 0.0f, 0.0f), vec2(0.0f, 0.0f)),
     TexturedColoredVertex(vec3(0.5f,-0.5f, 0.5f), vec3(1.0f, 0.0f, 1.0f), vec3(1.0f, 0.0f, 0.0f), vec2(0.0f, 0.5f)),
 
@@ -912,44 +871,82 @@ int main(int argc, char* argv[])
     glReadBuffer(GL_NONE);
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
-
     // Load Textures
     #if defined(PLATFORM_OSX)
         GLuint boxTextureID = loadTexture("Textures/box_texture.png");
         GLuint metalTextureID = loadTexture("Textures/metal_finish.jpg"); 
         GLuint tiledTextureID = loadTexture("Textures/tiled_texture.png"); 
-        GLuint testID = loadTexture("Textures/test.png");
-        GLuint x0y0z0ID = loadTexture("Textures/x0y0z0.png");
+        
+        //Front cubes
         GLuint x0y0z2ID = loadTexture("Textures/x0y0z2.png");
+        GLuint x0y1z2ID = loadTexture("Textures/x0y1z2.png");
+        GLuint x1y0z2ID = loadTexture("Textures/x1y0z2.png");
+        GLuint x1y1z2ID = loadTexture("Textures/x1y1z2.png");
+        GLuint x0y2z2ID = loadTexture("Textures/x0y2z2.png");
+        GLuint x1y2z2ID = loadTexture("Textures/x1y2z2.png");
+        GLuint x2y0z2ID = loadTexture("Textures/x2y0z2.png");
+        GLuint x2y1z2ID = loadTexture("Textures/x2y1z2.png");
+        GLuint x2y2z2ID = loadTexture("Textures/x2y2z2.png");
+
+        //Mid cubes
+        GLuint x0y0z1ID = loadTexture("Textures/x0y0z1.png");
+        GLuint x1y0z1ID = loadTexture("Textures/x1y0z1.png");
+        GLuint x2y0z1ID = loadTexture("Textures/x2y0z1.png");
+        GLuint x0y1z1ID = loadTexture("Textures/x0y1z1.png");
+        GLuint x1y1z1ID = loadTexture("Textures/x1y1z1.png");
+        GLuint x2y1z1ID = loadTexture("Textures/x2y1z1.png");
+        GLuint x0y2z1ID = loadTexture("Textures/x0y2z1.png");
+        GLuint x1y2z1ID = loadTexture("Textures/x1y2z1.png");
+        GLuint x2y2z1ID = loadTexture("Textures/x2y2z1.png");
+
+        //Back cubes
+        GLuint x0y0z0ID = loadTexture("Textures/x0y0z0.png");
+        GLuint x0y1z0ID = loadTexture("Textures/x0y1z0.png");
+        GLuint x0y2z0ID = loadTexture("Textures/x0y2z0.png");
+        GLuint x1y0z0ID = loadTexture("Textures/x1y0z0.png");
+        GLuint x1y1z0ID = loadTexture("Textures/x1y1z0.png");
+        GLuint x1y2z0ID = loadTexture("Textures/x1y2z0.png");
+        GLuint x2y0z0ID = loadTexture("Textures/x2y0z0.png");
+        GLuint x2y1z0ID = loadTexture("Textures/x2y1z0.png");
+        GLuint x2y2z0ID = loadTexture("Textures/x2y2z0.png");
+
     #else
         GLuint boxTextureID = loadTexture("../Assets/Textures/box_texture.png"); //Source: https://jooinn.com/wood-texture-box.html
         GLuint metalTextureID = loadTexture("../Assets/Textures/metal_finish.jpg"); //Source: https://unsplash.com/photos/v6uiP2MD6vs
         GLuint tiledTextureID = loadTexture("../Assets/Textures/tiled_texture.png"); //Source: https://www.3dxo.com/textures/tiles
-        GLuint testID = loadTexture("../Assets/Textures/test.png");
+
+        //Front cubes
+        GLuint x0y0z2ID = loadTexture("../Assets/Textures/x0y0z2.png");
+        GLuint x0y1z2ID = loadTexture("../Assets/Textures/x0y1z2.png");
+        GLuint x1y0z2ID = loadTexture("../Assets/Textures/x1y0z2.png");
+        GLuint x1y1z2ID = loadTexture("../Assets/Textures/x1y1z2.png");
+        GLuint x0y2z2ID = loadTexture("../Assets/Textures/x0y2z2.png");
+        GLuint x1y2z2ID = loadTexture("../Assets/Textures/x1y2z2.png");
+        GLuint x2y0z2ID = loadTexture("../Assets/Textures/x2y0z2.png");
+        GLuint x2y1z2ID = loadTexture("../Assets/Textures/x2y1z2.png");
+        GLuint x2y2z2ID = loadTexture("../Assets/Textures/x2y2z2.png");
+
+        //Mid cubes
+        GLuint x0y0z1ID = loadTexture("../Assets/Textures/x0y0z1.png");
+        GLuint x1y0z1ID = loadTexture("../Assets/Textures/x1y0z1.png");
+        GLuint x2y0z1ID = loadTexture("../Assets/Textures/x2y0z1.png");
+        GLuint x0y1z1ID = loadTexture("../Assets/Textures/x0y1z1.png");
+        GLuint x1y1z1ID = loadTexture("../Assets/Textures/x1y1z1.png");
+        GLuint x2y1z1ID = loadTexture("../Assets/Textures/x2y1z1.png");
+        GLuint x0y2z1ID = loadTexture("../Assets/Textures/x0y2z1.png");
+        GLuint x1y2z1ID = loadTexture("../Assets/Textures/x1y2z1.png");
+        GLuint x2y2z1ID = loadTexture("../Assets/Textures/x2y2z1.png");
+
+        //Back cubes
         GLuint x0y0z0ID = loadTexture("../Assets/Textures/x0y0z0.png");
-        GLuint x0y0z2ID = loadTexture("../Assets/Textures/asta.jpg");
-        GLuint c0 = loadTexture("../Assets/Textures/0.png");
-        GLuint c1 = loadTexture("../Assets/Textures/1.png");
-        GLuint c2 = loadTexture("../Assets/Textures/2.png");
-        GLuint c3 = loadTexture("../Assets/Textures/3.png");
-        GLuint c4 = loadTexture("../Assets/Textures/4.png");
-        GLuint c5 = loadTexture("../Assets/Textures/5.png");
-        GLuint c6 = loadTexture("../Assets/Textures/6.png");
-        GLuint c7 = loadTexture("../Assets/Textures/7.png");
-        GLuint c8 = loadTexture("../Assets/Textures/8.png");
-        GLuint c9 = loadTexture("../Assets/Textures/9.png");
-        GLuint c10 = loadTexture("../Assets/Textures/10.png");
-        GLuint c11 = loadTexture("../Assets/Textures/11.png");
-        GLuint c12 = loadTexture("../Assets/Textures/12.png");
-        GLuint c13 = loadTexture("../Assets/Textures/13.png");
-        GLuint c14 = loadTexture("../Assets/Textures/14.png");
-        GLuint c15 = loadTexture("../Assets/Textures/15.png");
-        GLuint c16 = loadTexture("../Assets/Textures/16.png");
-        GLuint c17 = loadTexture("../Assets/Textures/17.png");
-        GLuint c18 = loadTexture("../Assets/Textures/18.png");
-        GLuint c19 = loadTexture("../Assets/Textures/19.png");
-        GLuint rezeroID = loadTexture("../Assets/Textures/rezero.png");
-        GLuint privatePhoto = loadTexture("../Assets/Textures/privatePhoto.jpg");
+        GLuint x0y1z0ID = loadTexture("../Assets/Textures/x0y1z0.png");
+        GLuint x0y2z0ID = loadTexture("../Assets/Textures/x0y2z0.png");
+        GLuint x1y0z0ID = loadTexture("../Assets/Textures/x1y0z0.png");
+        GLuint x1y1z0ID = loadTexture("../Assets/Textures/x1y1z0.png");
+        GLuint x1y2z0ID = loadTexture("../Assets/Textures/x1y2z0.png");
+        GLuint x2y0z0ID = loadTexture("../Assets/Textures/x2y0z0.png");
+        GLuint x2y1z0ID = loadTexture("../Assets/Textures/x2y1z0.png");
+        GLuint x2y2z0ID = loadTexture("../Assets/Textures/x2y2z0.png");
     #endif
 
     //Array of textures
@@ -957,30 +954,33 @@ int main(int argc, char* argv[])
     textureArray[1] = boxTextureID;
     textureArray[2] = metalTextureID;
     textureArray[3] = tiledTextureID;
-    textureArray[4] = testID;
-    textureArray[5] = privatePhoto;
+    textureArray[4] = x0y0z0ID; //start rubix textures
+    textureArray[5] = x0y0z1ID;
     textureArray[6] = x0y0z2ID;
-    textureArray[7] = c1;
-    textureArray[8] = c2;
-    textureArray[9] = c3;
-    textureArray[10] = c4;
-    textureArray[11] = c5;
-    textureArray[12] = c6;
-    textureArray[13] = c7;
-    textureArray[14] = c8;
-    textureArray[15] = c9;
-    textureArray[16] = c10;
-    textureArray[17] = c11;
-    textureArray[18] = c0;
-    textureArray[19] = c12;
-    textureArray[20] = c13;
-    textureArray[21] = c14;
-    textureArray[22] = c15;
-    textureArray[23] = c16;
-    textureArray[24] = c17;
-    textureArray[25] = c18;
-    textureArray[26] = c19;
-    textureArray[27] = rezeroID;
+    textureArray[7] = x0y1z0ID;
+    textureArray[8] = x0y1z1ID;
+    textureArray[9] = x0y1z2ID;
+    textureArray[10] = x0y2z0ID;
+    textureArray[11] = x0y2z1ID;
+    textureArray[12] = x0y2z2ID;
+    textureArray[13] = x1y0z0ID;
+    textureArray[14] = x1y0z1ID;
+    textureArray[15] = x1y0z2ID;
+    textureArray[16] = x1y1z0ID;
+    textureArray[17] = x1y1z1ID;
+    textureArray[18] = x1y1z2ID;
+    textureArray[19] = x1y2z0ID;
+    textureArray[20] = x1y2z1ID;
+    textureArray[21] = x1y2z2ID;
+    textureArray[22] = x2y0z0ID;
+    textureArray[23] = x2y0z1ID;
+    textureArray[24] = x2y0z2ID;
+    textureArray[25] = x2y1z0ID;
+    textureArray[26] = x2y1z1ID;
+    textureArray[27] = x2y1z2ID;
+    textureArray[28] = x2y2z0ID;
+    textureArray[29] = x2y2z1ID;
+    textureArray[30] = x2y2z2ID;
 
     // Black background
     glClearColor(0.1f, 0.2f, 0.2f, 1.0f);

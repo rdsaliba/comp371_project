@@ -21,11 +21,11 @@ void ModelController::addModel(Model* model) {
 }
 
 void ModelController::initModels(int shaderProgram, unsigned int vao, unsigned int vbo, Sphere sphere) {
-	RubiksModel* rubiksModel = new RubiksModel(vec3(0.0f, 2.0f, 0.0f), 0.0f); //axis lines
+	RubiksModel* rubiksModel = new RubiksModel(vec3(0.0f, 5.0f, 0.0f), 0.0f); //axis lines
 	TaqiModel* taqi = new TaqiModel(vec3(-40.0f, 0.0f, -40.0f), 0.0f); //Taqi (Q4)
 	HauModel* hau = new HauModel(vec3(40.0f, 0.0f, -40.0f), 0.0f); //Hau (U6)
 	RoyModel* roy = new RoyModel(vec3(-40.0f, 0.0f, 40.0f), 0.0f); //Roy (Y8)
-	SwetangModel* swetang = new SwetangModel(vec3(0.0f, 0.0f, 0.0f), 0.0f); //Swetang (E0)
+	SwetangModel* swetang = new SwetangModel(vec3(0.0f, 0.0f, -15.0f), 0.0f); //Swetang (E0)
 	WilliamModel* william = new WilliamModel(vec3(40.0f, 0.0f, 40.0f), 0.0f); //William (L9)
 
 	rubiksCube = rubiksModel;

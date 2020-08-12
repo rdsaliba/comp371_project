@@ -1,15 +1,17 @@
 800 x 800 image size /9 (image divided in 9)
 
-- (near) habspic https://www.habseyesontheprize.com/prospects/2018/10/1/17920444/three-headed-monster-jesperi-kotkaniemi-nick-suzuki-ryan-poehling-montreal-canadiens-centre-core
-- (left) rezero
-- (far) earth https://wallup.net/superb-3d-earth/
-- (right) wolf https://wallpapercave.com/white-wolf-wallpaper
+To resize image use: https://picresize.com/
+To divide image into 9 use: https://www.imgonline.com.ua/eng/cut-photo-into-pieces.php
 
-
+- (near face) habspic https://www.habseyesontheprize.com/prospects/2018/10/1/17920444/three-headed-monster-jesperi-kotkaniemi-nick-suzuki-ryan-poehling-montreal-canadiens-centre-core
+- (left face) rezero https://www.zerochan.net/2288396
+- (far face) earth https://wallup.net/superb-3d-earth/
+- (right face) wolf https://wallpapercave.com/white-wolf-wallpaper
 
 27 pics/cubes:
 
 x0 = leftmost cube, y0 = lowest cube, z0 = farthest cube (back of rubix)
+x2 = rightmost cube, y2 = highest cube, z2 = nearest cube (front of rubix)
 
 image 
 1 = top left
@@ -25,30 +27,30 @@ image
 9 = low right
 
 Back cubes:
-x0, y0, z0 (includes the following cube faces: bottom, far, left)
-x1, y0, z0 (bottom, far)
-x2, y0, z0 (bottom, far, right)
+x0, y0, z0 (includes the following cube faces: bottom, far, left) 
+x1, y0, z0 (bottom, far) 
+x2, y0, z0 (bottom, far, right) 
 
-x0, y1, z0 (far, left)
-x1, y1, z0 (far)
-x2, y1, z0 (far, right)
+x0, y1, z0 (far, left) 
+x1, y1, z0 (far) 
+x2, y1, z0 (far, right) 
 
-x0, y2, z0 (far, top, left)
-x1, y2, z0 (far, top)
-x2, y2, z0 (far, top, right)
+x0, y2, z0 (far, top, left) 
+x1, y2, z0 (far, top) 
+x2, y2, z0 (far, top, right) 
 
 Middle cubes:
-x0, y0, z1 (bottom, left)
-x1, y0, z1 (bottom)
-x2, y0, z1 (bottom, right)
+x0, y0, z1 (bottom, left) 
+x1, y0, z1 (bottom) 
+x2, y0, z1 (bottom, right) 
 
-x0, y1, z1 (left)
+x0, y1, z1 (left) 
 x1, y1, z1 
-x2, y1, z1 (right)
+x2, y1, z1 (right) 
 
-x0, y2, z1 (top, left)
-x1, y2, z1 (top)
-x2, y2, z1 (top, right)
+x0, y2, z1 (top, left) 
+x1, y2, z1 (top) 
+x2, y2, z1 (top, right) 
 
 Front cubes:
 x0, y0, z2 (bottom, left, near)
@@ -63,3 +65,38 @@ x0, y2, z2 (top, left, near)
 x1, y2, z2 (top, near)
 x2, y2, z2 (top, right, near)
 
+
+//Cube creation order (creates all left cubes, then all mid, finally all right cubes)
+(leftmost)
+x0y0z0 
+x0y0z1 
+x0y0z2
+x0y1z0
+x0y1z1
+x0y1z2
+x0y2z0 
+x0y2z1 
+x0y2z2 
+
+(middle)
+x1y0z0 
+x1y0z1 
+x1y0z2 
+x1y1z0 
+x1y1z1 
+x1y1z2 
+x1y2z0
+x1y2z1
+x1y2z2
+
+
+(rightmost)
+x2y0z0
+x2y0z1
+x2y0z2
+x2y1z0
+x2y1z1
+x2y1z2
+x2y2z0
+x2y2z1
+x2y2z2

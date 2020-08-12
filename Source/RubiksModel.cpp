@@ -455,7 +455,7 @@ void RubiksModel::draw(mat4 worldRotationUpdate, GLuint textureArray[]) {
 	//if (isTurning) {
 	//	mat4 rotationMatrix = this->computeRotationMatrix();
 	//}
-	int i = 1;
+	int i = 4;
 
 	bool turning = false;
 
@@ -463,14 +463,9 @@ void RubiksModel::draw(mat4 worldRotationUpdate, GLuint textureArray[]) {
 		
 		(*aCube)->setShaderProgram(this->getShaderProgram());
 		(*aCube)->setDt(dt);
-		if (i < 28)
-		{
-			(*aCube)->draw(worldRotationUpdate, textureArray[i]);
-		}
-		else
-		{
-			//(*aCube)->draw(worldRotationUpdate, textureArray[4]);
-		}
+
+		(*aCube)->draw(worldRotationUpdate, textureArray[i]);
+
 		
 		if ((*aCube)->getIsTurning()) {
 			turning = true; //If there is at least 1 cube that is still turning, then the rubiks cube is still turning
