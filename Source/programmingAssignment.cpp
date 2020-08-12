@@ -723,13 +723,13 @@ void updateInput(GLFWwindow* window, float dt, vec3& worldRotation, int shaderAr
         }
     }
 
-    //small move forward + shear
+    // move forward + shear
     if ((glfwGetKey(window, GLFW_KEY_Z) == GLFW_PRESS) && !((glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS || glfwGetKey(window, GLFW_KEY_RIGHT_SHIFT) == GLFW_PRESS)))
     {
         modelController->updateShearingY(-0.05f);
         modelController->updateZ(-0.1f);
     }
-    //small reverse + shear
+    // reverse + shear
     if (glfwGetKey(window, GLFW_KEY_Z) == GLFW_PRESS && (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS || glfwGetKey(window, GLFW_KEY_RIGHT_SHIFT) == GLFW_PRESS))
     {
         modelController->updateShearingY(0.05f);

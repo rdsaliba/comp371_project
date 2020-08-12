@@ -57,7 +57,6 @@ private:
 
 	// Other camera parameters
 	float cameraSpeed = 1.0f;
-	float cameraFastSpeed = 2 * cameraSpeed;
 	float cameraHorizontalAngle = 90.0f;
 	float cameraVerticalAngle = 0.0f;
 };
