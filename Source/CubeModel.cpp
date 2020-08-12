@@ -141,10 +141,14 @@ void CubeModel::completeAction() {
 	this->rotationAngle = 0.0f;
 }
 
-void CubeModel::draw(mat4 worldRotationUpdate, GLuint textureArray) {
+void CubeModel::draw(mat4 worldRotationUpdate, GLuint toggle, GLuint texture) {
 	glBindVertexArray(this->vao);
 	glBindBuffer(GL_ARRAY_BUFFER, vbo);
-	glBindTexture(GL_TEXTURE_2D, textureArray);
+
+	if (toggle == 1) //texture is on
+	{
+		glBindTexture(GL_TEXTURE_2D, texture);
+	}
 
 	GLuint worldMatrixLocation = glGetUniformLocation(this->shaderProgram, "worldMatrix");
 

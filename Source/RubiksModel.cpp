@@ -464,7 +464,7 @@ void RubiksModel::draw(mat4 worldRotationUpdate, GLuint textureArray[]) {
 		(*aCube)->setShaderProgram(this->getShaderProgram());
 		(*aCube)->setDt(dt);
 
-		(*aCube)->draw(worldRotationUpdate, textureArray[i]);
+		(*aCube)->draw(worldRotationUpdate, textureArray[0], textureArray[i]);
 
 		
 		if ((*aCube)->getIsTurning()) {

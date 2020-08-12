@@ -268,7 +268,7 @@ const char* getTexturedFragmentShaderSource()
         "   vec3 color = vertexColor;"
         "   vec3 lightColor = vec3(0.3);" //Bright White
         //ambiant
-        "   vec3 lightPos = vec3(0.0f, 30.0f, 0.0f);" ////////
+        "   vec3 lightPos = vec3(0.0f, 30.0f, 0.0f);" //TODO: Remove
         "   vec3 ambient = 0.05 * color;"  //0.05
         //diffuse
         "   vec3 lightDir = normalize(lightPos - fragPos);"
@@ -284,7 +284,8 @@ const char* getTexturedFragmentShaderSource()
 
         // calculate shadow
         "   float shadow = ShadowCalculation(fragPosLightSpace);"
-        "   vec3 lighting = (ambient + (1.0 - shadow) * (diffuse + specular)) * color; "
+       // "   vec3 lighting = (ambient + (1.0 - shadow) * (diffuse + specular)) * color; "
+        "   vec3 lighting = (ambient + (1.0 - shadow) * (diffuse + specular)); "
         "   vec4 textureColor = texture( textureSampler, vertexUV );"
         //"   FragColor = textureColor * vec4(lighting, 1.0);"
         "FragColor = textureColor;"

@@ -80,7 +80,7 @@ public:
 	bool equal(CubeModel cube);
 
 	//void updateActionRotationMatrix();
-	virtual void draw(mat4 worldRotationUpdate, GLuint textureArray);
+	virtual void draw(mat4 worldRotationUpdate, GLuint toggle, GLuint texture);
 
 private:
 	int id;
