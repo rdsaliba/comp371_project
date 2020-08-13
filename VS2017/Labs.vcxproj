@@ -121,6 +121,9 @@
     <ClCompile Include="..\Source\ModelController.cpp" />
     <ClCompile Include="..\Source\RubiksModel.cpp" />
     <ClCompile Include="..\Source\Sphere.cpp" />
+    <ClCompile Include="..\Source\TextureLoader.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</ExcludedFromBuild>
+    </ClCompile>
     <ClCompile Include="..\Source\ViewController.cpp" />
     <ClCompile Include="..\Source\Model.cpp" />
     <ClCompile Include="..\Source\programmingAssignment.cpp" />
@@ -138,6 +141,9 @@
     <ClInclude Include="..\Source\RubiksModel.h" />
     <ClInclude Include="..\Source\Sphere.h" />
     <ClInclude Include="..\Source\Structs.h" />
+    <ClInclude Include="..\Source\TextureLoader.h">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</ExcludedFromBuild>
+    </ClInclude>
     <ClInclude Include="..\Source\ViewController.h" />
     <ClInclude Include="..\Source\Model.h" />
     <ClInclude Include="..\Source\ModelUtilities.h" />

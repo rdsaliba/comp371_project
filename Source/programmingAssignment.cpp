@@ -20,11 +20,9 @@
 #include "ModelController.h"
 #include "Axis.h"
 #include "ViewController.h"
-//Library to load popular file formats and easy integration to project
-#define STB_IMAGE_IMPLEMENTATION
-#include "stb_image.h"
 #include "Structs.h"
 #include "Sphere.h"
+#include "TextureLoader.h"
 
 using namespace std;
 using namespace glm;
@@ -44,7 +42,6 @@ GLuint textureArray[31] = {}; //Contains toggle (on/off), box texture, metal tex
 int shaderType; //Color or texture
 
 //Forward declarations
-GLuint loadTexture(const char* filename);
 const char* getTexturedVertexShaderSource();
 const char* getTexturedFragmentShaderSource();
 
@@ -865,80 +862,80 @@ int main(int argc, char* argv[])
 
     // Load Textures
     #if defined(PLATFORM_OSX)
-        GLuint boxTextureID = loadTexture("Textures/box_texture.png");
-        GLuint metalTextureID = loadTexture("Textures/metal_finish.jpg"); 
-        GLuint tiledTextureID = loadTexture("Textures/tiled_texture.png"); 
+        GLuint boxTextureID = TextureLoader::LoadTextureUsingStb("Textures/box_texture.png");
+        GLuint metalTextureID = TextureLoader::LoadTextureUsingStb("Textures/metal_finish.jpg"); 
+        GLuint tiledTextureID = TextureLoader::LoadTextureUsingStb("Textures/tiled_texture.png"); 
         
         //Front cubes
-        GLuint x0y0z2ID = loadTexture("Textures/x0y0z2.png");
-        GLuint x0y1z2ID = loadTexture("Textures/x0y1z2.png");
-        GLuint x1y0z2ID = loadTexture("Textures/x1y0z2.png");
-        GLuint x1y1z2ID = loadTexture("Textures/x1y1z2.png");
-        GLuint x0y2z2ID = loadTexture("Textures/x0y2z2.png");
-        GLuint x1y2z2ID = loadTexture("Textures/x1y2z2.png");
-        GLuint x2y0z2ID = loadTexture("Textures/x2y0z2.png");
-        GLuint x2y1z2ID = loadTexture("Textures/x2y1z2.png");
-        GLuint x2y2z2ID = loadTexture("Textures/x2y2z2.png");
+        GLuint x0y0z2ID = TextureLoader::LoadTextureUsingStb("Textures/x0y0z2.png");
+        GLuint x0y1z2ID = TextureLoader::LoadTextureUsingStb("Textures/x0y1z2.png");
+        GLuint x1y0z2ID = TextureLoader::LoadTextureUsingStb("Textures/x1y0z2.png");
+        GLuint x1y1z2ID = TextureLoader::LoadTextureUsingStb("Textures/x1y1z2.png");
+        GLuint x0y2z2ID = TextureLoader::LoadTextureUsingStb("Textures/x0y2z2.png");
+        GLuint x1y2z2ID = TextureLoader::LoadTextureUsingStb("Textures/x1y2z2.png");
+        GLuint x2y0z2ID = TextureLoader::LoadTextureUsingStb("Textures/x2y0z2.png");
+        GLuint x2y1z2ID = TextureLoader::LoadTextureUsingStb("Textures/x2y1z2.png");
+        GLuint x2y2z2ID = TextureLoader::LoadTextureUsingStb("Textures/x2y2z2.png");
 
         //Mid cubes
-        GLuint x0y0z1ID = loadTexture("Textures/x0y0z1.png");
-        GLuint x1y0z1ID = loadTexture("Textures/x1y0z1.png");
-        GLuint x2y0z1ID = loadTexture("Textures/x2y0z1.png");
-        GLuint x0y1z1ID = loadTexture("Textures/x0y1z1.png");
-        GLuint x1y1z1ID = loadTexture("Textures/x1y1z1.png");
-        GLuint x2y1z1ID = loadTexture("Textures/x2y1z1.png");
-        GLuint x0y2z1ID = loadTexture("Textures/x0y2z1.png");
-        GLuint x1y2z1ID = loadTexture("Textures/x1y2z1.png");
-        GLuint x2y2z1ID = loadTexture("Textures/x2y2z1.png");
+        GLuint x0y0z1ID = TextureLoader::LoadTextureUsingStb("Textures/x0y0z1.png");
+        GLuint x1y0z1ID = TextureLoader::LoadTextureUsingStb("Textures/x1y0z1.png");
+        GLuint x2y0z1ID = TextureLoader::LoadTextureUsingStb("Textures/x2y0z1.png");
+        GLuint x0y1z1ID = TextureLoader::LoadTextureUsingStb("Textures/x0y1z1.png");
+        GLuint x1y1z1ID = TextureLoader::LoadTextureUsingStb("Textures/x1y1z1.png");
+        GLuint x2y1z1ID = TextureLoader::LoadTextureUsingStb("Textures/x2y1z1.png");
+        GLuint x0y2z1ID = TextureLoader::LoadTextureUsingStb("Textures/x0y2z1.png");
+        GLuint x1y2z1ID = TextureLoader::LoadTextureUsingStb("Textures/x1y2z1.png");
+        GLuint x2y2z1ID = TextureLoader::LoadTextureUsingStb("Textures/x2y2z1.png");
 
         //Back cubes
-        GLuint x0y0z0ID = loadTexture("Textures/x0y0z0.png");
-        GLuint x0y1z0ID = loadTexture("Textures/x0y1z0.png");
-        GLuint x0y2z0ID = loadTexture("Textures/x0y2z0.png");
-        GLuint x1y0z0ID = loadTexture("Textures/x1y0z0.png");
-        GLuint x1y1z0ID = loadTexture("Textures/x1y1z0.png");
-        GLuint x1y2z0ID = loadTexture("Textures/x1y2z0.png");
-        GLuint x2y0z0ID = loadTexture("Textures/x2y0z0.png");
-        GLuint x2y1z0ID = loadTexture("Textures/x2y1z0.png");
-        GLuint x2y2z0ID = loadTexture("Textures/x2y2z0.png");
+        GLuint x0y0z0ID = TextureLoader::LoadTextureUsingStb("Textures/x0y0z0.png");
+        GLuint x0y1z0ID = TextureLoader::LoadTextureUsingStb("Textures/x0y1z0.png");
+        GLuint x0y2z0ID = TextureLoader::LoadTextureUsingStb("Textures/x0y2z0.png");
+        GLuint x1y0z0ID = TextureLoader::LoadTextureUsingStb("Textures/x1y0z0.png");
+        GLuint x1y1z0ID = TextureLoader::LoadTextureUsingStb("Textures/x1y1z0.png");
+        GLuint x1y2z0ID = TextureLoader::LoadTextureUsingStb("Textures/x1y2z0.png");
+        GLuint x2y0z0ID = TextureLoader::LoadTextureUsingStb("Textures/x2y0z0.png");
+        GLuint x2y1z0ID = TextureLoader::LoadTextureUsingStb("Textures/x2y1z0.png");
+        GLuint x2y2z0ID = TextureLoader::LoadTextureUsingStb("Textures/x2y2z0.png");
 
     #else
-        GLuint boxTextureID = loadTexture("../Assets/Textures/box_texture.png"); //Source: https://jooinn.com/wood-texture-box.html
-        GLuint metalTextureID = loadTexture("../Assets/Textures/metal_finish.jpg"); //Source: https://unsplash.com/photos/v6uiP2MD6vs
-        GLuint tiledTextureID = loadTexture("../Assets/Textures/tiled_texture.png"); //Source: https://www.3dxo.com/textures/tiles
+        GLuint boxTextureID = TextureLoader::LoadTextureUsingStb("../Assets/Textures/box_texture.png"); //Source: https://jooinn.com/wood-texture-box.html
+        GLuint metalTextureID = TextureLoader::LoadTextureUsingStb("../Assets/Textures/metal_finish.jpg"); //Source: https://unsplash.com/photos/v6uiP2MD6vs
+        GLuint tiledTextureID = TextureLoader::LoadTextureUsingStb("../Assets/Textures/tiled_texture.png"); //Source: https://www.3dxo.com/textures/tiles
 
         //Front cubes
-        GLuint x0y0z2ID = loadTexture("../Assets/Textures/x0y0z2.png");
-        GLuint x0y1z2ID = loadTexture("../Assets/Textures/x0y1z2.png");
-        GLuint x1y0z2ID = loadTexture("../Assets/Textures/x1y0z2.png");
-        GLuint x1y1z2ID = loadTexture("../Assets/Textures/x1y1z2.png");
-        GLuint x0y2z2ID = loadTexture("../Assets/Textures/x0y2z2.png");
-        GLuint x1y2z2ID = loadTexture("../Assets/Textures/x1y2z2.png");
-        GLuint x2y0z2ID = loadTexture("../Assets/Textures/x2y0z2.png");
-        GLuint x2y1z2ID = loadTexture("../Assets/Textures/x2y1z2.png");
-        GLuint x2y2z2ID = loadTexture("../Assets/Textures/x2y2z2.png");
+        GLuint x0y0z2ID = TextureLoader::LoadTextureUsingStb("../Assets/Textures/x0y0z2.png");
+        GLuint x0y1z2ID = TextureLoader::LoadTextureUsingStb("../Assets/Textures/x0y1z2.png");
+        GLuint x1y0z2ID = TextureLoader::LoadTextureUsingStb("../Assets/Textures/x1y0z2.png");
+        GLuint x1y1z2ID = TextureLoader::LoadTextureUsingStb("../Assets/Textures/x1y1z2.png");
+        GLuint x0y2z2ID = TextureLoader::LoadTextureUsingStb("../Assets/Textures/x0y2z2.png");
+        GLuint x1y2z2ID = TextureLoader::LoadTextureUsingStb("../Assets/Textures/x1y2z2.png");
+        GLuint x2y0z2ID = TextureLoader::LoadTextureUsingStb("../Assets/Textures/x2y0z2.png");
+        GLuint x2y1z2ID = TextureLoader::LoadTextureUsingStb("../Assets/Textures/x2y1z2.png");
+        GLuint x2y2z2ID = TextureLoader::LoadTextureUsingStb("../Assets/Textures/x2y2z2.png");
 
         //Mid cubes
-        GLuint x0y0z1ID = loadTexture("../Assets/Textures/x0y0z1.png");
-        GLuint x1y0z1ID = loadTexture("../Assets/Textures/x1y0z1.png");
-        GLuint x2y0z1ID = loadTexture("../Assets/Textures/x2y0z1.png");
-        GLuint x0y1z1ID = loadTexture("../Assets/Textures/x0y1z1.png");
-        GLuint x1y1z1ID = loadTexture("../Assets/Textures/x1y1z1.png");
-        GLuint x2y1z1ID = loadTexture("../Assets/Textures/x2y1z1.png");
-        GLuint x0y2z1ID = loadTexture("../Assets/Textures/x0y2z1.png");
-        GLuint x1y2z1ID = loadTexture("../Assets/Textures/x1y2z1.png");
-        GLuint x2y2z1ID = loadTexture("../Assets/Textures/x2y2z1.png");
+        GLuint x0y0z1ID = TextureLoader::LoadTextureUsingStb("../Assets/Textures/x0y0z1.png");
+        GLuint x1y0z1ID = TextureLoader::LoadTextureUsingStb("../Assets/Textures/x1y0z1.png");
+        GLuint x2y0z1ID = TextureLoader::LoadTextureUsingStb("../Assets/Textures/x2y0z1.png");
+        GLuint x0y1z1ID = TextureLoader::LoadTextureUsingStb("../Assets/Textures/x0y1z1.png");
+        GLuint x1y1z1ID = TextureLoader::LoadTextureUsingStb("../Assets/Textures/x1y1z1.png");
+        GLuint x2y1z1ID = TextureLoader::LoadTextureUsingStb("../Assets/Textures/x2y1z1.png");
+        GLuint x0y2z1ID = TextureLoader::LoadTextureUsingStb("../Assets/Textures/x0y2z1.png");
+        GLuint x1y2z1ID = TextureLoader::LoadTextureUsingStb("../Assets/Textures/x1y2z1.png");
+        GLuint x2y2z1ID = TextureLoader::LoadTextureUsingStb("../Assets/Textures/x2y2z1.png");
 
         //Back cubes
-        GLuint x0y0z0ID = loadTexture("../Assets/Textures/x0y0z0.png");
-        GLuint x0y1z0ID = loadTexture("../Assets/Textures/x0y1z0.png");
-        GLuint x0y2z0ID = loadTexture("../Assets/Textures/x0y2z0.png");
-        GLuint x1y0z0ID = loadTexture("../Assets/Textures/x1y0z0.png");
-        GLuint x1y1z0ID = loadTexture("../Assets/Textures/x1y1z0.png");
-        GLuint x1y2z0ID = loadTexture("../Assets/Textures/x1y2z0.png");
-        GLuint x2y0z0ID = loadTexture("../Assets/Textures/x2y0z0.png");
-        GLuint x2y1z0ID = loadTexture("../Assets/Textures/x2y1z0.png");
-        GLuint x2y2z0ID = loadTexture("../Assets/Textures/x2y2z0.png");
+        GLuint x0y0z0ID = TextureLoader::LoadTextureUsingStb("../Assets/Textures/x0y0z0.png");
+        GLuint x0y1z0ID = TextureLoader::LoadTextureUsingStb("../Assets/Textures/x0y1z0.png");
+        GLuint x0y2z0ID = TextureLoader::LoadTextureUsingStb("../Assets/Textures/x0y2z0.png");
+        GLuint x1y0z0ID = TextureLoader::LoadTextureUsingStb("../Assets/Textures/x1y0z0.png");
+        GLuint x1y1z0ID = TextureLoader::LoadTextureUsingStb("../Assets/Textures/x1y1z0.png");
+        GLuint x1y2z0ID = TextureLoader::LoadTextureUsingStb("../Assets/Textures/x1y2z0.png");
+        GLuint x2y0z0ID = TextureLoader::LoadTextureUsingStb("../Assets/Textures/x2y0z0.png");
+        GLuint x2y1z0ID = TextureLoader::LoadTextureUsingStb("../Assets/Textures/x2y1z0.png");
+        GLuint x2y2z0ID = TextureLoader::LoadTextureUsingStb("../Assets/Textures/x2y2z0.png");
     #endif
 
     //Array of textures
@@ -1204,45 +1201,4 @@ int main(int argc, char* argv[])
     glfwTerminate();
 
     return 0;
-}
-
-//Load the texture
-GLuint loadTexture(const char* filename)
-{
-    // Step1 Create and bind textures
-    GLuint textureId = 0;
-    glGenTextures(1, &textureId);
-    assert(textureId != 0);
-
-
-    glBindTexture(GL_TEXTURE_2D, textureId);
-
-    // Step2 Set filter parameters
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-
-    // Step3 Load Textures with dimension data
-    int width, height, nrChannels;
-    unsigned char* data = stbi_load(filename, &width, &height, &nrChannels, 0);
-    if (!data)
-    {
-        std::cerr << "Error::Texture could not load texture file:" << filename << std::endl;
-        return 0;
-    }
-
-    // Step4 Upload the texture to the PU
-    GLenum format = 0;
-    if (nrChannels == 1)
-        format = GL_RED;
-    else if (nrChannels == 3)
-        format = GL_RGB;
-    else if (nrChannels == 4)
-        format = GL_RGBA;
-    glTexImage2D(GL_TEXTURE_2D, 0, format, width, height,
-        0, format, GL_UNSIGNED_BYTE, data);
-
-    // Step5 Free resources
-    stbi_image_free(data);
-    glBindTexture(GL_TEXTURE_2D, 0);
-    return textureId;
 }
