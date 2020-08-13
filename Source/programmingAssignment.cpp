@@ -279,16 +279,15 @@ const char* getTexturedFragmentShaderSource()
         "   vec3 viewDir = normalize(viewPos - fragPos);"
         "   float spec = 0.0;"
         "   vec3 reflectDir = reflect(-lightDir, normal);"
-        "   spec = pow(max(dot(viewDir, reflectDir), 0.0), 32.0);"
+        "   spec = pow(max(dot(viewDir, reflectDir), 0.0), 2.0);" 
         "   vec3 specular = spec * lightColor; "
 
         // calculate shadow
         "   float shadow = ShadowCalculation(fragPosLightSpace);"
-       // "   vec3 lighting = (ambient + (1.0 - shadow) * (diffuse + specular)) * color; "
-        "   vec3 lighting = (ambient + (1.0 - shadow) * (diffuse + specular)); "
+        "   vec3 lighting = (ambient + (1.0 - shadow) * (diffuse + specular)) * color; "
         "   vec4 textureColor = texture( textureSampler, vertexUV );"
-        //"   FragColor = textureColor * vec4(lighting, 1.0);"
-        "FragColor = textureColor;"
+        "   FragColor = textureColor * vec4(lighting, 1.0);"
+        //"FragColor = textureColor;"
         "}";
 }
 
@@ -444,53 +443,53 @@ int compileAndLinkDepthShaders()
 // Textured Cube model
 const TexturedColoredVertex texturedCubeVertexArray[] = {  // position, color, normal, UV coordinates
 
-    TexturedColoredVertex(vec3(-0.5f,-0.5f,-0.5f), vec3(1.0f, 0.0f, 0.0f), vec3(-1.0f, 0.0f, 0.0f), vec2(0.0f, 1.0f)), //left - red
-    TexturedColoredVertex(vec3(-0.5f,-0.5f, 0.5f), vec3(1.0f, 0.0f, 0.0f), vec3(-1.0f, 0.0f, 0.0f), vec2(0.33f, 1.0f)),
-    TexturedColoredVertex(vec3(-0.5f, 0.5f, 0.5f), vec3(1.0f, 0.0f, 0.0f), vec3(-1.0f, 0.0f, 0.0f), vec2(0.33f, 0.5f)),
+    TexturedColoredVertex(vec3(-0.5f,-0.5f,-0.5f), vec3(1.0f, 1.0f, 1.0f), vec3(-1.0f, 0.0f, 0.0f), vec2(0.0f, 1.0f)), //left - white
+    TexturedColoredVertex(vec3(-0.5f,-0.5f, 0.5f), vec3(1.0f, 1.0f, 1.0f), vec3(-1.0f, 0.0f, 0.0f), vec2(0.33f, 1.0f)),
+    TexturedColoredVertex(vec3(-0.5f, 0.5f, 0.5f), vec3(1.0f, 1.0f, 1.0f), vec3(-1.0f, 0.0f, 0.0f), vec2(0.33f, 0.5f)),
 
-    TexturedColoredVertex(vec3(-0.5f,-0.5f,-0.5f), vec3(1.0f, 0.0f, 0.0f), vec3(-1.0f, 0.0f, 0.0f), vec2(0.0f, 1.0f)),
-    TexturedColoredVertex(vec3(-0.5f, 0.5f, 0.5f), vec3(1.0f, 0.0f, 0.0f), vec3(-1.0f, 0.0f, 0.0f), vec2(0.33f, 0.5f)),
-    TexturedColoredVertex(vec3(-0.5f, 0.5f,-0.5f), vec3(1.0f, 0.0f, 0.0f), vec3(-1.0f, 0.0f, 0.0f), vec2(0.0f, 0.5f)),
+    TexturedColoredVertex(vec3(-0.5f,-0.5f,-0.5f), vec3(1.0f, 1.0f, 1.0f), vec3(-1.0f, 0.0f, 0.0f), vec2(0.0f, 1.0f)),
+    TexturedColoredVertex(vec3(-0.5f, 0.5f, 0.5f), vec3(1.0f, 1.0f, 1.0f), vec3(-1.0f, 0.0f, 0.0f), vec2(0.33f, 0.5f)),
+    TexturedColoredVertex(vec3(-0.5f, 0.5f,-0.5f), vec3(1.0f, 1.0f, 1.0f), vec3(-1.0f, 0.0f, 0.0f), vec2(0.0f, 0.5f)),
 
-    TexturedColoredVertex(vec3(0.5f, 0.5f,-0.5f), vec3(0.0f, 0.0f, 1.0f), vec3(0.0f, 0.0f, -1.0f), vec2(0.33f, 0.0f)), // far - blue
-    TexturedColoredVertex(vec3(-0.5f,-0.5f,-0.5f), vec3(0.0f, 0.0f, 1.0f), vec3(0.0f, 0.0f, -1.0f), vec2(0.67f, 0.5f)),
-    TexturedColoredVertex(vec3(-0.5f, 0.5f,-0.5f), vec3(0.0f, 0.0f, 1.0f), vec3(0.0f, 0.0f, -1.0f), vec2(0.67f, 0.0f)),
+    TexturedColoredVertex(vec3(0.5f, 0.5f,-0.5f), vec3(1.0f, 1.0f, 1.0f), vec3(0.0f, 0.0f, -1.0f), vec2(0.33f, 0.0f)), // far - white
+    TexturedColoredVertex(vec3(-0.5f,-0.5f,-0.5f), vec3(1.0f, 1.0f, 1.0f), vec3(0.0f, 0.0f, -1.0f), vec2(0.67f, 0.5f)),
+    TexturedColoredVertex(vec3(-0.5f, 0.5f,-0.5f), vec3(1.0f, 1.0f, 1.0f), vec3(0.0f, 0.0f, -1.0f), vec2(0.67f, 0.0f)),
 
-    TexturedColoredVertex(vec3(0.5f, 0.5f,-0.5f), vec3(0.0f, 0.0f, 1.0f), vec3(0.0f, 0.0f, -1.0f), vec2(0.33f, 0.0f)),
-    TexturedColoredVertex(vec3(0.5f,-0.5f,-0.5f), vec3(0.0f, 0.0f, 1.0f), vec3(0.0f, 0.0f, -1.0f), vec2(0.33f, 0.5f)),
-    TexturedColoredVertex(vec3(-0.5f,-0.5f,-0.5f), vec3(0.0f, 0.0f, 1.0f), vec3(0.0f, 0.0f, -1.0f), vec2(0.67f, 0.5f)),
+    TexturedColoredVertex(vec3(0.5f, 0.5f,-0.5f), vec3(1.0f, 1.0f, 1.0f), vec3(0.0f, 0.0f, -1.0f), vec2(0.33f, 0.0f)),
+    TexturedColoredVertex(vec3(0.5f,-0.5f,-0.5f), vec3(1.0f, 1.0f, 1.0f), vec3(0.0f, 0.0f, -1.0f), vec2(0.33f, 0.5f)),
+    TexturedColoredVertex(vec3(-0.5f,-0.5f,-0.5f), vec3(1.0f, 1.0f, 1.0f), vec3(0.0f, 0.0f, -1.0f), vec2(0.67f, 0.5f)),
 
-    TexturedColoredVertex(vec3(0.5f,-0.5f, 0.5f), vec3(0.0f, 1.0f, 1.0f), vec3(0.0f, -1.0f, 0.0f), vec2(1.0f, 0.5f)), // bottom - turquoise
-    TexturedColoredVertex(vec3(-0.5f,-0.5f,-0.5f), vec3(0.0f, 1.0f, 1.0f), vec3(0.0f, -1.0f, 0.0f), vec2(0.67f, 0.0f)),
-    TexturedColoredVertex(vec3(0.5f,-0.5f,-0.5f), vec3(0.0f, 1.0f, 1.0f), vec3(0.0f, -1.0f, 0.0f), vec2(1.0f, 0.0f)),
+    TexturedColoredVertex(vec3(0.5f,-0.5f, 0.5f), vec3(1.0f, 1.0f, 1.0f), vec3(0.0f, -1.0f, 0.0f), vec2(1.0f, 0.5f)), // bottom - white
+    TexturedColoredVertex(vec3(-0.5f,-0.5f,-0.5f), vec3(1.0f, 1.0f, 1.0f), vec3(0.0f, -1.0f, 0.0f), vec2(0.67f, 0.0f)),
+    TexturedColoredVertex(vec3(0.5f,-0.5f,-0.5f), vec3(1.0f, 1.0f, 1.0f), vec3(0.0f, -1.0f, 0.0f), vec2(1.0f, 0.0f)),
 
-    TexturedColoredVertex(vec3(0.5f,-0.5f, 0.5f), vec3(0.0f, 1.0f, 1.0f), vec3(0.0f, -1.0f, 0.0f), vec2(1.0f, 0.5f)),
-    TexturedColoredVertex(vec3(-0.5f,-0.5f, 0.5f), vec3(0.0f, 1.0f, 1.0f), vec3(0.0f, -1.0f, 0.0f), vec2(0.67f, 0.5f)),
-    TexturedColoredVertex(vec3(-0.5f,-0.5f,-0.5f), vec3(0.0f, 1.0f, 1.0f), vec3(0.0f, -1.0f, 0.0f), vec2(0.67f, 0.0f)),
+    TexturedColoredVertex(vec3(0.5f,-0.5f, 0.5f), vec3(1.0f, 1.0f, 1.0f), vec3(0.0f, -1.0f, 0.0f), vec2(1.0f, 0.5f)),
+    TexturedColoredVertex(vec3(-0.5f,-0.5f, 0.5f), vec3(1.0f, 1.0f, 1.0f), vec3(0.0f, -1.0f, 0.0f), vec2(0.67f, 0.5f)),
+    TexturedColoredVertex(vec3(-0.5f,-0.5f,-0.5f), vec3(1.0f, 1.0f, 1.0f), vec3(0.0f, -1.0f, 0.0f), vec2(0.67f, 0.0f)),
 
-    TexturedColoredVertex(vec3(-0.5f, 0.5f, 0.5f), vec3(0.0f, 1.0f, 0.0f), vec3(0.0f, 0.0f, 1.0f), vec2(0.33f, 0.5f)), // near - green
-    TexturedColoredVertex(vec3(-0.5f,-0.5f, 0.5f), vec3(0.0f, 1.0f, 0.0f), vec3(0.0f, 0.0f, 1.0f), vec2(0.33f, 1.0f)),
-    TexturedColoredVertex(vec3(0.5f,-0.5f, 0.5f), vec3(0.0f, 1.0f, 0.0f), vec3(0.0f, 0.0f, 1.0f), vec2(0.67f, 1.0f)),
+    TexturedColoredVertex(vec3(-0.5f, 0.5f, 0.5f), vec3(1.0f, 1.0f, 1.0f), vec3(0.0f, 0.0f, 1.0f), vec2(0.33f, 0.5f)), // near - white
+    TexturedColoredVertex(vec3(-0.5f,-0.5f, 0.5f), vec3(1.0f, 1.0f, 1.0f), vec3(0.0f, 0.0f, 1.0f), vec2(0.33f, 1.0f)),
+    TexturedColoredVertex(vec3(0.5f,-0.5f, 0.5f), vec3(1.0f, 1.0f, 1.0f), vec3(0.0f, 0.0f, 1.0f), vec2(0.67f, 1.0f)),
 
-    TexturedColoredVertex(vec3(0.5f, 0.5f, 0.5f), vec3(0.0f, 1.0f, 0.0f), vec3(0.0f, 0.0f, 1.0f), vec2(0.67f, 0.5f)),
-    TexturedColoredVertex(vec3(-0.5f, 0.5f, 0.5f), vec3(0.0f, 1.0f, 0.0f), vec3(0.0f, 0.0f, 1.0f), vec2(0.33f, 0.5f)),
-    TexturedColoredVertex(vec3(0.5f,-0.5f, 0.5f), vec3(0.0f, 1.0f, 0.0f), vec3(0.0f, 0.0f, 1.0f), vec2(0.67f, 1.0f)),
+    TexturedColoredVertex(vec3(0.5f, 0.5f, 0.5f), vec3(1.0f, 1.0f, 1.0f), vec3(0.0f, 0.0f, 1.0f), vec2(0.67f, 0.5f)),
+    TexturedColoredVertex(vec3(-0.5f, 0.5f, 0.5f), vec3(1.0f, 1.0f, 1.0f), vec3(0.0f, 0.0f, 1.0f), vec2(0.33f, 0.5f)),
+    TexturedColoredVertex(vec3(0.5f,-0.5f, 0.5f), vec3(1.0f, 1.0f, 1.0f), vec3(0.0f, 0.0f, 1.0f), vec2(0.67f, 1.0f)),
 
-    TexturedColoredVertex(vec3(0.5f, 0.5f, 0.5f), vec3(1.0f, 0.0f, 1.0f), vec3(1.0f, 0.0f, 0.0f), vec2(0.0f, 0.0f)), // right - purple
-    TexturedColoredVertex(vec3(0.5f,-0.5f,-0.5f), vec3(1.0f, 0.0f, 1.0f), vec3(1.0f, 0.0f, 0.0f), vec2(0.33f, 0.5f)),
-    TexturedColoredVertex(vec3(0.5f, 0.5f,-0.5f), vec3(1.0f, 0.0f, 1.0f), vec3(1.0f, 0.0f, 0.0f), vec2(0.33f, 0.0f)),
+    TexturedColoredVertex(vec3(0.5f, 0.5f, 0.5f), vec3(1.0f, 1.0f, 1.0f), vec3(1.0f, 0.0f, 0.0f), vec2(0.0f, 0.0f)), // right - white
+    TexturedColoredVertex(vec3(0.5f,-0.5f,-0.5f), vec3(1.0f, 1.0f, 1.0f), vec3(1.0f, 0.0f, 0.0f), vec2(0.33f, 0.5f)),
+    TexturedColoredVertex(vec3(0.5f, 0.5f,-0.5f), vec3(1.0f, 1.0f, 1.0f), vec3(1.0f, 0.0f, 0.0f), vec2(0.33f, 0.0f)),
 
-    TexturedColoredVertex(vec3(0.5f,-0.5f,-0.5f), vec3(1.0f, 0.0f, 1.0f), vec3(1.0f, 0.0f, 0.0f), vec2(0.33f, 0.5f)),
-    TexturedColoredVertex(vec3(0.5f, 0.5f, 0.5f), vec3(1.0f, 0.0f, 1.0f), vec3(1.0f, 0.0f, 0.0f), vec2(0.0f, 0.0f)),
-    TexturedColoredVertex(vec3(0.5f,-0.5f, 0.5f), vec3(1.0f, 0.0f, 1.0f), vec3(1.0f, 0.0f, 0.0f), vec2(0.0f, 0.5f)),
+    TexturedColoredVertex(vec3(0.5f,-0.5f,-0.5f), vec3(1.0f, 1.0f, 1.0f), vec3(1.0f, 0.0f, 0.0f), vec2(0.33f, 0.5f)),
+    TexturedColoredVertex(vec3(0.5f, 0.5f, 0.5f), vec3(1.0f, 1.0f, 1.0f), vec3(1.0f, 0.0f, 0.0f), vec2(0.0f, 0.0f)),
+    TexturedColoredVertex(vec3(0.5f,-0.5f, 0.5f), vec3(1.0f, 1.0f, 1.0f), vec3(1.0f, 0.0f, 0.0f), vec2(0.0f, 0.5f)),
 
-    TexturedColoredVertex(vec3(0.5f, 0.5f, 0.5f), vec3(1.0f, 1.0f, 0.0f), vec3(0.0f, 1.0f, 0.0f), vec2(1.0f, 1.0f)), // top - yellow
-    TexturedColoredVertex(vec3(0.5f, 0.5f,-0.5f), vec3(1.0f, 1.0f, 0.0f), vec3(0.0f, 1.0f, 0.0f), vec2(1.0f, 0.5f)),
-    TexturedColoredVertex(vec3(-0.5f, 0.5f,-0.5f), vec3(1.0f, 1.0f, 0.0f), vec3(0.0f, 1.0f, 0.0f), vec2(0.67f, 0.5f)),
+    TexturedColoredVertex(vec3(0.5f, 0.5f, 0.5f), vec3(1.0f, 1.0f, 1.0f), vec3(0.0f, 1.0f, 0.0f), vec2(1.0f, 1.0f)), // top - white
+    TexturedColoredVertex(vec3(0.5f, 0.5f,-0.5f), vec3(1.0f, 1.0f, 1.0f), vec3(0.0f, 1.0f, 0.0f), vec2(1.0f, 0.5f)),
+    TexturedColoredVertex(vec3(-0.5f, 0.5f,-0.5f), vec3(1.0f, 1.0f, 1.0f), vec3(0.0f, 1.0f, 0.0f), vec2(0.67f, 0.5f)),
 
-    TexturedColoredVertex(vec3(0.5f, 0.5f, 0.5f), vec3(1.0f, 1.0f, 0.0f), vec3(0.0f, 1.0f, 0.0f), vec2(1.0f, 1.0f)),
-    TexturedColoredVertex(vec3(-0.5f, 0.5f,-0.5f), vec3(1.0f, 1.0f, 0.0f), vec3(0.0f, 1.0f, 0.0f), vec2(0.67f, 0.5f)),
-    TexturedColoredVertex(vec3(-0.5f, 0.5f, 0.5f), vec3(1.0f, 1.0f, 0.0f), vec3(0.0f, 1.0f, 0.0f), vec2(0.67f, 1.0f))
+    TexturedColoredVertex(vec3(0.5f, 0.5f, 0.5f), vec3(1.0f, 1.0f, 1.0f), vec3(0.0f, 1.0f, 0.0f), vec2(1.0f, 1.0f)),
+    TexturedColoredVertex(vec3(-0.5f, 0.5f,-0.5f), vec3(1.0f, 1.0f, 1.0f), vec3(0.0f, 1.0f, 0.0f), vec2(0.67f, 0.5f)),
+    TexturedColoredVertex(vec3(-0.5f, 0.5f, 0.5f), vec3(1.0f, 1.0f, 1.0f), vec3(0.0f, 1.0f, 0.0f), vec2(0.67f, 1.0f))
 };
 
 //Square plane
