@@ -1,55 +1,160 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <ClCompile Include="..\Source\Axis.cpp" />
-    <ClCompile Include="..\Source\ModelController.cpp" />
-    <ClCompile Include="..\Source\ViewController.cpp" />
-    <ClCompile Include="..\Source\Model.cpp" />
-    <ClCompile Include="..\Source\programmingAssignment.cpp" />
-    <ClCompile Include="..\Source\ModelUtilities.cpp" />
-    <ClCompile Include="..\Source\HauModel.cpp" />
-    <ClCompile Include="..\Source\RoyModel.cpp" />
-    <ClCompile Include="..\Source\TaqiModel.cpp" />
-    <ClCompile Include="..\Source\SwetangModel.cpp" />
-    <ClCompile Include="..\Source\WilliamModel.cpp" />
-    <ClCompile Include="..\Source\Sphere.cpp" />
-    <ClCompile Include="..\Source\CubeModel.cpp" />
-    <ClCompile Include="..\Source\RubiksModel.cpp" />
-    <ClCompile Include="..\Source\TextureLoader.cpp" />
+    <ClCompile Include="..\Source\Axis.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Source\CubeModel.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Source\HauModel.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Source\Model.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Source\ModelController.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Source\ModelUtilities.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Source\programmingAssignment.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Source\RoyModel.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Source\RubiksModel.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Source\Sphere.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Source\SwetangModel.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Source\TaqiModel.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Source\TextureLoader.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Source\ViewController.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Source\WilliamModel.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\Source\Axis.h" />
-    <ClInclude Include="..\Source\ModelController.h" />
-    <ClInclude Include="..\Source\Structs.h" />
-    <ClInclude Include="..\Source\ViewController.h" />
-    <ClInclude Include="..\Source\Model.h" />
-    <ClInclude Include="..\Source\ModelUtilities.h" />
-    <ClInclude Include="..\Source\HauModel.h" />
-    <ClInclude Include="..\Source\RoyModel.h" />
-    <ClInclude Include="..\Source\stb_image.h" />
-    <ClInclude Include="..\Source\SwetangModel.h" />
-    <ClInclude Include="..\Source\TaqiModel.h" />
-    <ClInclude Include="..\Source\WilliamModel.h" />
-    <ClInclude Include="..\Source\Sphere.h" />
-    <ClInclude Include="..\Source\CubeModel.h" />
-    <ClInclude Include="..\Source\RubiksModel.h" />
-    <ClInclude Include="..\Source\TextureLoader.h" />
+    <ClInclude Include="..\Source\Axis.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Source\CubeModel.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Source\HauModel.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Source\Model.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Source\ModelController.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Source\ModelUtilities.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Source\RoyModel.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Source\RubiksModel.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Source\Sphere.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Source\Structs.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Source\stb_image.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Source\SwetangModel.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Source\TaqiModel.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Source\TextureLoader.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Source\ViewController.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Source\WilliamModel.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <Image Include="..\Assets\Textures\BillboardTest.bmp" />
-    <Image Include="..\Assets\Textures\Particle.png" />
+    <Image Include="..\Assets\Textures\Particle.png">
+      <Filter>Resource Files\Textures</Filter>
+    </Image>
+    <Image Include="..\Assets\Textures\BillboardTest.bmp">
+      <Filter>Resource Files\Textures</Filter>
+    </Image>
   </ItemGroup>
   <ItemGroup>
-    <None Include="..\Assets\Scenes\AnimatedScene.scene" />
-    <None Include="..\Assets\Scenes\AnimatedSceneWithParticles.scene" />
-    <None Include="..\Assets\Scenes\CoordinateSystem.scene" />
-    <None Include="..\Assets\Scenes\StaticScene.scene" />
-    <None Include="..\Assets\Shaders\BlueColor.fragmentshader" />
-    <None Include="..\Assets\Shaders\PathLines.fragmentshader" />
-    <None Include="..\Assets\Shaders\PathLines.vertexshader" />
-    <None Include="..\Assets\Shaders\SolidColor.fragmentshader" />
-    <None Include="..\Assets\Shaders\SolidColor.vertexshader" />
-    <None Include="..\Assets\Shaders\Texture.fragmentshader" />
-    <None Include="..\Assets\Shaders\Texture.vertexshader" />
+    <None Include="..\Assets\Scenes\AnimatedScene.scene">
+      <Filter>Resource Files\Scenes</Filter>
+    </None>
+    <None Include="..\Assets\Scenes\AnimatedSceneWithParticles.scene">
+      <Filter>Resource Files\Scenes</Filter>
+    </None>
+    <None Include="..\Assets\Scenes\CoordinateSystem.scene">
+      <Filter>Resource Files\Scenes</Filter>
+    </None>
+    <None Include="..\Assets\Scenes\StaticScene.scene">
+      <Filter>Resource Files\Shaders</Filter>
+    </None>
+    <None Include="..\Assets\Shaders\Texture.vertexshader">
+      <Filter>Resource Files\Shaders</Filter>
+    </None>
+    <None Include="..\Assets\Shaders\Texture.fragmentshader">
+      <Filter>Resource Files\Shaders</Filter>
+    </None>
+    <None Include="..\Assets\Shaders\SolidColor.vertexshader">
+      <Filter>Resource Files\Shaders</Filter>
+    </None>
+    <None Include="..\Assets\Shaders\SolidColor.fragmentshader">
+      <Filter>Resource Files\Shaders</Filter>
+    </None>
+    <None Include="..\Assets\Shaders\PathLines.vertexshader">
+      <Filter>Resource Files\Shaders</Filter>
+    </None>
+    <None Include="..\Assets\Shaders\PathLines.fragmentshader">
+      <Filter>Resource Files\Shaders</Filter>
+    </None>
+    <None Include="..\Assets\Shaders\BlueColor.fragmentshader">
+      <Filter>Resource Files\Shaders</Filter>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{6240f491-d705-471c-8134-40b9ade2ccf0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Resource Files">
+      <UniqueIdentifier>{ce6f2ba6-7059-44b6-9db4-32ce5e0d5026}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Resource Files\Scenes">
+      <UniqueIdentifier>{bcd98eff-9c26-4d0f-856e-2df40ba533c7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Resource Files\Shaders">
+      <UniqueIdentifier>{9adb2f38-99a0-472c-b772-b06461f41fbf}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Resource Files\Textures">
+      <UniqueIdentifier>{c7ddec39-6837-4971-8da3-ede47f326507}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
 </Project>
