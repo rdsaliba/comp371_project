@@ -149,7 +149,9 @@ C: move left
 
 B: move right
 
-shift: move faster
+shift_G: move up
+
+shift_V: move down
 
 
 Right_mouse_button: pan camera in x direction
