@@ -23,6 +23,8 @@
 #include "Structs.h"
 #include "Sphere.h"
 #include "TextureLoader.h"
+#include "shaderloader.h"
+
 
 using namespace std;
 using namespace glm;
@@ -40,10 +42,6 @@ ModelController* modelController = NULL;
 GLuint toggle = 0; //0 = off, 1 = on
 GLuint textureArray[31] = {}; //Contains toggle (on/off), box texture, metal texture, and tiled texture
 int shaderType; //Color or texture
-
-//Forward declarations
-const char* getTexturedVertexShaderSource();
-const char* getTexturedFragmentShaderSource();
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height)
 {
@@ -66,282 +64,6 @@ void cursor_position_callback(GLFWwindow* window, double xpos, double ypos){
     viewController->setMousePosY(ypos);
 }
 
-const char* getVertexShaderSource()
-{
-    //Vertex Shader
-    return
-        "#version 330 core\n"
-        "layout (location=0) in vec3 aPos;"
-        "layout (location=1) in vec3 aColor;"
-        "layout (location=2) in vec3 aNorm;"
-        ""
-        "uniform mat4 worldMatrix;"
-        "uniform mat4 viewMatrix = mat4(1.0);" //default value for view matrix (identity)
-        "uniform mat4 projectionMatrix = mat4(1.0);"
-        "uniform mat4 lightSpaceMatrix;"
-        ""
-        "out vec3 vertexColor;"
-        "out vec3 norm;"
-        "out vec3 fragPos;"
-        "out vec4 fragPosLightSpace;"
-
-        "void main()"
-        "{"
-        "   vertexColor = aColor;"
-        "   fragPos = vec3(worldMatrix * vec4(aPos, 1.0));"
-        //"   fragPos = aPos;"
-        "   norm = mat3(transpose(inverse(worldMatrix))) * aNorm;"
-        //"   norm = aNorm;"
-        "   mat4 modelViewProjection = projectionMatrix * viewMatrix * worldMatrix;"
-        "   fragPosLightSpace = lightSpaceMatrix * vec4(fragPos, 1.0);"
-        "   gl_Position = modelViewProjection * vec4(aPos.x, aPos.y, aPos.z, 1.0);"
-        "}";
-}
-
-const char* getFragmentShaderSource()
-{
-    //Fragment Shaders here
-    return
-        "#version 330 core\n"
-           "out vec4 FragColor;"
-
-           "in vec3 fragPos;"
-           "in vec3 vertexColor;"
-           "in vec3 norm;"
-           "in vec4 fragPosLightSpace;"
-           "uniform vec3 lightPos;"
-           "uniform vec3 viewPos;"
-           "uniform sampler2D shadowMap;"
-            
-        "float ShadowCalculation(vec4 fragPosLSpace)"
-        "{"
-            // perform perspective divide
-            "vec3 projCoords = fragPosLSpace.xyz / fragPosLSpace.w;"
-            // transform to [0,1] range
-            "projCoords = projCoords * 0.5 + 0.5;"
-            // get closest depth value from light's perspective (using [0,1] range fragPosLight as coords)
-            "float closestDepth = texture(shadowMap, projCoords.xy).r;"
-            // get depth of current fragment from light's perspective
-            "float currentDepth = projCoords.z;"
-            // calculate bias (based on depth map resolution and slope)
-            "vec3 normal = normalize(norm);"
-            "vec3 lightDir = normalize(lightPos - fragPos);"
-            "float bias = max(0.05 * (1.0 - dot(normal, lightDir)), 0.005);"
-            // check whether current frag pos is in shadow
-            // float shadow = currentDepth - bias > closestDepth  ? 1.0 : 0.0;
-            // PCF
-            "float shadow = 0.0;"
-            "vec2 texelSize = 1.0 / textureSize(shadowMap, 0);"
-            "for (int x = -1; x <= 1; ++x)"
-            "{"
-                "for (int y = -1; y <= 1; ++y)"
-                "{"
-                    "float pcfDepth = texture(shadowMap, projCoords.xy + vec2(x, y) * texelSize).r;"
-                    "shadow += currentDepth - bias > pcfDepth ? 1.0 : 0.0;"
-                "}"
-            "}  "
-            "shadow /= 9.0;  "
-
-            // keep the shadow at 0.0 when outside the far_plane region of the light's frustum.
-            "if (projCoords.z > 1.0)"
-                "shadow = 0.0;"
-
-            "return shadow;"
-         "}"
-
-           "void main()"
-           "{"
-           "   vec3 color = vertexColor;"
-           "   vec3 lightColor = vec3(0.3);" //Bright White
-           // ambient
-           "   vec3 ambient = 0.05 * color;"  //0.05
-           // diffuse
-           "   vec3 lightDir = normalize(lightPos - fragPos);"
-           "   vec3 normal = normalize(norm);"
-           "   float diff = max(dot(lightDir, normal), 0.0);"
-           "   vec3 diffuse = diff * color;"
-           // specular
-           "   vec3 viewDir = normalize(viewPos - fragPos);"
-           "   float spec = 0.0;"
-           "   vec3 reflectDir = reflect(-lightDir, normal);"
-           "   spec = pow(max(dot(viewDir, reflectDir), 0.0), 32.0);"
-           "   vec3 specular = spec * lightColor; "
-           // calculate shadow
-           "   float shadow = ShadowCalculation(fragPosLightSpace);"
-           "   vec3 lighting = (ambient + (1.0 - shadow) * (diffuse + specular)) * color; "
-           "   FragColor = vec4(lighting, 1.0);"
-           " }";
-}
-
-//Vertex shader receives UV attributes and outputs them back to fragment shader
-const char* getTexturedVertexShaderSource()
-{
-    // For now, you use a string for your shader code, shaders will be stored in .glsl files
-    return
-        "#version 330 core\n"
-        "layout (location = 0) in vec3 aPos;"
-        "layout (location = 1) in vec3 aColor;"
-        "layout (location = 2) in vec3 aNorm;"
-        "layout (location = 3) in vec2 aUV;"
-        ""
-        "uniform mat4 worldMatrix;"
-        "uniform mat4 viewMatrix = mat4(1.0);"  // default value for view matrix (identity)
-        "uniform mat4 projectionMatrix = mat4(1.0);"
-        "uniform mat4 lightSpaceMatrix;"
-        ""
-        "out vec3 vertexColor;"
-        "out vec3 norm;"
-        "out vec3 fragPos;"
-        "out vec4 fragPosLightSpace;"
-        "out vec2 vertexUV;"
-        ""
-        "void main()"
-        "{"
-        "   vertexColor = aColor;"
-        "   fragPos = vec3(worldMatrix * vec4(aPos, 1.0));"
-        "   norm = mat3(transpose(inverse(worldMatrix))) * aNorm;"
-        "   mat4 modelViewProjection = projectionMatrix * viewMatrix * worldMatrix;"
-        "   fragPosLightSpace = lightSpaceMatrix * vec4(fragPos, 1.0);"
-        "   gl_Position = modelViewProjection * vec4(aPos.x, aPos.y, aPos.z, 1.0);"
-        "   vertexUV = aUV;"
-        "}";
-}
-
-//Fragment shader fetches the texture sample at coordinate UV and blends the color with vertex colors
-const char* getTexturedFragmentShaderSource()
-{
-    return
-        "#version 330 core\n"
-        "out vec4 FragColor;"
-        "in vec3 fragPos;"
-        "in vec3 vertexColor;"
-        "in vec2 vertexUV;"
-        "in vec3 norm;"
-        "in vec4 fragPosLightSpace;"
-        "uniform vec3 lightPos;"
-        "uniform vec3 viewPos;"
-        "uniform sampler2D textureSampler;"
-        "uniform sampler2D shadowMap;"
-
-        "float ShadowCalculation(vec4 fragPosLSpace)"
-        "{"
-            // perform perspective divide
-            "vec3 projCoords = fragPosLSpace.xyz / fragPosLSpace.w;"
-            // transform to [0,1] range
-            "projCoords = projCoords * 0.5 + 0.5;"
-            // get closest depth value from light's perspective (using [0,1] range fragPosLight as coords)
-            "float closestDepth = texture(shadowMap, projCoords.xy).r;"
-            // get depth of current fragment from light's perspective
-            "float currentDepth = projCoords.z;"
-            // calculate bias (based on depth map resolution and slope)
-            "vec3 normal = normalize(norm);"
-            "vec3 lightDir = normalize(lightPos - fragPos);"
-            "float bias = max(0.05 * (1.0 - dot(normal, lightDir)), 0.005);"
-            // check whether current frag pos is in shadow
-            // float shadow = currentDepth - bias > closestDepth  ? 1.0 : 0.0;
-            // PCF
-            "float shadow = 0.0;"
-            "vec2 texelSize = 1.0 / textureSize(shadowMap, 0);"
-            "for (int x = -1; x <= 1; ++x)"
-            "{"
-            "for (int y = -1; y <= 1; ++y)"
-            "{"
-            "float pcfDepth = texture(shadowMap, projCoords.xy + vec2(x, y) * texelSize).r;"
-            "shadow += currentDepth - bias > pcfDepth ? 1.0 : 0.0;"
-            "}"
-            "}  "
-            "shadow /= 9.0;  "
-
-            // keep the shadow at 0.0 when outside the far_plane region of the light's frustum.
-            "if (projCoords.z > 1.0)"
-            "shadow = 0.0;"
-
-            "return shadow;"
-        "}"
-
-        
-        "void main()"
-        "{"
-        "   vec3 color = vertexColor;"
-        "   vec3 lightColor = vec3(0.3);" //Bright White
-        //ambiant
-        "   vec3 lightPos = vec3(0.0f, 30.0f, 0.0f);" //TODO: Remove
-        "   vec3 ambient = 0.05 * color;"  //0.05
-        //diffuse
-        "   vec3 lightDir = normalize(lightPos - fragPos);"
-        "   vec3 normal = normalize(norm);"
-        "   float diff = max(dot(lightDir, normal), 0.0);"
-        "   vec3 diffuse = diff * color;"
-        //specular
-        "   vec3 viewDir = normalize(viewPos - fragPos);"
-        "   float spec = 0.0;"
-        "   vec3 reflectDir = reflect(-lightDir, normal);"
-        "   spec = pow(max(dot(viewDir, reflectDir), 0.0), 2.0);" 
-        "   vec3 specular = spec * lightColor; "
-
-        // calculate shadow
-        "   float shadow = ShadowCalculation(fragPosLightSpace);"
-        "   vec3 lighting = (ambient + (1.0 - shadow) * (diffuse + specular)) * color; "
-        "   vec4 textureColor = texture( textureSampler, vertexUV );"
-        "   FragColor = textureColor * vec4(lighting, 1.0);"
-        //"FragColor = textureColor;"
-        "}";
-}
-
-
-int compileAndLinkShaders(const char* vertexShaderSource, const char* fragmentShaderSource)
-{
-    // compile and link shader program
-    // return shader program id
-    // ------------------------------------
-
-    // vertex shader
-    int vertexShader = glCreateShader(GL_VERTEX_SHADER);
-    glShaderSource(vertexShader, 1, &vertexShaderSource, NULL);
-    glCompileShader(vertexShader);
-
-    // check for shader compile errors
-    int success;
-    char infoLog[512];
-    glGetShaderiv(vertexShader, GL_COMPILE_STATUS, &success);
-    if (!success)
-    {
-        glGetShaderInfoLog(vertexShader, 512, NULL, infoLog);
-        std::cerr << "ERROR::SHADER::VERTEX::COMPILATION_FAILED\n" << infoLog << std::endl;
-    }
-
-    // fragment shader
-    int fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
-    glShaderSource(fragmentShader, 1, &fragmentShaderSource, NULL);
-    glCompileShader(fragmentShader);
-
-    // check for shader compile errors
-    glGetShaderiv(fragmentShader, GL_COMPILE_STATUS, &success);
-    if (!success)
-    {
-        glGetShaderInfoLog(fragmentShader, 512, NULL, infoLog);
-        std::cerr << "ERROR::SHADER::FRAGMENT::COMPILATION_FAILED\n" << infoLog << std::endl;
-    }
-
-    // link shaders
-    int shaderProgram = glCreateProgram();
-    glAttachShader(shaderProgram, vertexShader);
-    glAttachShader(shaderProgram, fragmentShader);
-    glLinkProgram(shaderProgram);
-
-    // check for linking errors
-    glGetProgramiv(shaderProgram, GL_LINK_STATUS, &success);
-    if (!success) {
-        glGetProgramInfoLog(shaderProgram, 512, NULL, infoLog);
-        std::cerr << "ERROR::SHADER::PROGRAM::LINKING_FAILED\n" << infoLog << std::endl;
-    }
-
-    glDeleteShader(vertexShader);
-    glDeleteShader(fragmentShader);
-
-    return shaderProgram;
-}
-
 void setProjectionMatrix(int shaderProgram, mat4 projectionMatrix)
 {
     glUseProgram(shaderProgram);
@@ -354,87 +76,6 @@ void setWorldMatrix(int shaderProgram, mat4 worldMatrix)
     glUseProgram(shaderProgram);
     GLuint worldMatrixLocation = glGetUniformLocation(shaderProgram, "worldMatrix");
     glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &worldMatrix[0][0]);
-}
-
-const char* getDepthVertexShaderSource()
-{
-    //Vertex Shader
-    return
-        "#version 330 core\n"
-        "layout (location=0) in vec3 aPos;"
-
-        "uniform mat4 lightSpaceMatrix;"
-        "uniform mat4 worldMatrix;"
-        " void main()"
-        " {"
-        "   gl_Position = lightSpaceMatrix * worldMatrix * vec4(aPos, 1.0);"
-        " }";
-}
-
-const char* getDepthFragmentShaderSource()
-{
-    //Fragment Shaders here
-    return
-        "#version 330 core\n"
-        "out vec4 FragColor;"
-        "void main()"
-        "{"
-        "}";
-}
-
-int compileAndLinkDepthShaders()
-{
-    // compile and link shader program
-    // return shader program id
-    // ------------------------------------
-
-    // vertex shader
-    int vertexShader = glCreateShader(GL_VERTEX_SHADER);
-    const char* vertexShaderSource = getDepthVertexShaderSource();
-    glShaderSource(vertexShader, 1, &vertexShaderSource, NULL);
-    glCompileShader(vertexShader);
-
-    // check for shader compile errors
-    int success;
-    char infoLog[512];
-    glGetShaderiv(vertexShader, GL_COMPILE_STATUS, &success);
-    if (!success)
-    {
-        glGetShaderInfoLog(vertexShader, 512, NULL, infoLog);
-        std::cerr << "ERROR::SHADER::VERTEX::COMPILATION_FAILED\n" << infoLog << std::endl;
-    }
-
-    // fragment shader
-    int fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
-    const char* fragmentShaderSource = getDepthFragmentShaderSource();
-    glShaderSource(fragmentShader, 1, &fragmentShaderSource, NULL);
-    glCompileShader(fragmentShader);
-
-    // check for shader compile errors
-    glGetShaderiv(fragmentShader, GL_COMPILE_STATUS, &success);
-    if (!success)
-    {
-        glGetShaderInfoLog(fragmentShader, 512, NULL, infoLog);
-        std::cerr << "ERROR::SHADER::FRAGMENT::COMPILATION_FAILED\n" << infoLog << std::endl;
-    }
-
-    // link shaders
-    int shaderProgram = glCreateProgram();
-    glAttachShader(shaderProgram, vertexShader);
-    glAttachShader(shaderProgram, fragmentShader);
-    glLinkProgram(shaderProgram);
-
-    // check for linking errors
-    glGetProgramiv(shaderProgram, GL_LINK_STATUS, &success);
-    if (!success) {
-        glGetProgramInfoLog(shaderProgram, 512, NULL, infoLog);
-        std::cerr << "ERROR::SHADER::PROGRAM::LINKING_FAILED\n" << infoLog << std::endl;
-    }
-
-    glDeleteShader(vertexShader);
-    glDeleteShader(fragmentShader);
-
-    return shaderProgram;
 }
 
 // Textured Cube model
@@ -974,9 +615,17 @@ int main(int argc, char* argv[])
     // Black background
     glClearColor(0.1f, 0.2f, 0.2f, 1.0f);
 
-    // Compile and link shaders here ...
-    int shaderProgram = compileAndLinkShaders(getVertexShaderSource(), getFragmentShaderSource());
-    int texturedShaderProgram = compileAndLinkShaders(getTexturedVertexShaderSource(), getTexturedFragmentShaderSource());
+    //Load shaders 
+    #if defined(PLATFORM_OSX)
+        std::string shaderPathPrefix = "Shaders/";
+    #else
+        std::string shaderPathPrefix = "../Assets/Shaders/";
+    #endif
+
+    int shaderProgram = loadSHADER(shaderPathPrefix + "color_vertex.glsl", shaderPathPrefix + "color_fragment.glsl");
+    int texturedShaderProgram = loadSHADER(shaderPathPrefix + "texture_vertex.glsl", shaderPathPrefix + "texture_fragment.glsl");
+    depthShaderProgram = loadSHADER(shaderPathPrefix + "depth_vertex.glsl", shaderPathPrefix + "depth_fragment.glsl");
+
     int shaderArray[2] = { shaderProgram, texturedShaderProgram };
     shaderType = shaderArray[0]; //Initial shader is the one with color, without texture
 
@@ -1084,8 +733,6 @@ int main(int argc, char* argv[])
     mat4 worldRotationY;
     mat4 worldRotationUpdate;
 
-    depthShaderProgram = compileAndLinkDepthShaders();
-
     ViewController view(window, WIDTH, HEIGHT, shaderProgram, shaderArray);
     viewController = &view;
 
@@ -1173,13 +820,11 @@ int main(int argc, char* argv[])
         {
             if (toggleShadow == true)
             {
-                depthShaderProgram = compileAndLinkDepthShaders();
                 glProgramUniformMatrix4fv(depthShaderProgram, glGetUniformLocation(depthShaderProgram, "lightSpaceMatrix"), 1, GL_FALSE, &lightSpaceMatrix[0][0]);
                 toggleShadow = false;
             }
             else
             {
-                depthShaderProgram = compileAndLinkDepthShaders();
                 glProgramUniformMatrix4fv(depthShaderProgram, glGetUniformLocation(depthShaderProgram, "lightSpaceMatrix"), 0, GL_FALSE, &lightSpaceMatrix[0][0]);
                 toggleShadow = true;
             }

@@ -102,14 +102,24 @@
     <None Include="..\Assets\Scenes\AnimatedScene.scene" />
     <None Include="..\Assets\Scenes\AnimatedSceneWithParticles.scene" />
     <None Include="..\Assets\Scenes\CoordinateSystem.scene" />
-    <None Include="..\Assets\Scenes\StaticScene.scene" />
-    <None Include="..\Assets\Shaders\BlueColor.fragmentshader" />
-    <None Include="..\Assets\Shaders\PathLines.fragmentshader" />
-    <None Include="..\Assets\Shaders\PathLines.vertexshader" />
-    <None Include="..\Assets\Shaders\SolidColor.fragmentshader" />
-    <None Include="..\Assets\Shaders\SolidColor.vertexshader" />
-    <None Include="..\Assets\Shaders\Texture.fragmentshader" />
-    <None Include="..\Assets\Shaders\Texture.vertexshader" />
+    <None Include="..\Assets\Shaders\color_fragment.glsl">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</ExcludedFromBuild>
+    </None>
+    <None Include="..\Assets\Shaders\color_vertex.glsl">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</ExcludedFromBuild>
+    </None>
+    <None Include="..\Assets\Shaders\depth_fragment.glsl">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</ExcludedFromBuild>
+    </None>
+    <None Include="..\Assets\Shaders\depth_vertex.glsl">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</ExcludedFromBuild>
+    </None>
+    <None Include="..\Assets\Shaders\texture_fragment.glsl">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</ExcludedFromBuild>
+    </None>
+    <None Include="..\Assets\Shaders\texture_vertex.glsl">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</ExcludedFromBuild>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <Image Include="..\Assets\Textures\BillboardTest.bmp" />
@@ -139,6 +149,9 @@
     <ClInclude Include="..\Source\CubeModel.h" />
     <ClInclude Include="..\Source\ModelController.h" />
     <ClInclude Include="..\Source\RubiksModel.h" />
+    <ClInclude Include="..\Source\shaderloader.h">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</ExcludedFromBuild>
+    </ClInclude>
     <ClInclude Include="..\Source\Sphere.h" />
     <ClInclude Include="..\Source\Structs.h" />
     <ClInclude Include="..\Source\TextureLoader.h">

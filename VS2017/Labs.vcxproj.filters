@@ -96,6 +96,9 @@
     <ClInclude Include="..\Source\WilliamModel.h">
       <Filter>Source Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\Source\shaderloader.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Image Include="..\Assets\Textures\Particle.png">
@@ -115,28 +118,22 @@
     <None Include="..\Assets\Scenes\CoordinateSystem.scene">
       <Filter>Resource Files\Scenes</Filter>
     </None>
-    <None Include="..\Assets\Scenes\StaticScene.scene">
+    <None Include="..\Assets\Shaders\color_fragment.glsl">
       <Filter>Resource Files\Shaders</Filter>
     </None>
-    <None Include="..\Assets\Shaders\Texture.vertexshader">
+    <None Include="..\Assets\Shaders\color_vertex.glsl">
       <Filter>Resource Files\Shaders</Filter>
     </None>
-    <None Include="..\Assets\Shaders\Texture.fragmentshader">
+    <None Include="..\Assets\Shaders\texture_fragment.glsl">
       <Filter>Resource Files\Shaders</Filter>
     </None>
-    <None Include="..\Assets\Shaders\SolidColor.vertexshader">
+    <None Include="..\Assets\Shaders\texture_vertex.glsl">
       <Filter>Resource Files\Shaders</Filter>
     </None>
-    <None Include="..\Assets\Shaders\SolidColor.fragmentshader">
+    <None Include="..\Assets\Shaders\depth_fragment.glsl">
       <Filter>Resource Files\Shaders</Filter>
     </None>
-    <None Include="..\Assets\Shaders\PathLines.vertexshader">
-      <Filter>Resource Files\Shaders</Filter>
-    </None>
-    <None Include="..\Assets\Shaders\PathLines.fragmentshader">
-      <Filter>Resource Files\Shaders</Filter>
-    </None>
-    <None Include="..\Assets\Shaders\BlueColor.fragmentshader">
+    <None Include="..\Assets\Shaders\depth_vertex.glsl">
       <Filter>Resource Files\Shaders</Filter>
     </None>
   </ItemGroup>
