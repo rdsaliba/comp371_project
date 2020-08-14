@@ -216,7 +216,7 @@ float RubiksModel::addComponentCubeOffset(float value) {
 }
 
 /// <summary>
-/// Build 1 cube of the rubiks cube
+/// Build 1 cube of the rubiks cube 
 /// </summary>
 /// <param name="x"></param>
 /// <param name="y"></param>
@@ -234,19 +234,26 @@ CubeModel* RubiksModel::initCubeComponent(float x, float y, float z) {
 	return aCube;
 }
 
-RubiksMove RubiksModel::dequeueMove() {
-	//currentMove = moveBuffer.front();
-	//moveBuffer.erase(moveBuffer.begin());
-	
+/// <summary>
+/// 
+/// </summary>
+/// <returns>The next move to apply onto the puzzle</returns>
+RubiksMove RubiksModel::nextMove(){
 	return moveBuffer.front();
 }
 
+/// <summary>
+/// Puts the puzzle in an active state where an action is executed on a particular layer of the rubiks cube
+/// </summary>
 void RubiksModel::updateActionState() {
 	isTurning = true;
 	currentMove = moveBuffer.front();
 	moveBuffer.erase(moveBuffer.begin());
 }
 
+/// <summary>
+/// Returns the puzzle into an idle state once an action has been completed
+/// </summary>
 void RubiksModel::completeCurrentAction() {
 	isTurning = false;
 	currentActionAngle = 0.0f;
@@ -265,6 +272,8 @@ void RubiksModel::updatRotatedLayerCubes(vector<CubeModel*> oldCubes, vector<Cub
 	CubeModel temp;
 	CubeModel* cube = NULL;
 	vec3 rotationVector = computeRotationVector();
+
+	//Creates a temporary copy of the cubes data before the rotation is applied
 	for (int i = 0; i < size; i++) {
 		cube = oldCubes[i];
 		temp.setId(cube->getId());
@@ -273,12 +282,15 @@ void RubiksModel::updatRotatedLayerCubes(vector<CubeModel*> oldCubes, vector<Cub
 		tempOldCubes.push_back(temp);
 	}
 
+	//Creates an ordered list of the cubes to be altered by the rotation
 	for (int i = 2; i >= 0; i--) {
 		for (int j = i; j < size; j += 3) {
 			newCubes.push_back(workingCubes[j]);
 		}
 	}
 
+	//Assign to the "rotated" cubes the data of the original cubes to complete the rotation on the
+	//data side of the action.
 	for (int i = 0; i < size; i++) {
 		temp = tempOldCubes[i];
 		cube = newCubes[i];
@@ -289,6 +301,11 @@ void RubiksModel::updatRotatedLayerCubes(vector<CubeModel*> oldCubes, vector<Cub
 		cube->setCurrentAction(currentMove, rotationVector);
 	}
 }
+
+/// <summary>
+/// Determine the axis on which the rotation of an action will occur
+/// </summary>
+/// <returns>vec3 representing the rotation plane</returns>
 vec3 RubiksModel::computeRotationVector() {
 	vec3 rotationVector(0.0f);
 	switch (currentMove) {
@@ -339,11 +356,17 @@ void RubiksModel::LPrime() {
 	updatRotatedLayerCubes(lcubes, lReverseCubes);
 }
 
+/// <summary>
+/// Performs a clockwise rotation of the top side of the rubiks cube
+/// </summary>
 void RubiksModel::U() {
 	vector<CubeModel*> uCubes = getFaceCubes(CubePosition::TOP);
 	updatRotatedLayerCubes(uCubes, uCubes);
 }
 
+/// <summary>
+/// Performs an anticlockwise rotation of the top side of the rubiks cube
+/// </summary>
 void RubiksModel::UPrime() {
 	vector<CubeModel*> uCubes = getFaceCubes(CubePosition::TOP);
 	vector<CubeModel*> uReverseCubes = reverseCubeModelVector(uCubes);
@@ -351,6 +374,9 @@ void RubiksModel::UPrime() {
 	updatRotatedLayerCubes(uCubes, uReverseCubes);
 }
 
+/// <summary>
+/// Performs a clockwise rotation of the bottom side of the rubiks cube
+/// </summary>
 void RubiksModel::D() {
 	vector<CubeModel*> dCubes = getFaceCubes(CubePosition::BOTTOM);
 	vector<CubeModel*> dReverseCubes = reverseCubeModelVector(dCubes);
@@ -358,11 +384,18 @@ void RubiksModel::D() {
 	updatRotatedLayerCubes(dCubes, dReverseCubes);
 }
 
+
+/// <summary>
+/// Performs an anticlockwise rotation of the bottom side of the rubiks cube
+/// </summary>
 void RubiksModel::DPrime() {
 	vector<CubeModel*> dCubes = getFaceCubes(CubePosition::BOTTOM);
 	updatRotatedLayerCubes(dCubes, dCubes);
 }
 
+/// <summary>
+/// Performs a clockwise rotation of the front side of the rubiks cube
+/// </summary>
 void RubiksModel::F() {
 	vector<CubeModel*> fCubes = getFaceCubes(CubePosition::FRONT);
 	vector<CubeModel*> fReverseCubes = reverseCubeModelVector(fCubes);
@@ -370,16 +403,25 @@ void RubiksModel::F() {
 	updatRotatedLayerCubes(fCubes, fReverseCubes);
 }
 
+/// <summary>
+/// Performs an anticlockwise rotation of the front side of the rubiks cube
+/// </summary>
 void RubiksModel::FPrime() {
 	vector<CubeModel*> fCubes = getFaceCubes(CubePosition::FRONT);
 	updatRotatedLayerCubes(fCubes, fCubes);
 }
 
+/// <summary>
+/// Performs a clockwise rotation of the back side of the rubiks cube
+/// </summary>
 void RubiksModel::B() {
 	vector<CubeModel*> bCubes = getFaceCubes(CubePosition::BACK);
 	updatRotatedLayerCubes(bCubes, bCubes);
 }
 
+/// <summary>
+/// Performs an anticlockwise rotation of the back side of the rubiks cube
+/// </summary>
 void RubiksModel::BPrime() {
 	vector<CubeModel*> bCubes = getFaceCubes(CubePosition::BACK);
 	vector<CubeModel*> bReverseCubes = reverseCubeModelVector(bCubes);
@@ -387,6 +429,9 @@ void RubiksModel::BPrime() {
 	updatRotatedLayerCubes(bCubes, bReverseCubes);
 }
 
+/// <summary>
+/// Performs a clockwise rotation of the right side of the rubiks cube
+/// </summary>
 void RubiksModel::R() {
 	vector<CubeModel*> rCubes = getFaceCubes(CubePosition::RIGHT);
 	vector<CubeModel*> rReverseCubes = reverseCubeModelVector(rCubes);
@@ -394,11 +439,17 @@ void RubiksModel::R() {
 	updatRotatedLayerCubes(rCubes, rReverseCubes);
 }
 
+/// <summary>
+/// Performs an anticlockwise rotation of the right side of the rubiks cube
+/// </summary>
 void RubiksModel::RPrime() {
 	vector<CubeModel*> rCubes = getFaceCubes(CubePosition::RIGHT);
 	updatRotatedLayerCubes(rCubes, rCubes);
 }
 
+/// <summary>
+/// Performs a clockwise rotation of the middle-vertical layer of the rubiks cube
+/// </summary>
 void RubiksModel::MV() {
 	vector<CubeModel*> mvCubes = getFaceCubes(CubePosition::MID_V);
 	vector<CubeModel*> mvReverseCubes = reverseCubeModelVector(mvCubes);
@@ -406,11 +457,17 @@ void RubiksModel::MV() {
 	updatRotatedLayerCubes(mvCubes, mvReverseCubes);
 }
 
+/// <summary>
+/// Performs an anticlockwise rotation of the middle-vertical layer of the rubiks cube
+/// </summary>
 void RubiksModel::MVPrime() {
 	vector<CubeModel*> mvCubes = getFaceCubes(CubePosition::MID_V);
 	updatRotatedLayerCubes(mvCubes, mvCubes);
 }
 
+/// <summary>
+/// Performs a clockwise rotation of the middle-vertical-sideway layer of the rubiks cube
+/// </summary>
 void RubiksModel::MVS() {
 	vector<CubeModel*> mvsCubes = getFaceCubes(CubePosition::MID_VS);
 	vector<CubeModel*> mvsReverseCubes = reverseCubeModelVector(mvsCubes);
@@ -418,11 +475,17 @@ void RubiksModel::MVS() {
 	updatRotatedLayerCubes(mvsCubes, mvsReverseCubes);
 }
 
+/// <summary>
+/// Performs an anticlockwise rotation of the middle-vertical-sideway layer of the rubiks cube
+/// </summary>
 void RubiksModel::MVSPrime() {
 	vector<CubeModel*> mvsCubes = getFaceCubes(CubePosition::MID_VS);
 	updatRotatedLayerCubes(mvsCubes, mvsCubes);
 }
 
+/// <summary>
+/// Performs a clockwise rotation of the middle-horizontal layer of the rubiks cube
+/// </summary>
 void RubiksModel::MH() {
 	vector<CubeModel*> mhCubes = getFaceCubes(CubePosition::MID_H);
 	vector<CubeModel*> mhReverseCubes = reverseCubeModelVector(mhCubes);
@@ -430,15 +493,18 @@ void RubiksModel::MH() {
 	updatRotatedLayerCubes(mhCubes, mhReverseCubes);
 }
 
+/// <summary>
+/// Performs an anticlockwise rotation of the middle-horizontal layer of the rubiks cube
+/// </summary>
 void RubiksModel::MHPrime() {
 	vector<CubeModel*> mhCubes = getFaceCubes(CubePosition::MID_H);
 	updatRotatedLayerCubes(mhCubes, mhCubes);
 }
 /// <summary>
-	/// Creates a vector of CubeModel* that is the reverse order of a given vector
-	/// </summary>
-	/// <param name="cubeVector"></param>
-	/// <returns></returns>
+/// Creates a vector of CubeModel* that is the reverse order of a given vector
+/// </summary>
+/// <param name="cubeVector">Vector of CubeModel* ordered from last to first</param>
+/// <returns></returns>
 vector<CubeModel*> RubiksModel::reverseCubeModelVector(vector<CubeModel*> cubeVector) {
 	vector<CubeModel*> reversedCubeVector;
 
@@ -449,6 +515,11 @@ vector<CubeModel*> RubiksModel::reverseCubeModelVector(vector<CubeModel*> cubeVe
 	return reversedCubeVector;
 }
 
+/// <summary>
+/// Draws the rubiks cube in the 3D scene
+/// </summary>
+/// <param name="worldRotationUpdate">Change in scene's rotation since last rendering of the model</param>
+/// <param name="textureArray">Textures to be applied onto the </param>
 void RubiksModel::draw(mat4 worldRotationUpdate, GLuint textureArray[]) {
 
 	//mat4 rotationMatrix(0.0f);
@@ -463,7 +534,6 @@ void RubiksModel::draw(mat4 worldRotationUpdate, GLuint textureArray[]) {
 		
 		(*aCube)->setShaderProgram(this->getShaderProgram());
 		(*aCube)->setDt(dt);
-
 		(*aCube)->draw(worldRotationUpdate, textureArray[0], textureArray[i]);
 
 		
