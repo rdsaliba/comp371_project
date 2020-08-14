@@ -10,7 +10,6 @@ ViewController::ViewController() {
 
     this->fastCam = false;
     this->cameraSpeed = 1.0f;
-    this->cameraFastSpeed = 2 * cameraSpeed;
     this->cameraHorizontalAngle = 90.0f;
     this->cameraVerticalAngle = 0.0f;
 
@@ -38,8 +37,7 @@ ViewController::ViewController(GLFWwindow* window, int width, int height, int sh
     this->projection_matrix = mat4(1.0f);
     
     this->fastCam = false;
-    this->cameraSpeed = 1.0f;
-    this->cameraFastSpeed = 2 * cameraSpeed;
+    this->cameraSpeed = 7.0f;
     this->cameraHorizontalAngle = 90.0f;
     this->cameraVerticalAngle = 0.0f;
 
@@ -89,7 +87,7 @@ void ViewController::setViewMatrix(int shaderType){
 /// Update View/camera according to user inputs
 /// </summary>
 void ViewController::update(int shaderType) {
-	float currentCameraSpeed = (fastCam) ? cameraFastSpeed : cameraSpeed;
+	float currentCameraSpeed = cameraSpeed;
 
     // - Calculate mouse motion dx and dy
     double dx = mousePosX - lastMousePosX;
@@ -115,12 +113,12 @@ void ViewController::update(int shaderType) {
     normalize(cameraSideVector); //vector to be normalized
 
     // Use camera lookat and side vectors to update positions with CVBG
-    if (glfwGetKey(window, GLFW_KEY_G) == GLFW_PRESS)
+    if (glfwGetKey(window, GLFW_KEY_G) == GLFW_PRESS && !(glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS || glfwGetKey(window, GLFW_KEY_RIGHT_SHIFT) == GLFW_PRESS))
     {
         cameraPosition += cameraLookAt * dt * currentCameraSpeed;
     }
 
-    if (glfwGetKey(window, GLFW_KEY_V) == GLFW_PRESS)
+    if (glfwGetKey(window, GLFW_KEY_V) == GLFW_PRESS && !(glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS || glfwGetKey(window, GLFW_KEY_RIGHT_SHIFT) == GLFW_PRESS))
     {
         cameraPosition -= cameraLookAt * dt * currentCameraSpeed;
     }
@@ -133,6 +131,16 @@ void ViewController::update(int shaderType) {
     if (glfwGetKey(window, GLFW_KEY_C) == GLFW_PRESS)
     {
         cameraPosition -= cameraSideVector * dt * currentCameraSpeed;
+    }
+
+    if (glfwGetKey(window, GLFW_KEY_G) == GLFW_PRESS && (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS || glfwGetKey(window, GLFW_KEY_RIGHT_SHIFT) == GLFW_PRESS))
+    {
+        cameraPosition.y += 0.3;
+    }
+
+    if (glfwGetKey(window, GLFW_KEY_V) == GLFW_PRESS && (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS || glfwGetKey(window, GLFW_KEY_RIGHT_SHIFT) == GLFW_PRESS))
+    {
+        cameraPosition.y -= 0.3;
     }
 
     // Set the view matrix for first person camera

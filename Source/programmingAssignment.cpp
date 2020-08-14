@@ -20,11 +20,11 @@
 #include "ModelController.h"
 #include "Axis.h"
 #include "ViewController.h"
-//Library to load popular file formats and easy integration to project
-#define STB_IMAGE_IMPLEMENTATION
-#include "stb_image.h"
 #include "Structs.h"
 #include "Sphere.h"
+#include "TextureLoader.h"
+#include "shaderloader.h"
+
 
 using namespace std;
 using namespace glm;
@@ -40,13 +40,8 @@ ViewController* viewController = NULL;
 ModelController* modelController = NULL;
 
 GLuint toggle = 0; //0 = off, 1 = on
-GLuint textureArray[4] = {}; //Contains toggle (on/off), box texture, metal texture, and tiled texture
+GLuint textureArray[31] = {}; //Contains toggle (on/off), box texture, metal texture, and tiled texture
 int shaderType; //Color or texture
-
-//Forward declarations
-GLuint loadTexture(const char* filename);
-const char* getTexturedVertexShaderSource();
-const char* getTexturedFragmentShaderSource();
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height)
 {
@@ -69,281 +64,6 @@ void cursor_position_callback(GLFWwindow* window, double xpos, double ypos){
     viewController->setMousePosY(ypos);
 }
 
-const char* getVertexShaderSource()
-{
-    //Vertex Shader
-    return
-        "#version 330 core\n"
-        "layout (location=0) in vec3 aPos;"
-        "layout (location=1) in vec3 aColor;"
-        "layout (location=2) in vec3 aNorm;"
-        ""
-        "uniform mat4 worldMatrix;"
-        "uniform mat4 viewMatrix = mat4(1.0);" //default value for view matrix (identity)
-        "uniform mat4 projectionMatrix = mat4(1.0);"
-        "uniform mat4 lightSpaceMatrix;"
-        ""
-        "out vec3 vertexColor;"
-        "out vec3 norm;"
-        "out vec3 fragPos;"
-        "out vec4 fragPosLightSpace;"
-
-        "void main()"
-        "{"
-        "   vertexColor = aColor;"
-        "   fragPos = vec3(worldMatrix * vec4(aPos, 1.0));"
-        //"   fragPos = aPos;"
-        "   norm = mat3(transpose(inverse(worldMatrix))) * aNorm;"
-        //"   norm = aNorm;"
-        "   mat4 modelViewProjection = projectionMatrix * viewMatrix * worldMatrix;"
-        "   fragPosLightSpace = lightSpaceMatrix * vec4(fragPos, 1.0);"
-        "   gl_Position = modelViewProjection * vec4(aPos.x, aPos.y, aPos.z, 1.0);"
-        "}";
-}
-
-const char* getFragmentShaderSource()
-{
-    //Fragment Shaders here
-    return
-        "#version 330 core\n"
-           "out vec4 FragColor;"
-
-           "in vec3 fragPos;"
-           "in vec3 vertexColor;"
-           "in vec3 norm;"
-           "in vec4 fragPosLightSpace;"
-           "uniform vec3 lightPos;"
-           "uniform vec3 viewPos;"
-           "uniform sampler2D shadowMap;"
-            
-        "float ShadowCalculation(vec4 fragPosLSpace)"
-        "{"
-            // perform perspective divide
-            "vec3 projCoords = fragPosLSpace.xyz / fragPosLSpace.w;"
-            // transform to [0,1] range
-            "projCoords = projCoords * 0.5 + 0.5;"
-            // get closest depth value from light's perspective (using [0,1] range fragPosLight as coords)
-            "float closestDepth = texture(shadowMap, projCoords.xy).r;"
-            // get depth of current fragment from light's perspective
-            "float currentDepth = projCoords.z;"
-            // calculate bias (based on depth map resolution and slope)
-            "vec3 normal = normalize(norm);"
-            "vec3 lightDir = normalize(lightPos - fragPos);"
-            "float bias = max(0.05 * (1.0 - dot(normal, lightDir)), 0.005);"
-            // check whether current frag pos is in shadow
-            // float shadow = currentDepth - bias > closestDepth  ? 1.0 : 0.0;
-            // PCF
-            "float shadow = 0.0;"
-            "vec2 texelSize = 1.0 / textureSize(shadowMap, 0);"
-            "for (int x = -1; x <= 1; ++x)"
-            "{"
-                "for (int y = -1; y <= 1; ++y)"
-                "{"
-                    "float pcfDepth = texture(shadowMap, projCoords.xy + vec2(x, y) * texelSize).r;"
-                    "shadow += currentDepth - bias > pcfDepth ? 1.0 : 0.0;"
-                "}"
-            "}  "
-            "shadow /= 9.0;  "
-
-            // keep the shadow at 0.0 when outside the far_plane region of the light's frustum.
-            "if (projCoords.z > 1.0)"
-                "shadow = 0.0;"
-
-            "return shadow;"
-         "}"
-
-           "void main()"
-           "{"
-           "   vec3 color = vertexColor;"
-           "   vec3 lightColor = vec3(0.3);" //Bright White
-           // ambient
-           "   vec3 ambient = 0.05 * color;"  //0.05
-           // diffuse
-           "   vec3 lightDir = normalize(lightPos - fragPos);"
-           "   vec3 normal = normalize(norm);"
-           "   float diff = max(dot(lightDir, normal), 0.0);"
-           "   vec3 diffuse = diff * color;"
-           // specular
-           "   vec3 viewDir = normalize(viewPos - fragPos);"
-           "   float spec = 0.0;"
-           "   vec3 reflectDir = reflect(-lightDir, normal);"
-           "   spec = pow(max(dot(viewDir, reflectDir), 0.0), 32.0);"
-           "   vec3 specular = spec * lightColor; "
-           // calculate shadow
-           "   float shadow = ShadowCalculation(fragPosLightSpace);"
-           "   vec3 lighting = (ambient + (1.0 - shadow) * (diffuse + specular)) * color; "
-           "   FragColor = vec4(lighting, 1.0);"
-           " }";
-}
-
-//Vertex shader receives UV attributes and outputs them back to fragment shader
-const char* getTexturedVertexShaderSource()
-{
-    // For now, you use a string for your shader code, shaders will be stored in .glsl files
-    return
-        "#version 330 core\n"
-        "layout (location = 0) in vec3 aPos;"
-        "layout (location = 1) in vec3 aColor;"
-        "layout (location = 2) in vec3 aNorm;"
-        "layout (location = 3) in vec2 aUV;"
-        ""
-        "uniform mat4 worldMatrix;"
-        "uniform mat4 viewMatrix = mat4(1.0);"  // default value for view matrix (identity)
-        "uniform mat4 projectionMatrix = mat4(1.0);"
-        "uniform mat4 lightSpaceMatrix;"
-        ""
-        "out vec3 vertexColor;"
-        "out vec3 norm;"
-        "out vec3 fragPos;"
-        "out vec4 fragPosLightSpace;"
-        "out vec2 vertexUV;"
-        ""
-        "void main()"
-        "{"
-        "   vertexColor = aColor;"
-        "   fragPos = vec3(worldMatrix * vec4(aPos, 1.0));"
-        "   norm = mat3(transpose(inverse(worldMatrix))) * aNorm;"
-        "   mat4 modelViewProjection = projectionMatrix * viewMatrix * worldMatrix;"
-        "   fragPosLightSpace = lightSpaceMatrix * vec4(fragPos, 1.0);"
-        "   gl_Position = modelViewProjection * vec4(aPos.x, aPos.y, aPos.z, 1.0);"
-        "   vertexUV = aUV;"
-        "}";
-}
-
-//Fragment shader fetches the texture sample at coordinate UV and blends the color with vertex colors
-const char* getTexturedFragmentShaderSource()
-{
-    return
-        "#version 330 core\n"
-        "out vec4 FragColor;"
-        "in vec3 fragPos;"
-        "in vec3 vertexColor;"
-        "in vec2 vertexUV;"
-        "in vec3 norm;"
-        "in vec4 fragPosLightSpace;"
-        "uniform vec3 lightPos;"
-        "uniform vec3 viewPos;"
-        "uniform sampler2D textureSampler;"
-        "uniform sampler2D shadowMap;"
-
-        "float ShadowCalculation(vec4 fragPosLSpace)"
-        "{"
-            // perform perspective divide
-            "vec3 projCoords = fragPosLSpace.xyz / fragPosLSpace.w;"
-            // transform to [0,1] range
-            "projCoords = projCoords * 0.5 + 0.5;"
-            // get closest depth value from light's perspective (using [0,1] range fragPosLight as coords)
-            "float closestDepth = texture(shadowMap, projCoords.xy).r;"
-            // get depth of current fragment from light's perspective
-            "float currentDepth = projCoords.z;"
-            // calculate bias (based on depth map resolution and slope)
-            "vec3 normal = normalize(norm);"
-            "vec3 lightDir = normalize(lightPos - fragPos);"
-            "float bias = max(0.05 * (1.0 - dot(normal, lightDir)), 0.005);"
-            // check whether current frag pos is in shadow
-            // float shadow = currentDepth - bias > closestDepth  ? 1.0 : 0.0;
-            // PCF
-            "float shadow = 0.0;"
-            "vec2 texelSize = 1.0 / textureSize(shadowMap, 0);"
-            "for (int x = -1; x <= 1; ++x)"
-            "{"
-            "for (int y = -1; y <= 1; ++y)"
-            "{"
-            "float pcfDepth = texture(shadowMap, projCoords.xy + vec2(x, y) * texelSize).r;"
-            "shadow += currentDepth - bias > pcfDepth ? 1.0 : 0.0;"
-            "}"
-            "}  "
-            "shadow /= 9.0;  "
-
-            // keep the shadow at 0.0 when outside the far_plane region of the light's frustum.
-            "if (projCoords.z > 1.0)"
-            "shadow = 0.0;"
-
-            "return shadow;"
-        "}"
-
-        
-        "void main()"
-        "{"
-        "   vec3 color = vertexColor;"
-        "   vec3 lightColor = vec3(0.3);" //Bright White
-        //ambiant
-        "   vec3 lightPos = vec3(0.0f, 30.0f, 0.0f);" ////////
-        "   vec3 ambient = 0.05 * color;"  //0.05
-        //diffuse
-        "   vec3 lightDir = normalize(lightPos - fragPos);"
-        "   vec3 normal = normalize(norm);"
-        "   float diff = max(dot(lightDir, normal), 0.0);"
-        "   vec3 diffuse = diff * color;"
-        //specular
-        "   vec3 viewDir = normalize(viewPos - fragPos);"
-        "   float spec = 0.0;"
-        "   vec3 reflectDir = reflect(-lightDir, normal);"
-        "   spec = pow(max(dot(viewDir, reflectDir), 0.0), 32.0);"
-        "   vec3 specular = spec * lightColor; "
-
-        // calculate shadow
-        "   float shadow = ShadowCalculation(fragPosLightSpace);"
-        "   vec3 lighting = (ambient + (1.0 - shadow) * (diffuse + specular)) * color; "
-        "   vec4 textureColor = texture( textureSampler, vertexUV );"
-        "   FragColor = textureColor * vec4(lighting, 1.0);"
-        "}";
-}
-
-
-int compileAndLinkShaders(const char* vertexShaderSource, const char* fragmentShaderSource)
-{
-    // compile and link shader program
-    // return shader program id
-    // ------------------------------------
-
-    // vertex shader
-    int vertexShader = glCreateShader(GL_VERTEX_SHADER);
-    glShaderSource(vertexShader, 1, &vertexShaderSource, NULL);
-    glCompileShader(vertexShader);
-
-    // check for shader compile errors
-    int success;
-    char infoLog[512];
-    glGetShaderiv(vertexShader, GL_COMPILE_STATUS, &success);
-    if (!success)
-    {
-        glGetShaderInfoLog(vertexShader, 512, NULL, infoLog);
-        std::cerr << "ERROR::SHADER::VERTEX::COMPILATION_FAILED\n" << infoLog << std::endl;
-    }
-
-    // fragment shader
-    int fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
-    glShaderSource(fragmentShader, 1, &fragmentShaderSource, NULL);
-    glCompileShader(fragmentShader);
-
-    // check for shader compile errors
-    glGetShaderiv(fragmentShader, GL_COMPILE_STATUS, &success);
-    if (!success)
-    {
-        glGetShaderInfoLog(fragmentShader, 512, NULL, infoLog);
-        std::cerr << "ERROR::SHADER::FRAGMENT::COMPILATION_FAILED\n" << infoLog << std::endl;
-    }
-
-    // link shaders
-    int shaderProgram = glCreateProgram();
-    glAttachShader(shaderProgram, vertexShader);
-    glAttachShader(shaderProgram, fragmentShader);
-    glLinkProgram(shaderProgram);
-
-    // check for linking errors
-    glGetProgramiv(shaderProgram, GL_LINK_STATUS, &success);
-    if (!success) {
-        glGetProgramInfoLog(shaderProgram, 512, NULL, infoLog);
-        std::cerr << "ERROR::SHADER::PROGRAM::LINKING_FAILED\n" << infoLog << std::endl;
-    }
-
-    glDeleteShader(vertexShader);
-    glDeleteShader(fragmentShader);
-
-    return shaderProgram;
-}
-
 void setProjectionMatrix(int shaderProgram, mat4 projectionMatrix)
 {
     glUseProgram(shaderProgram);
@@ -358,136 +78,56 @@ void setWorldMatrix(int shaderProgram, mat4 worldMatrix)
     glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &worldMatrix[0][0]);
 }
 
-const char* getDepthVertexShaderSource()
-{
-    //Vertex Shader
-    return
-        "#version 330 core\n"
-        "layout (location=0) in vec3 aPos;"
-
-        "uniform mat4 lightSpaceMatrix;"
-        "uniform mat4 worldMatrix;"
-        " void main()"
-        " {"
-        "   gl_Position = lightSpaceMatrix * worldMatrix * vec4(aPos, 1.0);"
-        " }";
-}
-
-const char* getDepthFragmentShaderSource()
-{
-    //Fragment Shaders here
-    return
-        "#version 330 core\n"
-        "out vec4 FragColor;"
-        "void main()"
-        "{"
-        "}";
-}
-
-int compileAndLinkDepthShaders()
-{
-    // compile and link shader program
-    // return shader program id
-    // ------------------------------------
-
-    // vertex shader
-    int vertexShader = glCreateShader(GL_VERTEX_SHADER);
-    const char* vertexShaderSource = getDepthVertexShaderSource();
-    glShaderSource(vertexShader, 1, &vertexShaderSource, NULL);
-    glCompileShader(vertexShader);
-
-    // check for shader compile errors
-    int success;
-    char infoLog[512];
-    glGetShaderiv(vertexShader, GL_COMPILE_STATUS, &success);
-    if (!success)
-    {
-        glGetShaderInfoLog(vertexShader, 512, NULL, infoLog);
-        std::cerr << "ERROR::SHADER::VERTEX::COMPILATION_FAILED\n" << infoLog << std::endl;
-    }
-
-    // fragment shader
-    int fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
-    const char* fragmentShaderSource = getDepthFragmentShaderSource();
-    glShaderSource(fragmentShader, 1, &fragmentShaderSource, NULL);
-    glCompileShader(fragmentShader);
-
-    // check for shader compile errors
-    glGetShaderiv(fragmentShader, GL_COMPILE_STATUS, &success);
-    if (!success)
-    {
-        glGetShaderInfoLog(fragmentShader, 512, NULL, infoLog);
-        std::cerr << "ERROR::SHADER::FRAGMENT::COMPILATION_FAILED\n" << infoLog << std::endl;
-    }
-
-    // link shaders
-    int shaderProgram = glCreateProgram();
-    glAttachShader(shaderProgram, vertexShader);
-    glAttachShader(shaderProgram, fragmentShader);
-    glLinkProgram(shaderProgram);
-
-    // check for linking errors
-    glGetProgramiv(shaderProgram, GL_LINK_STATUS, &success);
-    if (!success) {
-        glGetProgramInfoLog(shaderProgram, 512, NULL, infoLog);
-        std::cerr << "ERROR::SHADER::PROGRAM::LINKING_FAILED\n" << infoLog << std::endl;
-    }
-
-    glDeleteShader(vertexShader);
-    glDeleteShader(fragmentShader);
-
-    return shaderProgram;
-}
-
 // Textured Cube model
 const TexturedColoredVertex texturedCubeVertexArray[] = {  // position, color, normal, UV coordinates
-    TexturedColoredVertex(vec3(-0.5f,-0.5f,-0.5f), vec3(1.0f, 0.0f, 0.0f), vec3(-1.0f, 0.0f, 0.0f), vec2(0.0f, 0.0f)), //left - red
-    TexturedColoredVertex(vec3(-0.5f,-0.5f, 0.5f), vec3(1.0f, 0.0f, 0.0f), vec3(-1.0f, 0.0f, 0.0f), vec2(0.0f, 1.0f)),
-    TexturedColoredVertex(vec3(-0.5f, 0.5f, 0.5f), vec3(1.0f, 0.0f, 0.0f), vec3(-1.0f, 0.0f, 0.0f), vec2(1.0f, 1.0f)),
 
-    TexturedColoredVertex(vec3(-0.5f,-0.5f,-0.5f), vec3(1.0f, 0.0f, 0.0f), vec3(-1.0f, 0.0f, 0.0f), vec2(0.0f, 0.0f)),
-    TexturedColoredVertex(vec3(-0.5f, 0.5f, 0.5f), vec3(1.0f, 0.0f, 0.0f), vec3(-1.0f, 0.0f, 0.0f), vec2(1.0f, 1.0f)),
-    TexturedColoredVertex(vec3(-0.5f, 0.5f,-0.5f), vec3(1.0f, 0.0f, 0.0f), vec3(-1.0f, 0.0f, 0.0f), vec2(1.0f, 0.0f)),
+    TexturedColoredVertex(vec3(-0.5f,-0.5f,-0.5f), vec3(1.0f, 1.0f, 1.0f), vec3(-1.0f, 0.0f, 0.0f), vec2(0.0f, 1.0f)), //left - white
+    TexturedColoredVertex(vec3(-0.5f,-0.5f, 0.5f), vec3(1.0f, 1.0f, 1.0f), vec3(-1.0f, 0.0f, 0.0f), vec2(0.33f, 1.0f)),
+    TexturedColoredVertex(vec3(-0.5f, 0.5f, 0.5f), vec3(1.0f, 1.0f, 1.0f), vec3(-1.0f, 0.0f, 0.0f), vec2(0.33f, 0.5f)),
 
-    TexturedColoredVertex(vec3(0.5f, 0.5f,-0.5f), vec3(0.0f, 0.0f, 1.0f), vec3(0.0f, 0.0f, -1.0f), vec2(1.0f, 1.0f)), // far - blue
-    TexturedColoredVertex(vec3(-0.5f,-0.5f,-0.5f), vec3(0.0f, 0.0f, 1.0f), vec3(0.0f, 0.0f, -1.0f), vec2(0.0f, 0.0f)),
-    TexturedColoredVertex(vec3(-0.5f, 0.5f,-0.5f), vec3(0.0f, 0.0f, 1.0f), vec3(0.0f, 0.0f, -1.0f), vec2(0.0f, 1.0f)),
+    TexturedColoredVertex(vec3(-0.5f,-0.5f,-0.5f), vec3(1.0f, 1.0f, 1.0f), vec3(-1.0f, 0.0f, 0.0f), vec2(0.0f, 1.0f)),
+    TexturedColoredVertex(vec3(-0.5f, 0.5f, 0.5f), vec3(1.0f, 1.0f, 1.0f), vec3(-1.0f, 0.0f, 0.0f), vec2(0.33f, 0.5f)),
+    TexturedColoredVertex(vec3(-0.5f, 0.5f,-0.5f), vec3(1.0f, 1.0f, 1.0f), vec3(-1.0f, 0.0f, 0.0f), vec2(0.0f, 0.5f)),
 
-    TexturedColoredVertex(vec3(0.5f, 0.5f,-0.5f), vec3(0.0f, 0.0f, 1.0f), vec3(0.0f, 0.0f, -1.0f), vec2(1.0f, 1.0f)),
-    TexturedColoredVertex(vec3(0.5f,-0.5f,-0.5f), vec3(0.0f, 0.0f, 1.0f), vec3(0.0f, 0.0f, -1.0f), vec2(1.0f, 0.0f)),
-    TexturedColoredVertex(vec3(-0.5f,-0.5f,-0.5f), vec3(0.0f, 0.0f, 1.0f), vec3(0.0f, 0.0f, -1.0f), vec2(0.0f, 0.0f)),
+    TexturedColoredVertex(vec3(0.5f, 0.5f,-0.5f), vec3(1.0f, 1.0f, 1.0f), vec3(0.0f, 0.0f, -1.0f), vec2(0.33f, 0.0f)), // far - white
+    TexturedColoredVertex(vec3(-0.5f,-0.5f,-0.5f), vec3(1.0f, 1.0f, 1.0f), vec3(0.0f, 0.0f, -1.0f), vec2(0.67f, 0.5f)),
+    TexturedColoredVertex(vec3(-0.5f, 0.5f,-0.5f), vec3(1.0f, 1.0f, 1.0f), vec3(0.0f, 0.0f, -1.0f), vec2(0.67f, 0.0f)),
 
-    TexturedColoredVertex(vec3(0.5f,-0.5f, 0.5f), vec3(0.0f, 1.0f, 1.0f), vec3(0.0f, -1.0f, 0.0f), vec2(1.0f, 1.0f)), // bottom - turquoise
-    TexturedColoredVertex(vec3(-0.5f,-0.5f,-0.5f), vec3(0.0f, 1.0f, 1.0f), vec3(0.0f, -1.0f, 0.0f), vec2(0.0f, 0.0f)),
-    TexturedColoredVertex(vec3(0.5f,-0.5f,-0.5f), vec3(0.0f, 1.0f, 1.0f), vec3(0.0f, -1.0f, 0.0f), vec2(1.0f, 0.0f)),
+    TexturedColoredVertex(vec3(0.5f, 0.5f,-0.5f), vec3(1.0f, 1.0f, 1.0f), vec3(0.0f, 0.0f, -1.0f), vec2(0.33f, 0.0f)),
+    TexturedColoredVertex(vec3(0.5f,-0.5f,-0.5f), vec3(1.0f, 1.0f, 1.0f), vec3(0.0f, 0.0f, -1.0f), vec2(0.33f, 0.5f)),
+    TexturedColoredVertex(vec3(-0.5f,-0.5f,-0.5f), vec3(1.0f, 1.0f, 1.0f), vec3(0.0f, 0.0f, -1.0f), vec2(0.67f, 0.5f)),
 
-    TexturedColoredVertex(vec3(0.5f,-0.5f, 0.5f), vec3(0.0f, 1.0f, 1.0f), vec3(0.0f, -1.0f, 0.0f), vec2(1.0f, 1.0f)),
-    TexturedColoredVertex(vec3(-0.5f,-0.5f, 0.5f), vec3(0.0f, 1.0f, 1.0f), vec3(0.0f, -1.0f, 0.0f), vec2(0.0f, 1.0f)),
-    TexturedColoredVertex(vec3(-0.5f,-0.5f,-0.5f), vec3(0.0f, 1.0f, 1.0f), vec3(0.0f, -1.0f, 0.0f), vec2(0.0f, 0.0f)),
+    TexturedColoredVertex(vec3(0.5f,-0.5f, 0.5f), vec3(1.0f, 1.0f, 1.0f), vec3(0.0f, -1.0f, 0.0f), vec2(1.0f, 0.5f)), // bottom - white
+    TexturedColoredVertex(vec3(-0.5f,-0.5f,-0.5f), vec3(1.0f, 1.0f, 1.0f), vec3(0.0f, -1.0f, 0.0f), vec2(0.67f, 0.0f)),
+    TexturedColoredVertex(vec3(0.5f,-0.5f,-0.5f), vec3(1.0f, 1.0f, 1.0f), vec3(0.0f, -1.0f, 0.0f), vec2(1.0f, 0.0f)),
 
-    TexturedColoredVertex(vec3(-0.5f, 0.5f, 0.5f), vec3(0.0f, 1.0f, 0.0f), vec3(0.0f, 0.0f, 1.0f), vec2(0.0f, 1.0f)), // near - green
-    TexturedColoredVertex(vec3(-0.5f,-0.5f, 0.5f), vec3(0.0f, 1.0f, 0.0f), vec3(0.0f, 0.0f, 1.0f), vec2(0.0f, 0.0f)),
-    TexturedColoredVertex(vec3(0.5f,-0.5f, 0.5f), vec3(0.0f, 1.0f, 0.0f), vec3(0.0f, 0.0f, 1.0f), vec2(1.0f, 0.0f)),
+    TexturedColoredVertex(vec3(0.5f,-0.5f, 0.5f), vec3(1.0f, 1.0f, 1.0f), vec3(0.0f, -1.0f, 0.0f), vec2(1.0f, 0.5f)),
+    TexturedColoredVertex(vec3(-0.5f,-0.5f, 0.5f), vec3(1.0f, 1.0f, 1.0f), vec3(0.0f, -1.0f, 0.0f), vec2(0.67f, 0.5f)),
+    TexturedColoredVertex(vec3(-0.5f,-0.5f,-0.5f), vec3(1.0f, 1.0f, 1.0f), vec3(0.0f, -1.0f, 0.0f), vec2(0.67f, 0.0f)),
 
-    TexturedColoredVertex(vec3(0.5f, 0.5f, 0.5f), vec3(0.0f, 1.0f, 0.0f), vec3(0.0f, 0.0f, 1.0f), vec2(1.0f, 1.0f)),
-    TexturedColoredVertex(vec3(-0.5f, 0.5f, 0.5f), vec3(0.0f, 1.0f, 0.0f), vec3(0.0f, 0.0f, 1.0f), vec2(0.0f, 1.0f)),
-    TexturedColoredVertex(vec3(0.5f,-0.5f, 0.5f), vec3(0.0f, 1.0f, 0.0f), vec3(0.0f, 0.0f, 1.0f), vec2(1.0f, 0.0f)),
+    TexturedColoredVertex(vec3(-0.5f, 0.5f, 0.5f), vec3(1.0f, 1.0f, 1.0f), vec3(0.0f, 0.0f, 1.0f), vec2(0.33f, 0.5f)), // near - white
+    TexturedColoredVertex(vec3(-0.5f,-0.5f, 0.5f), vec3(1.0f, 1.0f, 1.0f), vec3(0.0f, 0.0f, 1.0f), vec2(0.33f, 1.0f)),
+    TexturedColoredVertex(vec3(0.5f,-0.5f, 0.5f), vec3(1.0f, 1.0f, 1.0f), vec3(0.0f, 0.0f, 1.0f), vec2(0.67f, 1.0f)),
 
-    TexturedColoredVertex(vec3(0.5f, 0.5f, 0.5f), vec3(1.0f, 0.0f, 1.0f), vec3(1.0f, 0.0f, 0.0f), vec2(1.0f, 1.0f)), // right - purple
-    TexturedColoredVertex(vec3(0.5f,-0.5f,-0.5f), vec3(1.0f, 0.0f, 1.0f), vec3(1.0f, 0.0f, 0.0f), vec2(0.0f, 0.0f)),
-    TexturedColoredVertex(vec3(0.5f, 0.5f,-0.5f), vec3(1.0f, 0.0f, 1.0f), vec3(1.0f, 0.0f, 0.0f), vec2(1.0f, 0.0f)),
+    TexturedColoredVertex(vec3(0.5f, 0.5f, 0.5f), vec3(1.0f, 1.0f, 1.0f), vec3(0.0f, 0.0f, 1.0f), vec2(0.67f, 0.5f)),
+    TexturedColoredVertex(vec3(-0.5f, 0.5f, 0.5f), vec3(1.0f, 1.0f, 1.0f), vec3(0.0f, 0.0f, 1.0f), vec2(0.33f, 0.5f)),
+    TexturedColoredVertex(vec3(0.5f,-0.5f, 0.5f), vec3(1.0f, 1.0f, 1.0f), vec3(0.0f, 0.0f, 1.0f), vec2(0.67f, 1.0f)),
 
-    TexturedColoredVertex(vec3(0.5f,-0.5f,-0.5f), vec3(1.0f, 0.0f, 1.0f), vec3(1.0f, 0.0f, 0.0f), vec2(0.0f, 0.0f)),
-    TexturedColoredVertex(vec3(0.5f, 0.5f, 0.5f), vec3(1.0f, 0.0f, 1.0f), vec3(1.0f, 0.0f, 0.0f), vec2(1.0f, 1.0f)),
-    TexturedColoredVertex(vec3(0.5f,-0.5f, 0.5f), vec3(1.0f, 0.0f, 1.0f), vec3(1.0f, 0.0f, 0.0f), vec2(0.0f, 1.0f)),
+    TexturedColoredVertex(vec3(0.5f, 0.5f, 0.5f), vec3(1.0f, 1.0f, 1.0f), vec3(1.0f, 0.0f, 0.0f), vec2(0.0f, 0.0f)), // right - white
+    TexturedColoredVertex(vec3(0.5f,-0.5f,-0.5f), vec3(1.0f, 1.0f, 1.0f), vec3(1.0f, 0.0f, 0.0f), vec2(0.33f, 0.5f)),
+    TexturedColoredVertex(vec3(0.5f, 0.5f,-0.5f), vec3(1.0f, 1.0f, 1.0f), vec3(1.0f, 0.0f, 0.0f), vec2(0.33f, 0.0f)),
 
-    TexturedColoredVertex(vec3(0.5f, 0.5f, 0.5f), vec3(1.0f, 1.0f, 0.0f), vec3(0.0f, 1.0f, 0.0f), vec2(1.0f, 1.0f)), // top - yellow
-    TexturedColoredVertex(vec3(0.5f, 0.5f,-0.5f), vec3(1.0f, 1.0f, 0.0f), vec3(0.0f, 1.0f, 0.0f), vec2(1.0f, 0.0f)),
-    TexturedColoredVertex(vec3(-0.5f, 0.5f,-0.5f), vec3(1.0f, 1.0f, 0.0f), vec3(0.0f, 1.0f, 0.0f), vec2(0.0f, 0.0f)),
+    TexturedColoredVertex(vec3(0.5f,-0.5f,-0.5f), vec3(1.0f, 1.0f, 1.0f), vec3(1.0f, 0.0f, 0.0f), vec2(0.33f, 0.5f)),
+    TexturedColoredVertex(vec3(0.5f, 0.5f, 0.5f), vec3(1.0f, 1.0f, 1.0f), vec3(1.0f, 0.0f, 0.0f), vec2(0.0f, 0.0f)),
+    TexturedColoredVertex(vec3(0.5f,-0.5f, 0.5f), vec3(1.0f, 1.0f, 1.0f), vec3(1.0f, 0.0f, 0.0f), vec2(0.0f, 0.5f)),
 
-    TexturedColoredVertex(vec3(0.5f, 0.5f, 0.5f), vec3(1.0f, 1.0f, 0.0f), vec3(0.0f, 1.0f, 0.0f), vec2(1.0f, 1.0f)),
-    TexturedColoredVertex(vec3(-0.5f, 0.5f,-0.5f), vec3(1.0f, 1.0f, 0.0f), vec3(0.0f, 1.0f, 0.0f), vec2(0.0f, 0.0f)),
-    TexturedColoredVertex(vec3(-0.5f, 0.5f, 0.5f), vec3(1.0f, 1.0f, 0.0f), vec3(0.0f, 1.0f, 0.0f), vec2(0.0f, 1.0f))
+    TexturedColoredVertex(vec3(0.5f, 0.5f, 0.5f), vec3(1.0f, 1.0f, 1.0f), vec3(0.0f, 1.0f, 0.0f), vec2(1.0f, 1.0f)), // top - white
+    TexturedColoredVertex(vec3(0.5f, 0.5f,-0.5f), vec3(1.0f, 1.0f, 1.0f), vec3(0.0f, 1.0f, 0.0f), vec2(1.0f, 0.5f)),
+    TexturedColoredVertex(vec3(-0.5f, 0.5f,-0.5f), vec3(1.0f, 1.0f, 1.0f), vec3(0.0f, 1.0f, 0.0f), vec2(0.67f, 0.5f)),
+
+    TexturedColoredVertex(vec3(0.5f, 0.5f, 0.5f), vec3(1.0f, 1.0f, 1.0f), vec3(0.0f, 1.0f, 0.0f), vec2(1.0f, 1.0f)),
+    TexturedColoredVertex(vec3(-0.5f, 0.5f,-0.5f), vec3(1.0f, 1.0f, 1.0f), vec3(0.0f, 1.0f, 0.0f), vec2(0.67f, 0.5f)),
+    TexturedColoredVertex(vec3(-0.5f, 0.5f, 0.5f), vec3(1.0f, 1.0f, 1.0f), vec3(0.0f, 1.0f, 0.0f), vec2(0.67f, 1.0f))
 };
 
 //Square plane
@@ -720,13 +360,13 @@ void updateInput(GLFWwindow* window, float dt, vec3& worldRotation, int shaderAr
         }
     }
 
-    //small move forward + shear
+    // move forward + shear
     if ((glfwGetKey(window, GLFW_KEY_Z) == GLFW_PRESS) && !((glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS || glfwGetKey(window, GLFW_KEY_RIGHT_SHIFT) == GLFW_PRESS)))
     {
         modelController->updateShearingY(-0.05f);
         modelController->updateZ(-0.1f);
     }
-    //small reverse + shear
+    // reverse + shear
     if (glfwGetKey(window, GLFW_KEY_Z) == GLFW_PRESS && (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS || glfwGetKey(window, GLFW_KEY_RIGHT_SHIFT) == GLFW_PRESS))
     {
         modelController->updateShearingY(0.05f);
@@ -743,6 +383,64 @@ void updateInput(GLFWwindow* window, float dt, vec3& worldRotation, int shaderAr
 
         modelController->randomPosition(vec3(setRandNumX, 0, setRandNumZ));
     }
+
+    if (glfwGetKey(window, GLFW_KEY_I)){
+        if (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS || glfwGetKey(window, GLFW_KEY_RIGHT_SHIFT) == GLFW_PRESS)
+            modelController->useRubiksCube(RubiksMove::L_PRIME);
+        else
+            modelController->useRubiksCube(RubiksMove::L);
+    }
+
+    if (glfwGetKey(window, GLFW_KEY_O)){
+        if(glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS || glfwGetKey(window, GLFW_KEY_RIGHT_SHIFT) == GLFW_PRESS)
+            modelController->useRubiksCube(RubiksMove::R_PRIME);
+        else
+            modelController->useRubiksCube(RubiksMove::R);
+    }
+
+    if (glfwGetKey(window, GLFW_KEY_N)){
+        if(glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS || glfwGetKey(window, GLFW_KEY_RIGHT_SHIFT) == GLFW_PRESS)
+            modelController->useRubiksCube(RubiksMove::U_PRIME);
+        else
+            modelController->useRubiksCube(RubiksMove::U);
+    }
+
+    if (glfwGetKey(window, GLFW_KEY_F)) {
+        if (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS || glfwGetKey(window, GLFW_KEY_RIGHT_SHIFT) == GLFW_PRESS)
+            modelController->useRubiksCube(RubiksMove::F_PRIME);
+        else
+            modelController->useRubiksCube(RubiksMove::F);
+    }
+
+    if (glfwGetKey(window, GLFW_KEY_Y)) {
+        if (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS || glfwGetKey(window, GLFW_KEY_RIGHT_SHIFT) == GLFW_PRESS)
+            modelController->useRubiksCube(RubiksMove::B_PRIME);
+        else
+            modelController->useRubiksCube(RubiksMove::B);
+    }
+
+    if (glfwGetKey(window, GLFW_KEY_M)) {
+        if (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS || glfwGetKey(window, GLFW_KEY_RIGHT_SHIFT) == GLFW_PRESS)
+            modelController->useRubiksCube(RubiksMove::D_PRIME);
+        else
+            modelController->useRubiksCube(RubiksMove::D);
+    }
+
+    if (glfwGetKey(window, GLFW_KEY_KP_8))
+        modelController->useRubiksCube(RubiksMove::MV);
+    if (glfwGetKey(window, GLFW_KEY_KP_2))
+        modelController->useRubiksCube(RubiksMove::MV_PRIME);
+    if (glfwGetKey(window, GLFW_KEY_KP_7))
+        modelController->useRubiksCube(RubiksMove::MVS_PRIME);
+    if (glfwGetKey(window, GLFW_KEY_KP_9))
+        modelController->useRubiksCube(RubiksMove::MVS);
+    if (glfwGetKey(window, GLFW_KEY_KP_4))
+        modelController->useRubiksCube(RubiksMove::MH_PRIME);
+    if (glfwGetKey(window, GLFW_KEY_KP_6))
+        modelController->useRubiksCube(RubiksMove::MH);
+
+    if (glfwGetKey(window, GLFW_KEY_KP_0))
+        modelController->scrambleGenerator();
 }
 
 int main(int argc, char* argv[])
@@ -803,16 +501,82 @@ int main(int argc, char* argv[])
     glReadBuffer(GL_NONE);
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
-
     // Load Textures
     #if defined(PLATFORM_OSX)
-        GLuint boxTextureID = loadTexture("Textures/box_texture.png");
-        GLuint metalTextureID = loadTexture("Textures/metal_finish.jpg"); 
-        GLuint tiledTextureID = loadTexture("Textures/tiled_texture.png"); 
+        GLuint boxTextureID = TextureLoader::LoadTextureUsingStb("Textures/box_texture.png");
+        GLuint metalTextureID = TextureLoader::LoadTextureUsingStb("Textures/metal_finish.jpg"); 
+        GLuint tiledTextureID = TextureLoader::LoadTextureUsingStb("Textures/tiled_texture.png"); 
+        
+        //Front cubes
+        GLuint x0y0z2ID = TextureLoader::LoadTextureUsingStb("Textures/x0y0z2.png");
+        GLuint x0y1z2ID = TextureLoader::LoadTextureUsingStb("Textures/x0y1z2.png");
+        GLuint x1y0z2ID = TextureLoader::LoadTextureUsingStb("Textures/x1y0z2.png");
+        GLuint x1y1z2ID = TextureLoader::LoadTextureUsingStb("Textures/x1y1z2.png");
+        GLuint x0y2z2ID = TextureLoader::LoadTextureUsingStb("Textures/x0y2z2.png");
+        GLuint x1y2z2ID = TextureLoader::LoadTextureUsingStb("Textures/x1y2z2.png");
+        GLuint x2y0z2ID = TextureLoader::LoadTextureUsingStb("Textures/x2y0z2.png");
+        GLuint x2y1z2ID = TextureLoader::LoadTextureUsingStb("Textures/x2y1z2.png");
+        GLuint x2y2z2ID = TextureLoader::LoadTextureUsingStb("Textures/x2y2z2.png");
+
+        //Mid cubes
+        GLuint x0y0z1ID = TextureLoader::LoadTextureUsingStb("Textures/x0y0z1.png");
+        GLuint x1y0z1ID = TextureLoader::LoadTextureUsingStb("Textures/x1y0z1.png");
+        GLuint x2y0z1ID = TextureLoader::LoadTextureUsingStb("Textures/x2y0z1.png");
+        GLuint x0y1z1ID = TextureLoader::LoadTextureUsingStb("Textures/x0y1z1.png");
+        GLuint x1y1z1ID = TextureLoader::LoadTextureUsingStb("Textures/x1y1z1.png");
+        GLuint x2y1z1ID = TextureLoader::LoadTextureUsingStb("Textures/x2y1z1.png");
+        GLuint x0y2z1ID = TextureLoader::LoadTextureUsingStb("Textures/x0y2z1.png");
+        GLuint x1y2z1ID = TextureLoader::LoadTextureUsingStb("Textures/x1y2z1.png");
+        GLuint x2y2z1ID = TextureLoader::LoadTextureUsingStb("Textures/x2y2z1.png");
+
+        //Back cubes
+        GLuint x0y0z0ID = TextureLoader::LoadTextureUsingStb("Textures/x0y0z0.png");
+        GLuint x0y1z0ID = TextureLoader::LoadTextureUsingStb("Textures/x0y1z0.png");
+        GLuint x0y2z0ID = TextureLoader::LoadTextureUsingStb("Textures/x0y2z0.png");
+        GLuint x1y0z0ID = TextureLoader::LoadTextureUsingStb("Textures/x1y0z0.png");
+        GLuint x1y1z0ID = TextureLoader::LoadTextureUsingStb("Textures/x1y1z0.png");
+        GLuint x1y2z0ID = TextureLoader::LoadTextureUsingStb("Textures/x1y2z0.png");
+        GLuint x2y0z0ID = TextureLoader::LoadTextureUsingStb("Textures/x2y0z0.png");
+        GLuint x2y1z0ID = TextureLoader::LoadTextureUsingStb("Textures/x2y1z0.png");
+        GLuint x2y2z0ID = TextureLoader::LoadTextureUsingStb("Textures/x2y2z0.png");
+
     #else
-        GLuint boxTextureID = loadTexture("../Assets/Textures/box_texture.png"); //Source: https://jooinn.com/wood-texture-box.html
-        GLuint metalTextureID = loadTexture("../Assets/Textures/metal_finish.jpg"); //Source: https://unsplash.com/photos/v6uiP2MD6vs
-        GLuint tiledTextureID = loadTexture("../Assets/Textures/tiled_texture.png"); //Source: https://www.3dxo.com/textures/tiles
+        GLuint boxTextureID = TextureLoader::LoadTextureUsingStb("../Assets/Textures/box_texture.png"); //Source: https://jooinn.com/wood-texture-box.html
+        GLuint metalTextureID = TextureLoader::LoadTextureUsingStb("../Assets/Textures/metal_finish.jpg"); //Source: https://unsplash.com/photos/v6uiP2MD6vs
+        GLuint tiledTextureID = TextureLoader::LoadTextureUsingStb("../Assets/Textures/tiled_texture.png"); //Source: https://www.3dxo.com/textures/tiles
+
+        //Front cubes
+        GLuint x0y0z2ID = TextureLoader::LoadTextureUsingStb("../Assets/Textures/x0y0z2.png");
+        GLuint x0y1z2ID = TextureLoader::LoadTextureUsingStb("../Assets/Textures/x0y1z2.png");
+        GLuint x1y0z2ID = TextureLoader::LoadTextureUsingStb("../Assets/Textures/x1y0z2.png");
+        GLuint x1y1z2ID = TextureLoader::LoadTextureUsingStb("../Assets/Textures/x1y1z2.png");
+        GLuint x0y2z2ID = TextureLoader::LoadTextureUsingStb("../Assets/Textures/x0y2z2.png");
+        GLuint x1y2z2ID = TextureLoader::LoadTextureUsingStb("../Assets/Textures/x1y2z2.png");
+        GLuint x2y0z2ID = TextureLoader::LoadTextureUsingStb("../Assets/Textures/x2y0z2.png");
+        GLuint x2y1z2ID = TextureLoader::LoadTextureUsingStb("../Assets/Textures/x2y1z2.png");
+        GLuint x2y2z2ID = TextureLoader::LoadTextureUsingStb("../Assets/Textures/x2y2z2.png");
+
+        //Mid cubes
+        GLuint x0y0z1ID = TextureLoader::LoadTextureUsingStb("../Assets/Textures/x0y0z1.png");
+        GLuint x1y0z1ID = TextureLoader::LoadTextureUsingStb("../Assets/Textures/x1y0z1.png");
+        GLuint x2y0z1ID = TextureLoader::LoadTextureUsingStb("../Assets/Textures/x2y0z1.png");
+        GLuint x0y1z1ID = TextureLoader::LoadTextureUsingStb("../Assets/Textures/x0y1z1.png");
+        GLuint x1y1z1ID = TextureLoader::LoadTextureUsingStb("../Assets/Textures/x1y1z1.png");
+        GLuint x2y1z1ID = TextureLoader::LoadTextureUsingStb("../Assets/Textures/x2y1z1.png");
+        GLuint x0y2z1ID = TextureLoader::LoadTextureUsingStb("../Assets/Textures/x0y2z1.png");
+        GLuint x1y2z1ID = TextureLoader::LoadTextureUsingStb("../Assets/Textures/x1y2z1.png");
+        GLuint x2y2z1ID = TextureLoader::LoadTextureUsingStb("../Assets/Textures/x2y2z1.png");
+
+        //Back cubes
+        GLuint x0y0z0ID = TextureLoader::LoadTextureUsingStb("../Assets/Textures/x0y0z0.png");
+        GLuint x0y1z0ID = TextureLoader::LoadTextureUsingStb("../Assets/Textures/x0y1z0.png");
+        GLuint x0y2z0ID = TextureLoader::LoadTextureUsingStb("../Assets/Textures/x0y2z0.png");
+        GLuint x1y0z0ID = TextureLoader::LoadTextureUsingStb("../Assets/Textures/x1y0z0.png");
+        GLuint x1y1z0ID = TextureLoader::LoadTextureUsingStb("../Assets/Textures/x1y1z0.png");
+        GLuint x1y2z0ID = TextureLoader::LoadTextureUsingStb("../Assets/Textures/x1y2z0.png");
+        GLuint x2y0z0ID = TextureLoader::LoadTextureUsingStb("../Assets/Textures/x2y0z0.png");
+        GLuint x2y1z0ID = TextureLoader::LoadTextureUsingStb("../Assets/Textures/x2y1z0.png");
+        GLuint x2y2z0ID = TextureLoader::LoadTextureUsingStb("../Assets/Textures/x2y2z0.png");
     #endif
 
     //Array of textures
@@ -820,13 +584,48 @@ int main(int argc, char* argv[])
     textureArray[1] = boxTextureID;
     textureArray[2] = metalTextureID;
     textureArray[3] = tiledTextureID;
+    textureArray[4] = x0y0z0ID; //start rubix textures
+    textureArray[5] = x0y0z1ID;
+    textureArray[6] = x0y0z2ID;
+    textureArray[7] = x0y1z0ID;
+    textureArray[8] = x0y1z1ID;
+    textureArray[9] = x0y1z2ID;
+    textureArray[10] = x0y2z0ID;
+    textureArray[11] = x0y2z1ID;
+    textureArray[12] = x0y2z2ID;
+    textureArray[13] = x1y0z0ID;
+    textureArray[14] = x1y0z1ID;
+    textureArray[15] = x1y0z2ID;
+    textureArray[16] = x1y1z0ID;
+    textureArray[17] = x1y1z1ID;
+    textureArray[18] = x1y1z2ID;
+    textureArray[19] = x1y2z0ID;
+    textureArray[20] = x1y2z1ID;
+    textureArray[21] = x1y2z2ID;
+    textureArray[22] = x2y0z0ID;
+    textureArray[23] = x2y0z1ID;
+    textureArray[24] = x2y0z2ID;
+    textureArray[25] = x2y1z0ID;
+    textureArray[26] = x2y1z1ID;
+    textureArray[27] = x2y1z2ID;
+    textureArray[28] = x2y2z0ID;
+    textureArray[29] = x2y2z1ID;
+    textureArray[30] = x2y2z2ID;
 
     // Black background
     glClearColor(0.1f, 0.2f, 0.2f, 1.0f);
 
-    // Compile and link shaders here ...
-    int shaderProgram = compileAndLinkShaders(getVertexShaderSource(), getFragmentShaderSource());
-    int texturedShaderProgram = compileAndLinkShaders(getTexturedVertexShaderSource(), getTexturedFragmentShaderSource());
+    //Load shaders 
+    #if defined(PLATFORM_OSX)
+        std::string shaderPathPrefix = "Shaders/";
+    #else
+        std::string shaderPathPrefix = "../Assets/Shaders/";
+    #endif
+
+    int shaderProgram = loadSHADER(shaderPathPrefix + "color_vertex.glsl", shaderPathPrefix + "color_fragment.glsl");
+    int texturedShaderProgram = loadSHADER(shaderPathPrefix + "texture_vertex.glsl", shaderPathPrefix + "texture_fragment.glsl");
+    depthShaderProgram = loadSHADER(shaderPathPrefix + "depth_vertex.glsl", shaderPathPrefix + "depth_fragment.glsl");
+
     int shaderArray[2] = { shaderProgram, texturedShaderProgram };
     shaderType = shaderArray[0]; //Initial shader is the one with color, without texture
 
@@ -934,8 +733,6 @@ int main(int argc, char* argv[])
     mat4 worldRotationY;
     mat4 worldRotationUpdate;
 
-    depthShaderProgram = compileAndLinkDepthShaders();
-
     ViewController view(window, WIDTH, HEIGHT, shaderProgram, shaderArray);
     viewController = &view;
 
@@ -984,9 +781,11 @@ int main(int argc, char* argv[])
         float dt = glfwGetTime() - lastFrameTime;
         lastFrameTime += dt;
         viewController->updateDt(dt);
-
+        modelController->setDt(dt);
+  
         //Get user inputs
         updateInput(window, dt, worldRotation, shaderArray);
+        modelController->scramble();
 
         // Each frame, reset color of each pixel to glClearColor
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -1000,7 +799,6 @@ int main(int argc, char* argv[])
             
         //Draw all objects
         modelController->drawModels(worldRotationUpdate, textureArray, depthShaderProgram);
-
 
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
@@ -1017,19 +815,16 @@ int main(int argc, char* argv[])
 
         //MODELS
         modelController->drawModels(worldRotationUpdate, textureArray, shaderType);
-
         //Toggle Shadow
         if (glfwGetKey(window, GLFW_KEY_N) == GLFW_PRESS)
         {
             if (toggleShadow == true)
             {
-                depthShaderProgram = compileAndLinkDepthShaders();
                 glProgramUniformMatrix4fv(depthShaderProgram, glGetUniformLocation(depthShaderProgram, "lightSpaceMatrix"), 1, GL_FALSE, &lightSpaceMatrix[0][0]);
                 toggleShadow = false;
             }
             else
             {
-                depthShaderProgram = compileAndLinkDepthShaders();
                 glProgramUniformMatrix4fv(depthShaderProgram, glGetUniformLocation(depthShaderProgram, "lightSpaceMatrix"), 0, GL_FALSE, &lightSpaceMatrix[0][0]);
                 toggleShadow = true;
             }
@@ -1047,51 +842,8 @@ int main(int argc, char* argv[])
             glfwSetWindowShouldClose(window, true);
     }
 
-    viewController->~ViewController();
-    modelController->~ModelController();
     // Shutdown GLFW
     glfwTerminate();
 
     return 0;
-}
-
-//Load the texture
-GLuint loadTexture(const char* filename)
-{
-    // Step1 Create and bind textures
-    GLuint textureId = 0;
-    glGenTextures(1, &textureId);
-    assert(textureId != 0);
-
-
-    glBindTexture(GL_TEXTURE_2D, textureId);
-
-    // Step2 Set filter parameters
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-
-    // Step3 Load Textures with dimension data
-    int width, height, nrChannels;
-    unsigned char* data = stbi_load(filename, &width, &height, &nrChannels, 0);
-    if (!data)
-    {
-        std::cerr << "Error::Texture could not load texture file:" << filename << std::endl;
-        return 0;
-    }
-
-    // Step4 Upload the texture to the PU
-    GLenum format = 0;
-    if (nrChannels == 1)
-        format = GL_RED;
-    else if (nrChannels == 3)
-        format = GL_RGB;
-    else if (nrChannels == 4)
-        format = GL_RGBA;
-    glTexImage2D(GL_TEXTURE_2D, 0, format, width, height,
-        0, format, GL_UNSIGNED_BYTE, data);
-
-    // Step5 Free resources
-    stbi_image_free(data);
-    glBindTexture(GL_TEXTURE_2D, 0);
-    return textureId;
 }

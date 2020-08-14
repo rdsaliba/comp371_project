@@ -83,7 +83,18 @@ void Model::setPosition(vec3 position) {
 	this->sphere.setPosition(position + vec3(0.0f, sphereY, 0.0f));
 }
 
-void Model::draw(mat4 worldRotationUpdate, GLuint textureArray[]) {}
+void Model::draw(mat4 worldRotationUpdate, GLuint textureArray[]) {
+	glBindVertexArray(this->vao);
+	glBindBuffer(GL_ARRAY_BUFFER, vbo);
+	GLuint worldMatrixLocation = glGetUniformLocation(this->shaderProgram, "worldMatrix");
+
+	mat4 rotationUpdate = rotate(mat4(1.0f), radians(this->rotation.y), vec3(0.0f, 1.0f, 0.0f));
+	mat4 scaleUpdate = scale(mat4(1.0f), vec3(1.0f + this->scaling));
+	mat4 shearUpdate = shearY3D(mat4(1.0f), 0.0f, shearYZ.z);
+	mat4 groupMatrix = translate(mat4(1.0f), this->position) * rotationUpdate * shearUpdate * scaleUpdate;
+	glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &groupMatrix[0][0]);
+	glDrawArrays(this->renderMode, 0, 36);
+}
 
 void Model::drawPart(mat4 worldRotationUpdate,mat4 part, vec3 componentPosition) {
 	glBindVertexArray(this->vao);
