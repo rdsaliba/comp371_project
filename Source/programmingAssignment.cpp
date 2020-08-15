@@ -441,6 +441,8 @@ void updateInput(GLFWwindow* window, float dt, vec3& worldRotation, int shaderAr
 
     if (glfwGetKey(window, GLFW_KEY_KP_0))
         modelController->scrambleGenerator();
+    if (glfwGetKey(window, GLFW_KEY_KP_ENTER) == GLFW_PRESS)
+        modelController->setIsAutoSovling(true);
 }
 
 int main(int argc, char* argv[])
@@ -785,7 +787,7 @@ int main(int argc, char* argv[])
   
         //Get user inputs
         updateInput(window, dt, worldRotation, shaderArray);
-        modelController->scramble();
+        modelController->automatedCubeAction();
 
         // Each frame, reset color of each pixel to glClearColor
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
