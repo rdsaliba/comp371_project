@@ -93,6 +93,8 @@ keypad_4: MH'
 
 keypad_0: Scramble the cube with a random sequence of 3 to 10 moves. 
 
+keypad_enter: Solve the rubiks cube automatically
+
 ### General Controls:
 
 ESC: close window

@@ -7,6 +7,7 @@ ModelController::ModelController() {
 	models = vector<Model*>();
 	selectedModelIndex = -1;
 	isScrambling = false;
+	isAutoSolving = false;
 }
 
 ModelController::~ModelController() {
@@ -133,11 +134,23 @@ void ModelController::randomPosition(vec3 value) {
 void ModelController::scrambleGenerator() {
 	srand(glfwGetTime()); //generate new seed to ensure scrambles are different
 	int moveCtr = rand() % 10 + 3; //10 maximum moves, 3 moves minimum
+	RubiksMove move = RubiksMove::NONE;
 	isScrambling = true;
 	for (int i = 0; i < moveCtr; i++) {
-		RubiksMove move = static_cast<RubiksMove>(rand() % 20);
+		do {
+			move = static_cast<RubiksMove>(rand() % 20);
+		} while (move == RubiksMove::NONE || move == RubiksMove::COMPLETE); //Prevents adding to scramble non rotational moves
+	
 		scrambleList.push_back(move);
 	}
+}
+
+/// <summary>
+/// Executes actions on the rubiks cube that do not require user input.
+/// </summary>
+void ModelController::automatedCubeAction() {
+	scramble();
+	solve();
 }
 
 /// <summary>
@@ -145,14 +158,32 @@ void ModelController::scrambleGenerator() {
 /// </summary>
 void ModelController::scramble() {
 	if (isScrambling) {
-		if (scrambleList.size() > 0){
+		if (!scrambleList.empty()){
 			if (!rubiksCube->getIsTurning()) {
+				RubiksMove move = scrambleList.front();
 				useRubiksCube(scrambleList.front());
 				scrambleList.erase(scrambleList.begin());
 			}
 		}
 		else {
 			isScrambling = false;
+		}
+	}
+}
+
+/// <summary>
+/// Auto solve the Rubiks cube
+/// </summary>
+void ModelController::solve() {
+	if (isAutoSolving) {
+		if (!solveList.empty()) {
+			if (!rubiksCube->getIsTurning()) {
+				useRubiksCube(solveList.back());
+				solveList.pop_back();
+			}
+		}
+		else {
+			isAutoSolving = false;
 		}
 	}
 }
@@ -165,6 +196,8 @@ void ModelController::scramble() {
 void ModelController::useRubiksCube(RubiksMove move) {
 	if (!rubiksCube->getIsTurning()) {
 		rubiksCube->queueMove(move);
+		if(!isAutoSolving)
+			solveList.push_back(getReverseMove(move));
 		rubiksCube->updateActionState();
 	
 		switch (move) {
@@ -224,4 +257,71 @@ void ModelController::useRubiksCube(RubiksMove move) {
 			break;
 		}
 	}
+}
+
+/// <summary>
+/// 
+/// </summary>
+/// <param name="move">Move applied on the rubiks cube</param>
+/// <returns>Move negating the action previously applied on the cube</returns>
+RubiksMove ModelController::getReverseMove(RubiksMove move) {
+	RubiksMove reverseMove = RubiksMove::NONE;
+	switch (move) {
+	case RubiksMove::L:
+		reverseMove = RubiksMove::L_PRIME;
+		break;
+	case RubiksMove::L_PRIME:
+		reverseMove = RubiksMove::L;
+		break;
+	case RubiksMove::U:
+		reverseMove = RubiksMove::U_PRIME;
+		break;
+	case RubiksMove::U_PRIME:
+		reverseMove = RubiksMove::U;
+		break;
+	case RubiksMove::D:
+		reverseMove = RubiksMove::D_PRIME;
+		break;
+	case RubiksMove::D_PRIME:
+		reverseMove = RubiksMove::D;
+		break;
+	case RubiksMove::F:
+		reverseMove = RubiksMove::F_PRIME;
+		break;
+	case RubiksMove::F_PRIME:
+		reverseMove = RubiksMove::F;
+		break;
+	case RubiksMove::B:
+		reverseMove = RubiksMove::B_PRIME;
+		break;
+	case RubiksMove::B_PRIME:
+		reverseMove = RubiksMove::B;
+		break;
+	case RubiksMove::R:
+		reverseMove = RubiksMove::R_PRIME;
+		break;
+	case RubiksMove::R_PRIME:
+		reverseMove = RubiksMove::R;
+		break;
+	case RubiksMove::MV:
+		reverseMove = RubiksMove::MV_PRIME;
+		break;
+	case RubiksMove::MV_PRIME:
+		reverseMove = RubiksMove::MV;
+		break;
+	case RubiksMove::MVS:
+		reverseMove = RubiksMove::MVS_PRIME;
+		break;
+	case RubiksMove::MVS_PRIME:
+		reverseMove = RubiksMove::MVS;
+		break;
+	case RubiksMove::MH:
+		reverseMove = RubiksMove::MH_PRIME;
+		break;
+	case RubiksMove::MH_PRIME:
+		reverseMove = RubiksMove::MH;
+		break;
+	}
+
+	return reverseMove;
 }
