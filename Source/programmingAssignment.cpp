@@ -779,24 +779,24 @@ int main(int argc, char* argv[])
     while (!glfwWindowShouldClose(window))
     {
         //Timer
-	  	  if (timer == true)
-	  	  {
-		    	system("CLS");
-		    	std::cout << glfwGetTime() << std::endl;
-		    }
-		    if (glfwGetKey(window, GLFW_KEY_0) == GLFW_PRESS)
-	    	{
-	  		  if (timer == true)
-		  	  {
-		  	  	system("CLS");
-		  	  	std::cout << glfwGetTime() << std::endl;
-		  		  timer = false;
-		    	}
-		    	else
-		  	  {
-		  		  timer = true;
-		  	  }
-	    	}
+	if (timer == true)
+	{
+	    system("CLS");
+	    std::cout << glfwGetTime() << std::endl;
+	}
+	if (glfwGetKey(window, GLFW_KEY_0) == GLFW_PRESS)
+	{
+	   if (timer == true)
+	   {
+	      system("CLS");
+	      std::cout << glfwGetTime() << std::endl;
+	      timer = false;
+	   }
+	   else
+	   {
+	      timer = true;
+	   }
+	}
 
         worldRotationX = rotate(glm::mat4(1.0f), glm::radians(worldRotation.x), glm::vec3(1.0f, 0.0f, 0.0f));
         worldRotationY = rotate(glm::mat4(1.0f), glm::radians(worldRotation.y), glm::vec3(0.0f, 1.0f, 0.0f));
