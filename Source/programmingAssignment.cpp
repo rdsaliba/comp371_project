@@ -9,6 +9,7 @@
 #pragma comment (lib,"glew32s.lib")
 #define GLEW_STATIC // This allows linking with Static Library on Windows, without DLL
 
+#include <stdlib.h>
 #include <GL/glew.h>    // Include GLEW - OpenGL Extension Wrangler
 
 #include <GLFW/glfw3.h> // GLFW provides a cross-platform interface for creating a graphical context,
@@ -771,10 +772,32 @@ int main(int argc, char* argv[])
 
     // Toggle Shadow on/off
     bool toggleShadow = false;
+    // timer
+  	bool timer = true;
 
      // Entering Main Loop
     while (!glfwWindowShouldClose(window))
     {
+        //Timer
+	  	  if (timer == true)
+	  	  {
+		    	system("CLS");
+		    	std::cout << glfwGetTime() << std::endl;
+		    }
+		    if (glfwGetKey(window, GLFW_KEY_M) == GLFW_PRESS)
+	    	{
+	  		  if (timer == true)
+		  	  {
+		  	  	system("CLS");
+		  	  	std::cout << glfwGetTime() << std::endl;
+		  		  timer = false;
+		    	}
+		    	else
+		  	  {
+		  		  timer = true;
+		  	  }
+	    	}
+
         worldRotationX = rotate(glm::mat4(1.0f), glm::radians(worldRotation.x), glm::vec3(1.0f, 0.0f, 0.0f));
         worldRotationY = rotate(glm::mat4(1.0f), glm::radians(worldRotation.y), glm::vec3(0.0f, 1.0f, 0.0f));
         worldRotationUpdate = worldRotationX * worldRotationY;
