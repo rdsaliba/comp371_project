@@ -784,7 +784,7 @@ int main(int argc, char* argv[])
 		    	system("CLS");
 		    	std::cout << glfwGetTime() << std::endl;
 		    }
-		    if (glfwGetKey(window, GLFW_KEY_M) == GLFW_PRESS)
+		    if (glfwGetKey(window, GLFW_KEY_0) == GLFW_PRESS)
 	    	{
 	  		  if (timer == true)
 		  	  {
