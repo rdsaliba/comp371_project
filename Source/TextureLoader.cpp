@@ -1,11 +1,3 @@
-//
-// COMP 371 Assignment Framework
-//
-// Created by Nicolas Bergeron on 15/7/15.
-//
-// Copyright (c) 2014-2019 Concordia University. All rights reserved.
-//
-
 #include "TextureLoader.h"
 #include <iostream>
 
@@ -13,6 +5,7 @@
 #include "stb_image.h"
 #include <GL\glew.h>
 
+//Load texture using stb_image library
 int TextureLoader::LoadTextureUsingStb(const char* filename) {
     // Step1 Create and bind textures
     GLuint textureId = 0;
