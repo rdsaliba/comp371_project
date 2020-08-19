@@ -41,7 +41,8 @@ ViewController* viewController = NULL;
 ModelController* modelController = NULL;
 
 GLuint toggle = 0; //0 = off, 1 = on
-GLuint textureArray[34] = {}; //Contains toggle (on/off), and the cubes textures
+GLuint textureArray[35] = {}; //Contains toggle (on/off), and the cubes textures
+GLuint timerTexture[10] = {}; //Texture for timer
 int shaderType; //Color or texture
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height)
@@ -446,9 +447,32 @@ void updateInput(GLFWwindow* window, float dt, vec3& worldRotation, int shaderAr
         modelController->setIsAutoSovling(true);
 }
 
-void getIn(int time)
+//Return digitTexture for the appropriate number
+GLuint getDigit(int number)
 {
-
+    switch (number)
+    {
+        case 0:
+            return timerTexture[0];
+        case 1:
+            return timerTexture[1];
+        case 2:
+            return timerTexture[2];
+        case 3:
+            return timerTexture[3];
+        case 4:
+            return timerTexture[4];
+        case 5:
+            return timerTexture[5];
+        case 6:
+            return timerTexture[6];
+        case 7:
+            return timerTexture[7];
+        case 8:
+            return timerTexture[8];
+        case 9:
+            return timerTexture[9];
+    }
 }
 
 int main(int argc, char* argv[])
@@ -631,8 +655,19 @@ int main(int argc, char* argv[])
     textureArray[28] = x2y2z0ID;
     textureArray[29] = x2y2z1ID;
     textureArray[30] = x2y2z2ID;
-    //textureArray[31] = digit0; //Timer texture
-    //textureArray[32] = digit1;
+
+
+    //Timer texture
+    timerTexture[0] = digit0;
+    timerTexture[1] = digit1;
+    timerTexture[2] = digit2;
+    timerTexture[3] = digit3;
+    timerTexture[4] = digit4;
+    timerTexture[5] = digit5;
+    timerTexture[6] = digit6;
+    timerTexture[7] = digit7;
+    timerTexture[8] = digit8;
+    timerTexture[9] = digit9;
 
     // Black background
     glClearColor(0.1f, 0.2f, 0.2f, 1.0f);
@@ -792,10 +827,9 @@ int main(int argc, char* argv[])
     // Toggle Shadow on/off
     bool toggleShadow = false;
     // timer
-  	bool timer = true;
+  	bool timer = false;
 
-    //Timer texture
-    GLuint timerTexture[10] = {};
+    int timeElapsed; //glfwGetTime() starts when the GLFW gets initialized, so we need the time elapsed between the initialization of GLFW and the moment user presses KP_0
 
      // Entering Main Loop
     while (!glfwWindowShouldClose(window))
@@ -806,36 +840,34 @@ int main(int argc, char* argv[])
 	    system("CLS");
 	    //std::cout << floor(glfwGetTime()) << std::endl;
 
-        int ones = (int)floor(glfwGetTime()) % 10; //Calculate ones digit
-        string pathOnes = "../Assets/Textures/digit" + to_string(ones) + ".png";
-
-        int tens = ((int)floor(glfwGetTime()) /10)%10; //Calculate tens digit
-        string pathTens = "../Assets/Textures/digit" + to_string(tens) + ".png";
-
-        int hundreds = ((int)floor(glfwGetTime()) /100) % 10; //Calculate hundres digit
-        string pathHundreds = "../Assets/Textures/digit" + to_string(hundreds) + ".png";
-
-        cout << hundreds << ", " << tens << ", " << ones;
-
-        textureArray[31] = TextureLoader::LoadTextureUsingStb(pathOnes.c_str()); //.c_str conversts string to const char*
-        textureArray[32] = TextureLoader::LoadTextureUsingStb(pathTens.c_str());
-        textureArray[33] = TextureLoader::LoadTextureUsingStb(pathHundreds.c_str());
+        int ones = ((int)floor(glfwGetTime()) - timeElapsed) % 10; //Calculate ones digit
+        textureArray[31] = getDigit(ones);
+        int tens = (((int)floor(glfwGetTime()) - timeElapsed) /10)%10; //Calculate tens digit
+        textureArray[32] = getDigit(tens);
+        int hundreds = (((int)floor(glfwGetTime()) - timeElapsed) /100) % 10; //Calculate hundres digit
+        textureArray[33] = getDigit(hundreds);
+        int thousands = (((int)floor(glfwGetTime()) - timeElapsed) / 1000) % 10; //Calculate hundres digit
+        textureArray[34] = getDigit(thousands);
     
 	}
-	if (glfwGetKey(window, GLFW_KEY_0) == GLFW_PRESS)
+	if (glfwGetKey(window, GLFW_KEY_KP_0) == GLFW_PRESS)
 	{
-	   if (timer == true)
-	   {
-	      system("CLS");
-	      std::cout << glfwGetTime() << std::endl;
-	      timer = false;
+       timeElapsed = (int)floor(glfwGetTime());
+       timer = true;
 
-	   }
-	   else
-	   {
-	      timer = true;
-	   }
+	   //if (timer == true)
+	   //{
+	   //   system("CLS");
+	   //   std::cout << glfwGetTime() << std::endl;
+	   //   timer = false;
+
+	   //}
+	   //else
+	   //{
+	   //   timer = true;
+	   //}
 	}
+
 
         worldRotationX = rotate(glm::mat4(1.0f), glm::radians(worldRotation.x), glm::vec3(1.0f, 0.0f, 0.0f));
         worldRotationY = rotate(glm::mat4(1.0f), glm::radians(worldRotation.y), glm::vec3(0.0f, 1.0f, 0.0f));

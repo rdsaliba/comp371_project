@@ -7,6 +7,7 @@ public:
 	TimerModel(const Model& model) :Model(model) {};
 	virtual ~TimerModel();
 	virtual void draw(mat4 worldRotationUpdate, GLuint textureArray[]);
+	virtual void drawTimerFarLeft(mat4 worldRotationUpdate, GLuint toggle, GLuint texture);
 	virtual void drawTimerLeft(mat4 worldRotationUpdate, GLuint toggle, GLuint texture);
 	virtual void drawTimerCenter(mat4 worldRotationUpdate, GLuint toggle, GLuint texture);
 	virtual void drawTimerRight(mat4 worldRotationUpdate, GLuint toggle, GLuint texture);

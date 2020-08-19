@@ -22,6 +22,7 @@ namespace ModelUtilities{
 		TOP_LEFT,
 		TOP_RIGHT,
 		BOTTOM_RIGHT,
+		TIMER_FARLEFT,
 		TIMER_LEFT,
 		TIMER_CENTER,
 		TIMER_RIGHT

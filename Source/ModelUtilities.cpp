@@ -164,6 +164,10 @@ namespace ModelUtilities {
 			break;
 
 		//Timer
+		case ComponentType::TIMER_FARLEFT:
+			position.x -= 8.0f;
+			break;
+
 		case ComponentType::TIMER_LEFT:
 			position.x -= 4.0f;
 			break;
