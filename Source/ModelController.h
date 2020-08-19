@@ -1,56 +1,60 @@
 #pragma once
+#include <list>
+#include <algorithm>
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/common.hpp>
 #include <vector>
-#include "Model.h"
-#include "HauModel.h"
-#include "RoyModel.h"
-#include "TaqiModel.h"
-#include "SwetangModel.h"
-#include "WilliamModel.h"
-#include "ModelUtilities.h"
-#include "RubiksModel.h"
-#include "SuccessModel.h"
-using namespace std;
-class ModelController {
-public:
-	Model* focusedModel;
-	
-	ModelController();
-	~ModelController();
+#include "CubeModel.h"
+using namespace glm;
+namespace ModelUtilities{
+	//Constants for size standardization across the different models
+	vec3 longComponentScalingVector(); //5 units wide
+	vec3 shortComponentScalingVector(); //3 units wide
+	vec3 medComponentScalingVector(); //4 units wide
 
-	float getDt() { return dt; }
-	void addModel(Model* model);
-	void initModels(int shaderProgram, unsigned int vao, unsigned int vbo, Sphere sphere);
-	
-	void drawModels(mat4 worldRotationUpdate, GLuint textureArray[], int shaderProgram);
-	
-	void modelFocusSwitch(int nextModel);
-	bool getIsScrambling() { return isScrambling; }
+	///Segment positions for model building
+	enum class ComponentType {
+		TOP,
+		LEFT,
+		BOTTOM,
+		RIGHT,
+		CENTER,
+		TOP_LEFT,
+		TOP_RIGHT,
+		BOTTOM_RIGHT
+	};
 
-	void setModelsShaderProgram(int shaderProgram);
-	void setModelsVAO(unsigned int vao);
-	void setModelsVBO(unsigned int vbo);
-	void setModelsSphere(Sphere sphere);
-	void setDt(float dt) { this->dt = dt; }
-	void setIsScrambling(bool isScrambling) { this->isScrambling = isScrambling; }
+	enum class ComponentOrientation {
+		HORIZONTAL,
+		VERTICAL,
+		ANGLED_LEFT,
+		ANGLED_RIGHT
+	};
 
-	//Functions to update the currently selected model
-	void updateScaling(float scaling) { focusedModel->updateScaling(scaling); }
-	void updateRenderMode(GLenum renderMode) { focusedModel->setRenderMode(renderMode); }
-	void updateX(float x) { focusedModel->x(x); }
-	void updateY(float y) { focusedModel->y(y); }
-	void updateZ(float z) { focusedModel->z(z); }
-	void updateRotationY(float rotation) { focusedModel->updateRotationY(rotation); }
-	void updateShearingY(float shear) { focusedModel->updateShearingY(shear); }
-	void randomPosition(vec3 value);
-	void useRubiksCube(RubiksMove move);
-	void scrambleGenerator();
-	void scramble();
-	void checkIfCubeSolved();
-private:
-	vector<Model*> models;
-	RubiksModel* rubiksCube;
-	int selectedModelIndex;
-	float dt;
-	bool isScrambling;
-	vector<RubiksMove> scrambleList;
+	//Size of desired component to generate for model building
+	enum class ComponentSize {
+		SHORT,
+		LONG,
+		MED
+	};
+
+	enum class ModelType {
+		LETTER,
+		DIGIT,
+		LETTER2,
+		LETTER3,
+		LETTER4,
+		LETTER5,
+		LETTER6,
+		LETTER7
+	};
+
+	mat4 createComponent(ComponentSize size, ComponentOrientation orientation);
+	mat4 scaleComponent(mat4 component, vec3 scalingVector);
+	mat4 rotateComponent(mat4 component, float angle, vec3 rotationVector);
+	mat4 rotateComponentOnZ(mat4 component); //rotate component 90 degrees along the Z axis
+	mat4 rotateComponentOnZAngled(mat4 component, ComponentType componentType);
+	mat4 rotateComponentOnY(mat4 component); //rotate component 90 degrees along the Y axis
+	vec3 getComponentPosition(mat4 component, ComponentType type, ComponentSize size, ModelType modelType, ComponentOrientation orientation);
 };
+
