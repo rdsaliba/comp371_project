@@ -7,7 +7,6 @@ ModelController::ModelController() {
 	models = vector<Model*>();
 	selectedModelIndex = -1;
 	isScrambling = false;
-	isAutoSolving = false;
 }
 
 ModelController::~ModelController() {
@@ -39,15 +38,16 @@ void ModelController::initModels(int shaderProgram, unsigned int vao, unsigned i
 	RoyModel* roy = new RoyModel(vec3(-40.0f, 0.0f, 40.0f), 0.0f); //Roy (Y8)
 	SwetangModel* swetang = new SwetangModel(vec3(0.0f, 0.0f, -15.0f), 0.0f); //Swetang (E0)
 	WilliamModel* william = new WilliamModel(vec3(40.0f, 0.0f, 40.0f), 0.0f); //William (L9)
+	SuccessModel* success = new SuccessModel(vec3(-12.5f, 5.0, -25.0f), 0.0f); //SUCCESS
 
 	rubiksCube = rubiksModel;
-
 	models.push_back(rubiksModel);
 	models.push_back(taqi);
 	models.push_back(hau);
 	models.push_back(roy);
-	models.push_back(swetang);
 	models.push_back(william);
+	models.push_back(swetang);
+	models.push_back(success);
 
 	setModelsShaderProgram(shaderProgram);
 	setModelsVAO(vao);
@@ -65,10 +65,23 @@ void ModelController::initModels(int shaderProgram, unsigned int vao, unsigned i
 /// <param name="shaderProgram">Shader to use to render the models</param>
 void ModelController::drawModels(mat4 worldRotationUpdate, GLuint textureArray[], int shaderProgram) {
 	rubiksCube->setDt(dt);
-	for (vector<Model*>::iterator model = models.begin(); model != models.end(); ++model)
+
+	//If the rubiks cube is solved the Success Model will be displayed, if not then it will not be displayed
+	if (rubiksCube->computeSolveState() == true)
 	{
-		(*model)->setShaderProgram(shaderProgram);
-		(*model)->draw(worldRotationUpdate, textureArray);
+		for (vector<Model*>::iterator model = models.begin(); model != models.end(); ++model)
+		{
+			(*model)->setShaderProgram(shaderProgram);
+			(*model)->draw(worldRotationUpdate, textureArray);
+		}
+	}
+	else
+	{ 
+		for (vector<Model*>::iterator model = models.begin(); model != models.end()-1; ++model)
+		{
+			(*model)->setShaderProgram(shaderProgram);
+			(*model)->draw(worldRotationUpdate, textureArray);
+		}
 	}
 }
 
@@ -134,23 +147,11 @@ void ModelController::randomPosition(vec3 value) {
 void ModelController::scrambleGenerator() {
 	srand(glfwGetTime()); //generate new seed to ensure scrambles are different
 	int moveCtr = rand() % 10 + 3; //10 maximum moves, 3 moves minimum
-	RubiksMove move = RubiksMove::NONE;
 	isScrambling = true;
 	for (int i = 0; i < moveCtr; i++) {
-		do {
-			move = static_cast<RubiksMove>(rand() % 20);
-		} while (move == RubiksMove::NONE || move == RubiksMove::COMPLETE); //Prevents adding to scramble non rotational moves
-	
+		RubiksMove move = static_cast<RubiksMove>(rand() % 20);
 		scrambleList.push_back(move);
 	}
-}
-
-/// <summary>
-/// Executes actions on the rubiks cube that do not require user input.
-/// </summary>
-void ModelController::automatedCubeAction() {
-	scramble();
-	solve();
 }
 
 /// <summary>
@@ -158,9 +159,8 @@ void ModelController::automatedCubeAction() {
 /// </summary>
 void ModelController::scramble() {
 	if (isScrambling) {
-		if (!scrambleList.empty()){
+		if (scrambleList.size() > 0){
 			if (!rubiksCube->getIsTurning()) {
-				RubiksMove move = scrambleList.front();
 				useRubiksCube(scrambleList.front());
 				scrambleList.erase(scrambleList.begin());
 			}
@@ -170,24 +170,13 @@ void ModelController::scramble() {
 		}
 	}
 }
+void ModelController::checkIfCubeSolved()
+{
+	if (rubiksCube->computeSolveState() == true)
+	{
 
-/// <summary>
-/// Auto solve the Rubiks cube
-/// </summary>
-void ModelController::solve() {
-	if (isAutoSolving) {
-		if (!solveList.empty()) {
-			if (!rubiksCube->getIsTurning()) {
-				useRubiksCube(solveList.back());
-				solveList.pop_back();
-			}
-		}
-		else {
-			isAutoSolving = false;
-		}
 	}
 }
-
 /// <summary>
 /// Executes a move on a layer of the rubiks cube.
 /// Note: In this case a "move" refers to a rotation used to solve the rubiks cube rather than a manipulation of the 3D model in the scene.
@@ -196,8 +185,6 @@ void ModelController::solve() {
 void ModelController::useRubiksCube(RubiksMove move) {
 	if (!rubiksCube->getIsTurning()) {
 		rubiksCube->queueMove(move);
-		if(!isAutoSolving)
-			solveList.push_back(getReverseMove(move));
 		rubiksCube->updateActionState();
 	
 		switch (move) {
@@ -257,71 +244,4 @@ void ModelController::useRubiksCube(RubiksMove move) {
 			break;
 		}
 	}
-}
-
-/// <summary>
-/// 
-/// </summary>
-/// <param name="move">Move applied on the rubiks cube</param>
-/// <returns>Move negating the action previously applied on the cube</returns>
-RubiksMove ModelController::getReverseMove(RubiksMove move) {
-	RubiksMove reverseMove = RubiksMove::NONE;
-	switch (move) {
-	case RubiksMove::L:
-		reverseMove = RubiksMove::L_PRIME;
-		break;
-	case RubiksMove::L_PRIME:
-		reverseMove = RubiksMove::L;
-		break;
-	case RubiksMove::U:
-		reverseMove = RubiksMove::U_PRIME;
-		break;
-	case RubiksMove::U_PRIME:
-		reverseMove = RubiksMove::U;
-		break;
-	case RubiksMove::D:
-		reverseMove = RubiksMove::D_PRIME;
-		break;
-	case RubiksMove::D_PRIME:
-		reverseMove = RubiksMove::D;
-		break;
-	case RubiksMove::F:
-		reverseMove = RubiksMove::F_PRIME;
-		break;
-	case RubiksMove::F_PRIME:
-		reverseMove = RubiksMove::F;
-		break;
-	case RubiksMove::B:
-		reverseMove = RubiksMove::B_PRIME;
-		break;
-	case RubiksMove::B_PRIME:
-		reverseMove = RubiksMove::B;
-		break;
-	case RubiksMove::R:
-		reverseMove = RubiksMove::R_PRIME;
-		break;
-	case RubiksMove::R_PRIME:
-		reverseMove = RubiksMove::R;
-		break;
-	case RubiksMove::MV:
-		reverseMove = RubiksMove::MV_PRIME;
-		break;
-	case RubiksMove::MV_PRIME:
-		reverseMove = RubiksMove::MV;
-		break;
-	case RubiksMove::MVS:
-		reverseMove = RubiksMove::MVS_PRIME;
-		break;
-	case RubiksMove::MVS_PRIME:
-		reverseMove = RubiksMove::MVS;
-		break;
-	case RubiksMove::MH:
-		reverseMove = RubiksMove::MH_PRIME;
-		break;
-	case RubiksMove::MH_PRIME:
-		reverseMove = RubiksMove::MH;
-		break;
-	}
-
-	return reverseMove;
 }
