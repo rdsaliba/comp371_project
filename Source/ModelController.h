@@ -8,6 +8,7 @@
 #include "WilliamModel.h"
 #include "ModelUtilities.h"
 #include "RubiksModel.h"
+#include "SuccessModel.h"
 using namespace std;
 class ModelController {
 public:
@@ -19,11 +20,11 @@ public:
 	float getDt() { return dt; }
 	void addModel(Model* model);
 	void initModels(int shaderProgram, unsigned int vao, unsigned int vbo, Sphere sphere);
+	
 	void drawModels(mat4 worldRotationUpdate, GLuint textureArray[], int shaderProgram);
+	
 	void modelFocusSwitch(int nextModel);
 	bool getIsScrambling() { return isScrambling; }
-	bool getIsAutoSolving() { return isAutoSolving; }
-	RubiksMove getReverseMove(RubiksMove move);
 
 	void setModelsShaderProgram(int shaderProgram);
 	void setModelsVAO(unsigned int vao);
@@ -31,7 +32,6 @@ public:
 	void setModelsSphere(Sphere sphere);
 	void setDt(float dt) { this->dt = dt; }
 	void setIsScrambling(bool isScrambling) { this->isScrambling = isScrambling; }
-	void setIsAutoSovling(bool isAutoSolving) { this->isAutoSolving = isAutoSolving; }
 
 	//Functions to update the currently selected model
 	void updateScaling(float scaling) { focusedModel->updateScaling(scaling); }
@@ -42,20 +42,15 @@ public:
 	void updateRotationY(float rotation) { focusedModel->updateRotationY(rotation); }
 	void updateShearingY(float shear) { focusedModel->updateShearingY(shear); }
 	void randomPosition(vec3 value);
-	
-	//Rubiks cube manipulation functions
 	void useRubiksCube(RubiksMove move);
 	void scrambleGenerator();
 	void scramble();
-	void solve();
-	void automatedCubeAction();
+	void checkIfCubeSolved();
 private:
 	vector<Model*> models;
 	RubiksModel* rubiksCube;
 	int selectedModelIndex;
 	float dt;
 	bool isScrambling;
-	bool isAutoSolving;
 	vector<RubiksMove> scrambleList;
-	vector<RubiksMove> solveList;
 };
