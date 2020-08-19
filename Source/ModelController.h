@@ -8,6 +8,7 @@
 #include "WilliamModel.h"
 #include "ModelUtilities.h"
 #include "RubiksModel.h"
+#include "TimerModel.h"
 using namespace std;
 class ModelController {
 public:

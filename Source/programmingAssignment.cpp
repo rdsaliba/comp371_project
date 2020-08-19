@@ -41,7 +41,7 @@ ViewController* viewController = NULL;
 ModelController* modelController = NULL;
 
 GLuint toggle = 0; //0 = off, 1 = on
-GLuint textureArray[31] = {}; //Contains toggle (on/off), box texture, metal texture, and tiled texture
+GLuint textureArray[34] = {}; //Contains toggle (on/off), and the cubes textures
 int shaderType; //Color or texture
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height)
@@ -446,6 +446,11 @@ void updateInput(GLFWwindow* window, float dt, vec3& worldRotation, int shaderAr
         modelController->setIsAutoSovling(true);
 }
 
+void getIn(int time)
+{
+
+}
+
 int main(int argc, char* argv[])
 {
     // Initialize GLFW and OpenGL version
@@ -580,6 +585,18 @@ int main(int argc, char* argv[])
         GLuint x2y0z0ID = TextureLoader::LoadTextureUsingStb("../Assets/Textures/x2y0z0.png");
         GLuint x2y1z0ID = TextureLoader::LoadTextureUsingStb("../Assets/Textures/x2y1z0.png");
         GLuint x2y2z0ID = TextureLoader::LoadTextureUsingStb("../Assets/Textures/x2y2z0.png");
+        
+        GLuint digit0 = TextureLoader::LoadTextureUsingStb("../Assets/Textures/digit0.png");
+        GLuint digit1 = TextureLoader::LoadTextureUsingStb("../Assets/Textures/digit1.png");
+        GLuint digit2 = TextureLoader::LoadTextureUsingStb("../Assets/Textures/digit2.png");
+        GLuint digit3 = TextureLoader::LoadTextureUsingStb("../Assets/Textures/digit3.png");
+        GLuint digit4 = TextureLoader::LoadTextureUsingStb("../Assets/Textures/digit4.png");
+        GLuint digit5 = TextureLoader::LoadTextureUsingStb("../Assets/Textures/digit5.png");
+        GLuint digit6 = TextureLoader::LoadTextureUsingStb("../Assets/Textures/digit6.png");
+        GLuint digit7 = TextureLoader::LoadTextureUsingStb("../Assets/Textures/digit7.png");
+        GLuint digit8 = TextureLoader::LoadTextureUsingStb("../Assets/Textures/digit8.png");
+        GLuint digit9 = TextureLoader::LoadTextureUsingStb("../Assets/Textures/digit9.png");
+
     #endif
 
     //Array of textures
@@ -614,6 +631,8 @@ int main(int argc, char* argv[])
     textureArray[28] = x2y2z0ID;
     textureArray[29] = x2y2z1ID;
     textureArray[30] = x2y2z2ID;
+    //textureArray[31] = digit0; //Timer texture
+    //textureArray[32] = digit1;
 
     // Black background
     glClearColor(0.1f, 0.2f, 0.2f, 1.0f);
@@ -775,6 +794,9 @@ int main(int argc, char* argv[])
     // timer
   	bool timer = true;
 
+    //Timer texture
+    GLuint timerTexture[10] = {};
+
      // Entering Main Loop
     while (!glfwWindowShouldClose(window))
     {
@@ -782,7 +804,23 @@ int main(int argc, char* argv[])
 	if (timer == true)
 	{
 	    system("CLS");
-	    std::cout << glfwGetTime() << std::endl;
+	    //std::cout << floor(glfwGetTime()) << std::endl;
+
+        int ones = (int)floor(glfwGetTime()) % 10; //Calculate ones digit
+        string pathOnes = "../Assets/Textures/digit" + to_string(ones) + ".png";
+
+        int tens = ((int)floor(glfwGetTime()) /10)%10; //Calculate tens digit
+        string pathTens = "../Assets/Textures/digit" + to_string(tens) + ".png";
+
+        int hundreds = ((int)floor(glfwGetTime()) /100) % 10; //Calculate hundres digit
+        string pathHundreds = "../Assets/Textures/digit" + to_string(hundreds) + ".png";
+
+        cout << hundreds << ", " << tens << ", " << ones;
+
+        textureArray[31] = TextureLoader::LoadTextureUsingStb(pathOnes.c_str()); //.c_str conversts string to const char*
+        textureArray[32] = TextureLoader::LoadTextureUsingStb(pathTens.c_str());
+        textureArray[33] = TextureLoader::LoadTextureUsingStb(pathHundreds.c_str());
+    
 	}
 	if (glfwGetKey(window, GLFW_KEY_0) == GLFW_PRESS)
 	{
@@ -791,6 +829,7 @@ int main(int argc, char* argv[])
 	      system("CLS");
 	      std::cout << glfwGetTime() << std::endl;
 	      timer = false;
+
 	   }
 	   else
 	   {

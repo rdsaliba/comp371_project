@@ -162,6 +162,20 @@ namespace ModelUtilities {
 		case ComponentType::BOTTOM_RIGHT:
 			position.x += 2.0f;
 			break;
+
+		//Timer
+		case ComponentType::TIMER_LEFT:
+			position.x -= 4.0f;
+			break;
+
+		case ComponentType::TIMER_CENTER:
+			position.x += 0.0f;
+			break;
+		
+		case ComponentType::TIMER_RIGHT:
+			position.x += 4.0f;
+			break;
+		
 		}
 
 		switch (modelType) {

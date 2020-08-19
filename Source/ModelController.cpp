@@ -39,6 +39,7 @@ void ModelController::initModels(int shaderProgram, unsigned int vao, unsigned i
 	RoyModel* roy = new RoyModel(vec3(-40.0f, 0.0f, 40.0f), 0.0f); //Roy (Y8)
 	SwetangModel* swetang = new SwetangModel(vec3(0.0f, 0.0f, -15.0f), 0.0f); //Swetang (E0)
 	WilliamModel* william = new WilliamModel(vec3(40.0f, 0.0f, 40.0f), 0.0f); //William (L9)
+	TimerModel* timer = new TimerModel(vec3(0.0f, 10.0f, -20.0f), 0.0f); //Timer
 
 	rubiksCube = rubiksModel;
 
@@ -48,6 +49,7 @@ void ModelController::initModels(int shaderProgram, unsigned int vao, unsigned i
 	models.push_back(roy);
 	models.push_back(swetang);
 	models.push_back(william);
+	models.push_back(timer);
 
 	setModelsShaderProgram(shaderProgram);
 	setModelsVAO(vao);

@@ -21,7 +21,10 @@ namespace ModelUtilities{
 		CENTER,
 		TOP_LEFT,
 		TOP_RIGHT,
-		BOTTOM_RIGHT
+		BOTTOM_RIGHT,
+		TIMER_LEFT,
+		TIMER_CENTER,
+		TIMER_RIGHT
 	};
 
 	enum class ComponentOrientation {
