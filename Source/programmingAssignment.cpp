@@ -843,9 +843,6 @@ int main(int argc, char* argv[])
         //Timer
 	    if (timer == true)
 	    {
-	        system("CLS");
-	        //std::cout << floor(glfwGetTime()) << std::endl;
-
             int ones = ((int)floor(glfwGetTime()) - timeElapsed) % 10; //Calculate ones digit
             textureArray[31] = getDigit(ones);
             int tens = (((int)floor(glfwGetTime()) - timeElapsed) /10)%10; //Calculate tens digit
@@ -856,10 +853,11 @@ int main(int argc, char* argv[])
             textureArray[34] = getDigit(thousands);
     
 	    }
+
         //When user presses keypad 0, scramble and timer starts
 	    if (glfwGetKey(window, GLFW_KEY_KP_0) == GLFW_PRESS)
 	    {
-           timeElapsed = (int)floor(glfwGetTime());
+           timeElapsed = (int)floor(glfwGetTime()); //Time elapsed since GLFW timer started
            timer = true;
 	    }
 
