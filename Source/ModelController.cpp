@@ -73,6 +73,8 @@ void ModelController::drawModels(mat4 worldRotationUpdate, GLuint textureArray[]
 	//If the rubiks cube is solved the Success Model will be displayed, if not then it will not be displayed
 	if (rubiksCube->computeSolveState() == true)
 	{
+		this->timerOver = true;
+
 		for (vector<Model*>::iterator model = models.begin(); model != models.end(); ++model)
 		{
 			(*model)->setShaderProgram(shaderProgram);
@@ -81,6 +83,7 @@ void ModelController::drawModels(mat4 worldRotationUpdate, GLuint textureArray[]
 	}
 	else
 	{
+		this->timerOver = false;
 		for (vector<Model*>::iterator model = models.begin(); model != models.end() - 1; ++model)
 		{
 			(*model)->setShaderProgram(shaderProgram);

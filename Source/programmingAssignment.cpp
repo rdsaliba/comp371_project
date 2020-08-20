@@ -834,40 +834,34 @@ int main(int argc, char* argv[])
      // Entering Main Loop
     while (!glfwWindowShouldClose(window))
     {
+        //If solved, stop timer
+        if (modelController->timerOver == true)
+        {
+            timer = false;
+        }
+
         //Timer
-	if (timer == true)
-	{
-	    system("CLS");
-	    //std::cout << floor(glfwGetTime()) << std::endl;
+	    if (timer == true)
+	    {
+	        system("CLS");
+	        //std::cout << floor(glfwGetTime()) << std::endl;
 
-        int ones = ((int)floor(glfwGetTime()) - timeElapsed) % 10; //Calculate ones digit
-        textureArray[31] = getDigit(ones);
-        int tens = (((int)floor(glfwGetTime()) - timeElapsed) /10)%10; //Calculate tens digit
-        textureArray[32] = getDigit(tens);
-        int hundreds = (((int)floor(glfwGetTime()) - timeElapsed) /100) % 10; //Calculate hundres digit
-        textureArray[33] = getDigit(hundreds);
-        int thousands = (((int)floor(glfwGetTime()) - timeElapsed) / 1000) % 10; //Calculate hundres digit
-        textureArray[34] = getDigit(thousands);
+            int ones = ((int)floor(glfwGetTime()) - timeElapsed) % 10; //Calculate ones digit
+            textureArray[31] = getDigit(ones);
+            int tens = (((int)floor(glfwGetTime()) - timeElapsed) /10)%10; //Calculate tens digit
+            textureArray[32] = getDigit(tens);
+            int hundreds = (((int)floor(glfwGetTime()) - timeElapsed) /100) % 10; //Calculate hundres digit
+            textureArray[33] = getDigit(hundreds);
+            int thousands = (((int)floor(glfwGetTime()) - timeElapsed) / 1000) % 10; //Calculate hundres digit
+            textureArray[34] = getDigit(thousands);
     
-	}
-	if (glfwGetKey(window, GLFW_KEY_KP_0) == GLFW_PRESS)
-	{
-       timeElapsed = (int)floor(glfwGetTime());
-       timer = true;
-
-	   //if (timer == true)
-	   //{
-	   //   system("CLS");
-	   //   std::cout << glfwGetTime() << std::endl;
-	   //   timer = false;
-
-	   //}
-	   //else
-	   //{
-	   //   timer = true;
-	   //}
-	}
-
+	    }
+        //When user presses keypad 0, scramble and timer starts
+	    if (glfwGetKey(window, GLFW_KEY_KP_0) == GLFW_PRESS)
+	    {
+           timeElapsed = (int)floor(glfwGetTime());
+           timer = true;
+	    }
 
         worldRotationX = rotate(glm::mat4(1.0f), glm::radians(worldRotation.x), glm::vec3(1.0f, 0.0f, 0.0f));
         worldRotationY = rotate(glm::mat4(1.0f), glm::radians(worldRotation.y), glm::vec3(0.0f, 1.0f, 0.0f));

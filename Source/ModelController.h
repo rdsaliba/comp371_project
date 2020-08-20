@@ -15,6 +15,7 @@ using namespace std;
 class ModelController {
 public:
 	Model* focusedModel;
+	bool timerOver;
 	
 	ModelController();
 	~ModelController();
