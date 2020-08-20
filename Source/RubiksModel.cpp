@@ -52,9 +52,6 @@ bool RubiksModel::computeSolveState() {
 		}
 	}
 
-	for (vector<CubeModel*>::iterator cube = cubes.begin(); cube != cubes.end(); ++cube) {
-		(*cube)->setSize(5.0f);
-	}
 	return true;
 }
 
