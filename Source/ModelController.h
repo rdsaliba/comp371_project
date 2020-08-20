@@ -9,6 +9,8 @@
 #include "ModelUtilities.h"
 #include "RubiksModel.h"
 #include "TimerModel.h"
+#include "SuccessModel.h"
+
 using namespace std;
 class ModelController {
 public:
@@ -32,7 +34,7 @@ public:
 	void setModelsSphere(Sphere sphere);
 	void setDt(float dt) { this->dt = dt; }
 	void setIsScrambling(bool isScrambling) { this->isScrambling = isScrambling; }
-	void setIsAutoSovling(bool isAutoSolving) { this->isAutoSolving = isAutoSolving; }
+	void setIsAutoSolving(bool isAutoSolving) { this->isAutoSolving = isAutoSolving; }
 
 	//Functions to update the currently selected model
 	void updateScaling(float scaling) { focusedModel->updateScaling(scaling); }

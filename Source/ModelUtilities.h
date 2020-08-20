@@ -44,7 +44,13 @@ namespace ModelUtilities{
 
 	enum class ModelType {
 		LETTER,
-		DIGIT
+		DIGIT,
+		LETTER2,
+		LETTER3,
+		LETTER4,
+		LETTER5,
+		LETTER6,
+		LETTER7
 	};
 
 	mat4 createComponent(ComponentSize size, ComponentOrientation orientation);

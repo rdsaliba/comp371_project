@@ -40,6 +40,7 @@ void ModelController::initModels(int shaderProgram, unsigned int vao, unsigned i
 	SwetangModel* swetang = new SwetangModel(vec3(0.0f, 0.0f, -15.0f), 0.0f); //Swetang (E0)
 	WilliamModel* william = new WilliamModel(vec3(40.0f, 0.0f, 40.0f), 0.0f); //William (L9)
 	TimerModel* timer = new TimerModel(vec3(0.0f, 10.0f, -20.0f), 0.0f); //Timer
+	SuccessModel* success = new SuccessModel(vec3(-12.5f, 5.0, -25.0f), 0.0f); //SUCCESS
 
 	rubiksCube = rubiksModel;
 
@@ -50,6 +51,7 @@ void ModelController::initModels(int shaderProgram, unsigned int vao, unsigned i
 	models.push_back(swetang);
 	models.push_back(william);
 	models.push_back(timer);
+	models.push_back(success);
 
 	setModelsShaderProgram(shaderProgram);
 	setModelsVAO(vao);
@@ -67,10 +69,23 @@ void ModelController::initModels(int shaderProgram, unsigned int vao, unsigned i
 /// <param name="shaderProgram">Shader to use to render the models</param>
 void ModelController::drawModels(mat4 worldRotationUpdate, GLuint textureArray[], int shaderProgram) {
 	rubiksCube->setDt(dt);
-	for (vector<Model*>::iterator model = models.begin(); model != models.end(); ++model)
+
+	//If the rubiks cube is solved the Success Model will be displayed, if not then it will not be displayed
+	if (rubiksCube->computeSolveState() == true)
 	{
-		(*model)->setShaderProgram(shaderProgram);
-		(*model)->draw(worldRotationUpdate, textureArray);
+		for (vector<Model*>::iterator model = models.begin(); model != models.end(); ++model)
+		{
+			(*model)->setShaderProgram(shaderProgram);
+			(*model)->draw(worldRotationUpdate, textureArray);
+		}
+	}
+	else
+	{
+		for (vector<Model*>::iterator model = models.begin(); model != models.end() - 1; ++model)
+		{
+			(*model)->setShaderProgram(shaderProgram);
+			(*model)->draw(worldRotationUpdate, textureArray);
+		}
 	}
 }
 
@@ -91,7 +106,7 @@ void ModelController::modelFocusSwitch(int nextModel) {
 /// </summary>
 /// <param name="shaderProgram"></param>
 void ModelController::setModelsShaderProgram(int shaderProgram) {
-	for(vector<Model*>::iterator model = models.begin(); model != models.end(); ++model)
+	for (vector<Model*>::iterator model = models.begin(); model != models.end(); ++model)
 	{
 		(*model)->setShaderProgram(shaderProgram);
 	}
@@ -127,7 +142,7 @@ void ModelController::setModelsSphere(Sphere sphere) {
 /// </summary>
 /// <param name="value"></param>
 void ModelController::randomPosition(vec3 value) {
-	focusedModel->setPosition(value); 
+	focusedModel->setPosition(value);
 }
 
 /// <summary>
@@ -142,7 +157,7 @@ void ModelController::scrambleGenerator() {
 		do {
 			move = static_cast<RubiksMove>(rand() % 20);
 		} while (move == RubiksMove::NONE || move == RubiksMove::COMPLETE); //Prevents adding to scramble non rotational moves
-	
+
 		scrambleList.push_back(move);
 	}
 }
@@ -160,7 +175,7 @@ void ModelController::automatedCubeAction() {
 /// </summary>
 void ModelController::scramble() {
 	if (isScrambling) {
-		if (!scrambleList.empty()){
+		if (!scrambleList.empty()) {
 			if (!rubiksCube->getIsTurning()) {
 				RubiksMove move = scrambleList.front();
 				useRubiksCube(scrambleList.front());
@@ -198,10 +213,10 @@ void ModelController::solve() {
 void ModelController::useRubiksCube(RubiksMove move) {
 	if (!rubiksCube->getIsTurning()) {
 		rubiksCube->queueMove(move);
-		if(!isAutoSolving)
+		if (!isAutoSolving)
 			solveList.push_back(getReverseMove(move));
 		rubiksCube->updateActionState();
-	
+
 		switch (move) {
 		case RubiksMove::L:
 			rubiksCube->L();

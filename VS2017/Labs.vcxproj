@@ -131,6 +131,7 @@
     <ClCompile Include="..\Source\ModelController.cpp" />
     <ClCompile Include="..\Source\RubiksModel.cpp" />
     <ClCompile Include="..\Source\Sphere.cpp" />
+    <ClCompile Include="..\Source\SuccessModel.cpp" />
     <ClCompile Include="..\Source\TextureLoader.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</ExcludedFromBuild>
     </ClCompile>
@@ -155,6 +156,7 @@
     </ClInclude>
     <ClInclude Include="..\Source\Sphere.h" />
     <ClInclude Include="..\Source\Structs.h" />
+    <ClInclude Include="..\Source\SuccessModel.h" />
     <ClInclude Include="..\Source\TextureLoader.h">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</ExcludedFromBuild>
     </ClInclude>

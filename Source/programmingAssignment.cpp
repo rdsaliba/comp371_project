@@ -444,7 +444,7 @@ void updateInput(GLFWwindow* window, float dt, vec3& worldRotation, int shaderAr
     if (glfwGetKey(window, GLFW_KEY_KP_0))
         modelController->scrambleGenerator();
     if (glfwGetKey(window, GLFW_KEY_KP_ENTER) == GLFW_PRESS)
-        modelController->setIsAutoSovling(true);
+        modelController->setIsAutoSolving(true);
 }
 
 //Return digitTexture for the appropriate number
