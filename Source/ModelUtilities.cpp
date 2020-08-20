@@ -162,6 +162,24 @@ namespace ModelUtilities {
 		case ComponentType::BOTTOM_RIGHT:
 			position.x += 2.0f;
 			break;
+
+		//Timer
+		case ComponentType::TIMER_FARLEFT:
+			position.x -= 8.0f;
+			break;
+
+		case ComponentType::TIMER_LEFT:
+			position.x -= 4.0f;
+			break;
+
+		case ComponentType::TIMER_CENTER:
+			position.x += 0.0f;
+			break;
+		
+		case ComponentType::TIMER_RIGHT:
+			position.x += 4.0f;
+			break;
+		
 		}
 
 		switch (modelType) {
@@ -175,6 +193,25 @@ namespace ModelUtilities {
 			else {
 				position.x += 2.5f;
 			}
+			break;
+		
+		case ModelType::LETTER2:
+			position.x += 3.0f;
+			break;
+		case ModelType::LETTER3:
+			position.x += 8.0f;
+			break;
+		case ModelType::LETTER4:
+			position.x += 13.0f;
+			break;
+		case ModelType::LETTER5:
+			position.x += 18.0f;
+			break;
+		case ModelType::LETTER6:
+			position.x += 23.0f;
+			break;
+		case ModelType::LETTER7:
+			position.x += 28.0f;
 			break;
 		}
 

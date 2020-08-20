@@ -9,6 +9,7 @@
 #pragma comment (lib,"glew32s.lib")
 #define GLEW_STATIC // This allows linking with Static Library on Windows, without DLL
 
+#include <stdlib.h>
 #include <GL/glew.h>    // Include GLEW - OpenGL Extension Wrangler
 
 #include <GLFW/glfw3.h> // GLFW provides a cross-platform interface for creating a graphical context,
@@ -40,7 +41,8 @@ ViewController* viewController = NULL;
 ModelController* modelController = NULL;
 
 GLuint toggle = 0; //0 = off, 1 = on
-GLuint textureArray[31] = {}; //Contains toggle (on/off), box texture, metal texture, and tiled texture
+GLuint textureArray[35] = {}; //Contains toggle (on/off), and the cubes textures
+GLuint timerTexture[10] = {}; //Texture for timer
 int shaderType; //Color or texture
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height)
@@ -442,7 +444,35 @@ void updateInput(GLFWwindow* window, float dt, vec3& worldRotation, int shaderAr
     if (glfwGetKey(window, GLFW_KEY_KP_0))
         modelController->scrambleGenerator();
     if (glfwGetKey(window, GLFW_KEY_KP_ENTER) == GLFW_PRESS)
-        modelController->setIsAutoSovling(true);
+        modelController->setIsAutoSolving(true);
+}
+
+//Return digitTexture for the appropriate number
+GLuint getDigit(int number)
+{
+    switch (number)
+    {
+        case 0:
+            return timerTexture[0];
+        case 1:
+            return timerTexture[1];
+        case 2:
+            return timerTexture[2];
+        case 3:
+            return timerTexture[3];
+        case 4:
+            return timerTexture[4];
+        case 5:
+            return timerTexture[5];
+        case 6:
+            return timerTexture[6];
+        case 7:
+            return timerTexture[7];
+        case 8:
+            return timerTexture[8];
+        case 9:
+            return timerTexture[9];
+    }
 }
 
 int main(int argc, char* argv[])
@@ -579,6 +609,18 @@ int main(int argc, char* argv[])
         GLuint x2y0z0ID = TextureLoader::LoadTextureUsingStb("../Assets/Textures/x2y0z0.png");
         GLuint x2y1z0ID = TextureLoader::LoadTextureUsingStb("../Assets/Textures/x2y1z0.png");
         GLuint x2y2z0ID = TextureLoader::LoadTextureUsingStb("../Assets/Textures/x2y2z0.png");
+        
+        GLuint digit0 = TextureLoader::LoadTextureUsingStb("../Assets/Textures/digit0.png");
+        GLuint digit1 = TextureLoader::LoadTextureUsingStb("../Assets/Textures/digit1.png");
+        GLuint digit2 = TextureLoader::LoadTextureUsingStb("../Assets/Textures/digit2.png");
+        GLuint digit3 = TextureLoader::LoadTextureUsingStb("../Assets/Textures/digit3.png");
+        GLuint digit4 = TextureLoader::LoadTextureUsingStb("../Assets/Textures/digit4.png");
+        GLuint digit5 = TextureLoader::LoadTextureUsingStb("../Assets/Textures/digit5.png");
+        GLuint digit6 = TextureLoader::LoadTextureUsingStb("../Assets/Textures/digit6.png");
+        GLuint digit7 = TextureLoader::LoadTextureUsingStb("../Assets/Textures/digit7.png");
+        GLuint digit8 = TextureLoader::LoadTextureUsingStb("../Assets/Textures/digit8.png");
+        GLuint digit9 = TextureLoader::LoadTextureUsingStb("../Assets/Textures/digit9.png");
+
     #endif
 
     //Array of textures
@@ -613,6 +655,19 @@ int main(int argc, char* argv[])
     textureArray[28] = x2y2z0ID;
     textureArray[29] = x2y2z1ID;
     textureArray[30] = x2y2z2ID;
+
+
+    //Timer texture
+    timerTexture[0] = digit0;
+    timerTexture[1] = digit1;
+    timerTexture[2] = digit2;
+    timerTexture[3] = digit3;
+    timerTexture[4] = digit4;
+    timerTexture[5] = digit5;
+    timerTexture[6] = digit6;
+    timerTexture[7] = digit7;
+    timerTexture[8] = digit8;
+    timerTexture[9] = digit9;
 
     // Black background
     glClearColor(0.1f, 0.2f, 0.2f, 1.0f);
@@ -771,10 +826,41 @@ int main(int argc, char* argv[])
 
     // Toggle Shadow on/off
     bool toggleShadow = false;
+    // timer
+  	bool timer = false;
+
+    int timeElapsed; //glfwGetTime() starts when the GLFW gets initialized, so we need the time elapsed between the initialization of GLFW and the moment user presses KP_0
 
      // Entering Main Loop
     while (!glfwWindowShouldClose(window))
     {
+        //If solved, stop timer
+        if (modelController->timerOver == true)
+        {
+            timer = false;
+        }
+
+        //Timer
+	    if (timer == true)
+	    {
+            int ones = ((int)floor(glfwGetTime()) - timeElapsed) % 10; //Calculate ones digit
+            textureArray[31] = getDigit(ones);
+            int tens = (((int)floor(glfwGetTime()) - timeElapsed) /10)%10; //Calculate tens digit
+            textureArray[32] = getDigit(tens);
+            int hundreds = (((int)floor(glfwGetTime()) - timeElapsed) /100) % 10; //Calculate hundres digit
+            textureArray[33] = getDigit(hundreds);
+            int thousands = (((int)floor(glfwGetTime()) - timeElapsed) / 1000) % 10; //Calculate hundres digit
+            textureArray[34] = getDigit(thousands);
+    
+	    }
+
+        //When user presses keypad 0, scramble and timer starts
+	    if (glfwGetKey(window, GLFW_KEY_KP_0) == GLFW_PRESS)
+	    {
+           timeElapsed = (int)floor(glfwGetTime()); //Time elapsed since GLFW timer started
+           timer = true;
+	    }
+
         worldRotationX = rotate(glm::mat4(1.0f), glm::radians(worldRotation.x), glm::vec3(1.0f, 0.0f, 0.0f));
         worldRotationY = rotate(glm::mat4(1.0f), glm::radians(worldRotation.y), glm::vec3(0.0f, 1.0f, 0.0f));
         worldRotationUpdate = worldRotationX * worldRotationY;

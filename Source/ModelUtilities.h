@@ -21,7 +21,11 @@ namespace ModelUtilities{
 		CENTER,
 		TOP_LEFT,
 		TOP_RIGHT,
-		BOTTOM_RIGHT
+		BOTTOM_RIGHT,
+		TIMER_FARLEFT,
+		TIMER_LEFT,
+		TIMER_CENTER,
+		TIMER_RIGHT
 	};
 
 	enum class ComponentOrientation {
@@ -40,7 +44,13 @@ namespace ModelUtilities{
 
 	enum class ModelType {
 		LETTER,
-		DIGIT
+		DIGIT,
+		LETTER2,
+		LETTER3,
+		LETTER4,
+		LETTER5,
+		LETTER6,
+		LETTER7
 	};
 
 	mat4 createComponent(ComponentSize size, ComponentOrientation orientation);

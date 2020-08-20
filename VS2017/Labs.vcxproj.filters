@@ -46,6 +46,12 @@
     <ClCompile Include="..\Source\WilliamModel.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\Source\TimerModel.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Source\SuccessModel.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\Source\Axis.h">
@@ -97,6 +103,12 @@
       <Filter>Source Files</Filter>
     </ClInclude>
     <ClInclude Include="..\Source\shaderloader.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Source\TimerModel.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Source\SuccessModel.h">
       <Filter>Source Files</Filter>
     </ClInclude>
   </ItemGroup>
