@@ -25,7 +25,8 @@
 #include "Sphere.h"
 #include "TextureLoader.h"
 #include "shaderloader.h"
-
+#include "Light.h"
+#include "Camera.h"
 
 using namespace std;
 using namespace glm;
@@ -34,11 +35,21 @@ const GLuint WIDTH = 1024, HEIGHT = 768;
 glm::mat4 projection_matrix;
 
 int depthShaderProgram;
+int texturedShaderProgram;
+int shaderProgram;
 
 float gridUnit = 1.0f;
 int SELECTEDMODELINDEX = 1;
 ViewController* viewController = NULL;
 ModelController* modelController = NULL;
+
+bool toggleShadow;
+Light* lights[2] = {};
+Light* currentLight = NULL;
+Light movLight;
+Light stdLight;
+Camera* currentCam = NULL;
+Camera movCam;
 
 GLuint toggle = 0; //0 = off, 1 = on
 GLuint textureArray[35] = {}; //Contains toggle (on/off), and the cubes textures
@@ -64,6 +75,15 @@ void cursor_enter_callback(GLFWwindow* window, int entered) {
 void cursor_position_callback(GLFWwindow* window, double xpos, double ypos){
     viewController->setMousePosX(xpos);
     viewController->setMousePosY(ypos);
+}
+
+void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods)
+{
+    if (key == GLFW_KEY_L && action == GLFW_PRESS)
+    {
+        currentLight->_on = !currentLight->_on;
+        viewController->setView(currentCam, currentLight);
+    }
 }
 
 void setProjectionMatrix(int shaderProgram, mat4 projectionMatrix)
@@ -350,9 +370,9 @@ void updateInput(GLFWwindow* window, float dt, vec3& worldRotation, int shaderAr
 
             shaderType = shaderArray[1]; //Shader for texture
             glUseProgram(shaderType);
-            glActiveTexture(GL_TEXTURE0);
+            glActiveTexture(GL_TEXTURE1);
             GLuint textureLocation = glGetUniformLocation(shaderType, "textureSampler");
-            glUniform1i(textureLocation, 0);  // Set our Texture sampler to user Texture Unit 0
+            glUniform1i(textureLocation, 1);  // Set our Texture sampler to user Texture Unit 1
         }
         else if (toggle == 1)
         {
@@ -510,6 +530,21 @@ int main(int argc, char* argv[])
         return -1;
     }
 
+    glfwSetKeyCallback(window, key_callback);
+
+    //Initiale Light
+    stdLight = Light(vec3(0.0f, 30.0f, -10.0f), vec3(0.0f), vec3(0.0f, 1.0f, 0.0f), 1.0f, 150.0f);
+    movLight = Light(vec3(0.0f, 5.0f, 20.0f), vec3(0.0f), vec3(0.0f, 1.0f, 0.0f), 1.0f, 150.0f);
+    currentLight = &stdLight;
+    lights[0] = &stdLight;
+    lights[1] = &movLight;
+
+    //Set cameras
+    vec3 up = vec3(0.0, 1.0, 0.0);
+    vec3 lookat = vec3(0);
+    movCam = Camera(vec3(0.0, 5.0, 20.0), lookat, up);
+    currentCam = &movCam;
+
     // configure depth map FBO
     // -----------------------
     const unsigned int SHADOW_WIDTH = 1024, SHADOW_HEIGHT = 1024;
@@ -571,6 +606,17 @@ int main(int argc, char* argv[])
         GLuint x2y0z0ID = TextureLoader::LoadTextureUsingStb("Textures/x2y0z0.png");
         GLuint x2y1z0ID = TextureLoader::LoadTextureUsingStb("Textures/x2y1z0.png");
         GLuint x2y2z0ID = TextureLoader::LoadTextureUsingStb("Textures/x2y2z0.png");
+
+        GLuint digit0 = TextureLoader::LoadTextureUsingStb("Textures/digit0.png");
+        GLuint digit1 = TextureLoader::LoadTextureUsingStb("Textures/digit1.png");
+        GLuint digit2 = TextureLoader::LoadTextureUsingStb("Textures/digit2.png");
+        GLuint digit3 = TextureLoader::LoadTextureUsingStb("Textures/digit3.png");
+        GLuint digit4 = TextureLoader::LoadTextureUsingStb("Textures/digit4.png");
+        GLuint digit5 = TextureLoader::LoadTextureUsingStb("Textures/digit5.png");
+        GLuint digit6 = TextureLoader::LoadTextureUsingStb("Textures/digit6.png");
+        GLuint digit7 = TextureLoader::LoadTextureUsingStb("Textures/digit7.png");
+        GLuint digit8 = TextureLoader::LoadTextureUsingStb("Textures/digit8.png");
+        GLuint digit9 = TextureLoader::LoadTextureUsingStb("Textures/digit9.png");
 
     #else
         GLuint boxTextureID = TextureLoader::LoadTextureUsingStb("../Assets/Textures/box_texture.png"); //Source: https://jooinn.com/wood-texture-box.html
@@ -679,17 +725,18 @@ int main(int argc, char* argv[])
         std::string shaderPathPrefix = "../Assets/Shaders/";
     #endif
 
-    int shaderProgram = loadSHADER(shaderPathPrefix + "color_vertex.glsl", shaderPathPrefix + "color_fragment.glsl");
-    int texturedShaderProgram = loadSHADER(shaderPathPrefix + "texture_vertex.glsl", shaderPathPrefix + "texture_fragment.glsl");
+    shaderProgram = loadSHADER(shaderPathPrefix + "color_vertex.glsl", shaderPathPrefix + "color_fragment.glsl");
+    texturedShaderProgram = loadSHADER(shaderPathPrefix + "texture_vertex.glsl", shaderPathPrefix + "texture_fragment.glsl");
     depthShaderProgram = loadSHADER(shaderPathPrefix + "depth_vertex.glsl", shaderPathPrefix + "depth_fragment.glsl");
 
-    int shaderArray[2] = { shaderProgram, texturedShaderProgram };
+    int shaderArray[3] = { shaderProgram, texturedShaderProgram, depthShaderProgram };
     shaderType = shaderArray[0]; //Initial shader is the one with color, without texture
 
     glm::mat4 projectionMatrix = glm::perspective(70.0f, 1024.0f / 768.0f, 0.01f, 100.0f);
 
     setProjectionMatrix(shaderArray[0], projectionMatrix);
     setProjectionMatrix(shaderArray[1], projectionMatrix);
+    setProjectionMatrix(shaderArray[2], projectionMatrix);
 
     const int geometryCount = 8; //number of models to load
     GLuint vaoArray[geometryCount], vboArray[geometryCount];
@@ -790,7 +837,7 @@ int main(int argc, char* argv[])
     mat4 worldRotationY;
     mat4 worldRotationUpdate;
 
-    ViewController view(window, WIDTH, HEIGHT, shaderProgram, shaderArray);
+    ViewController view(window, WIDTH, HEIGHT, shaderProgram, shaderArray, lights);
     viewController = &view;
 
     ModelController model;
@@ -798,34 +845,25 @@ int main(int argc, char* argv[])
     modelController->initModels(shaderProgram, vaoArray[4], vboArray[4], sphere);
 
 
-    //Initiale Light
-    vec3 lightPos = vec3(10.0f, 30.0f, 0.0f);
-    glm::mat4 lightProjection, lightView;
-    glm::mat4 lightSpaceMatrix;
-    float near_plane = 1.0f, far_plane = 75.0f;
-    lightProjection = glm::perspective(glm::radians(45.0f), (GLfloat)SHADOW_WIDTH / (GLfloat)SHADOW_HEIGHT, near_plane, far_plane); //Light with an angle
-    //lightProjection = glm::ortho(-30.0f, 30.0f, -30.0f, 30.0f, near_plane, far_plane); //Light fromt the top
-    lightView = glm::lookAt(lightPos, glm::vec3(0.0, 0.0, 0.0), glm::vec3(0.0, 1.0, 0.0));
-    lightSpaceMatrix = lightProjection * lightView;
+    glProgramUniform3fv(shaderProgram, glGetUniformLocation(shaderProgram, "lightPos"), 1, &currentLight->getPos()[0]);
+    glProgramUniformMatrix4fv(shaderProgram, glGetUniformLocation(shaderProgram, "lightSpaceMatrix"), 1, GL_FALSE, &currentLight->getSpaceMatrix()[0][0]);
 
-    glProgramUniform3fv(shaderProgram, glGetUniformLocation(shaderProgram, "lightPos"), 1, &lightPos[0]);
-    glProgramUniformMatrix4fv(shaderProgram, glGetUniformLocation(shaderProgram, "lightSpaceMatrix"), 1, GL_FALSE, &lightSpaceMatrix[0][0]);
+    glProgramUniform3fv(texturedShaderProgram, glGetUniformLocation(texturedShaderProgram, "lightPos"), 1, &currentLight->getPos()[0]);
+    glProgramUniformMatrix4fv(texturedShaderProgram, glGetUniformLocation(texturedShaderProgram, "lightSpaceMatrix"), 1, GL_FALSE, &currentLight->getSpaceMatrix()[0][0]);
 
-    //glProgramUniform3fv(texturedShaderProgram, glGetUniformLocation(texturedShaderProgram, "lightPos"), 1, &lightPos[0]);
-    //glProgramUniformMatrix4fv(texturedShaderProgram, glGetUniformLocation(texturedShaderProgram, "lightSpaceMatrix"), 1, GL_FALSE, &lightSpaceMatrix[0][0]);
-
-    glProgramUniformMatrix4fv(depthShaderProgram, glGetUniformLocation(depthShaderProgram, "lightSpaceMatrix"), 1, GL_FALSE, &lightSpaceMatrix[0][0]);
-    glProgramUniform1i(depthShaderProgram, glGetUniformLocation(depthShaderProgram, "shadowMap"), 0/*depthMap*/);
+    glProgramUniformMatrix4fv(depthShaderProgram, glGetUniformLocation(depthShaderProgram, "lightSpaceMatrix"), 1, GL_FALSE, &currentLight->getSpaceMatrix()[0][0]);
+    glProgramUniform1i(depthShaderProgram, glGetUniformLocation(depthShaderProgram, "shadowMap"), depthMap);
 
 
     glfwSetWindowSizeCallback(window, framebuffer_size_callback); //Handle window resizing
     glfwSetCursorEnterCallback(window, cursor_enter_callback); //Handle cursor leaving window event: Stop tracking mouse mouvement
     glfwSetCursorPosCallback(window, cursor_position_callback); //Handle cursor mouvement event: Update ViewController's mouse position
     
-    viewController->initCamera();
+    viewController->initCamera(currentCam, currentLight);
 
     // Toggle Shadow on/off
-    bool toggleShadow = false;
+    toggleShadow = false;
+
     // timer
   	bool timer = false;
 
@@ -898,28 +936,16 @@ int main(int argc, char* argv[])
               
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D, depthMap);
+        glActiveTexture(GL_TEXTURE1);
+        glBindTexture(GL_TEXTURE_2D, depthMap);
+
         drawGroundGrid(shaderType, vaoArray, gridUnit, worldRotationUpdate, textureArray);
         axis.drawAxisLines(shaderType, vaoArray, gridUnit, worldRotationUpdate);
 
         //MODELS
         modelController->drawModels(worldRotationUpdate, textureArray, shaderType);
-        //Toggle Shadow
-        if (glfwGetKey(window, GLFW_KEY_N) == GLFW_PRESS)
-        {
-            if (toggleShadow == true)
-            {
-                glProgramUniformMatrix4fv(depthShaderProgram, glGetUniformLocation(depthShaderProgram, "lightSpaceMatrix"), 1, GL_FALSE, &lightSpaceMatrix[0][0]);
-                toggleShadow = false;
-            }
-            else
-            {
-                glProgramUniformMatrix4fv(depthShaderProgram, glGetUniformLocation(depthShaderProgram, "lightSpaceMatrix"), 0, GL_FALSE, &lightSpaceMatrix[0][0]);
-                toggleShadow = true;
-            }
-        }
-
-        viewController->setFastCam(glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS || glfwGetKey(window, GLFW_KEY_RIGHT_SHIFT) == GLFW_PRESS); //Press shift to go faster
-        viewController->update(shaderType);
+        
+        viewController->update(shaderType, currentLight);
                                                                                                                                            
         // End Frame
         glfwSwapBuffers(window);

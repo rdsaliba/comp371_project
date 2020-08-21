@@ -5,6 +5,7 @@
      in vec3 vertexColor; 
      in vec3 norm; 
      in vec4 fragPosLightSpace; 
+     uniform int isOn;
      uniform vec3 lightPos; 
      uniform vec3 viewPos; 
      uniform sampler2D shadowMap; 
@@ -48,9 +49,9 @@
      void main() 
      { 
         vec3 color = vertexColor; 
-        vec3 lightColor = vec3(0.3);  //Bright White
+        vec3 lightColor = vec3(1);  //Bright White
     // ambient
-        vec3 ambient = 0.05 * color;   //0.05
+        vec3 ambient = 0.15 * color;   //0.15
     // diffuse
         vec3 lightDir = normalize(lightPos - fragPos); 
         vec3 normal = normalize(norm); 
@@ -65,5 +66,7 @@
     // calculate shadow
         float shadow = ShadowCalculation(fragPosLightSpace); 
         vec3 lighting = (ambient + (1.0 - shadow) * (diffuse + specular)) * color;  
-        FragColor = vec4(lighting, 1.0); 
+        if(isOn == 1) {FragColor = vec4(lighting, 1.0);}
+        if(isOn == 0) {FragColor = vec4(ambient, 1.0);}
+        //FragColor = vec4(lighting, 1.0); 
       } ;

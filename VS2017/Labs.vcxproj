@@ -120,6 +120,7 @@
     <None Include="..\Assets\Shaders\texture_vertex.glsl">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</ExcludedFromBuild>
     </None>
+    <None Include="ClassDiagram.cd" />
   </ItemGroup>
   <ItemGroup>
     <Image Include="..\Assets\Textures\BillboardTest.bmp" />
@@ -127,7 +128,9 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\Source\Axis.cpp" />
+    <ClCompile Include="..\Source\Camera.cpp" />
     <ClCompile Include="..\Source\CubeModel.cpp" />
+    <ClCompile Include="..\Source\Light.cpp" />
     <ClCompile Include="..\Source\ModelController.cpp" />
     <ClCompile Include="..\Source\RubiksModel.cpp" />
     <ClCompile Include="..\Source\Sphere.cpp" />
@@ -148,7 +151,9 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\Source\Axis.h" />
+    <ClInclude Include="..\Source\Camera.h" />
     <ClInclude Include="..\Source\CubeModel.h" />
+    <ClInclude Include="..\Source\Light.h" />
     <ClInclude Include="..\Source\ModelController.h" />
     <ClInclude Include="..\Source\RubiksModel.h" />
     <ClInclude Include="..\Source\shaderloader.h">

@@ -1,0 +1,123 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<ClassDiagram MajorVersion="1" MinorVersion="1" MembersFormat="NameAndType">
+  <Class Name="Axis">
+    <Position X="28.25" Y="5" Width="2.25" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAEAQAAgAQAAEAAAAAAAAAAAAAAAQIAAAAAAAAA=</HashCode>
+      <FileName>C:\Users\Taqi Haque\source\repos\comp371_project\Source\Axis.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="Camera">
+    <Position X="28.25" Y="0.75" Width="2" />
+    <TypeIdentifier>
+      <HashCode>AAACAEIAIgCEAAQQAAAAAAAAAAAICAIAgAAAAAAAQAA=</HashCode>
+      <FileName>C:\Users\Taqi Haque\source\repos\comp371_project\Source\Camera.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="CubeModel">
+    <Position X="5" Y="9.5" Width="2.75" />
+    <TypeIdentifier>
+      <HashCode>AgCACAwECACAAgQBADIigAAJEZlBEEBgjAUCAQIgAoA=</HashCode>
+      <FileName>C:\Users\Taqi Haque\source\repos\comp371_project\Source\CubeModel.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="Light">
+    <Position X="33.75" Y="0.75" Width="2" />
+    <TypeIdentifier>
+      <HashCode>AAAAAEIAJgCEAAQQAAABAwAAAQAIGAIAgCoAAAACQAA=</HashCode>
+      <FileName>C:\Users\Taqi Haque\source\repos\comp371_project\Source\Light.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="ModelController">
+    <Position X="30.75" Y="0.75" Width="2.75" />
+    <TypeIdentifier>
+      <HashCode>AAAPgBAkAABBIABAAgAAQpACACAAqGAAIgwgQBRoAEY=</HashCode>
+      <FileName>C:\Users\Taqi Haque\source\repos\comp371_project\Source\ModelController.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="RubiksModel">
+    <Position X="17.75" Y="9.5" Width="3.5" />
+    <TypeIdentifier>
+      <HashCode>HALAQIQGBhERgAyAAAYCDMEIQAQgAEhAgAQAFAdCgQA=</HashCode>
+      <FileName>C:\Users\Taqi Haque\source\repos\comp371_project\Source\RubiksModel.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="Sphere">
+    <Position X="25" Y="0.75" Width="3" />
+    <TypeIdentifier>
+      <HashCode>AAAAIIACCAQBAUAAAAYAIgACAAEQBAAYKIBggQA4AQA=</HashCode>
+      <FileName>C:\Users\Taqi Haque\source\repos\comp371_project\Source\Sphere.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="SuccessModel">
+    <Position X="2.75" Y="9.5" Width="2" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAIAAAAAAAAAAAIIAAAAAAgAAgAQAAAAAQAADAA=</HashCode>
+      <FileName>C:\Users\Taqi Haque\source\repos\comp371_project\Source\SuccessModel.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="TextureLoader">
+    <Position X="33.75" Y="6.5" Width="2.25" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAEAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>C:\Users\Taqi Haque\source\repos\comp371_project\Source\TextureLoader.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="TimerModel">
+    <Position X="8.5" Y="9.5" Width="2" />
+    <TypeIdentifier>
+      <HashCode>AAACAAABAAAAAAACAAIAAADEAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>C:\Users\Taqi Haque\source\repos\comp371_project\Source\TimerModel.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="ViewController">
+    <Position X="38.5" Y="0.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AJDAJAAKAAAACASSQAAAEgEGCBIAAAAYAAYAgAUEAWA=</HashCode>
+      <FileName>C:\Users\Taqi Haque\source\repos\comp371_project\Source\ViewController.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="Model">
+    <Position X="9.5" Y="0.5" Width="2.25" />
+    <TypeIdentifier>
+      <HashCode>QQAAIIAAAiABBFgBAALAMgACCACAhCAoAAlgAQAgAQA=</HashCode>
+      <FileName>C:\Users\Taqi Haque\source\repos\comp371_project\Source\Model.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="HauModel">
+    <Position X="21.5" Y="9.5" Width="1.75" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAEAAAAAAAIAAAgAAAgAAAAAAAAAAAAgAAA=</HashCode>
+      <FileName>C:\Users\Taqi Haque\source\repos\comp371_project\Source\HauModel.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="RoyModel">
+    <Position X="0.5" Y="9.5" Width="2" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAQAAAAAAAAAAIAAAAAAAgAAACAAAAAAAAgAAA=</HashCode>
+      <FileName>C:\Users\Taqi Haque\source\repos\comp371_project\Source\RoyModel.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="SwetangModel">
+    <Position X="11.25" Y="9.5" Width="1.75" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAIAAAAAAAgAAQAAAAAAAQAgAAA=</HashCode>
+      <FileName>C:\Users\Taqi Haque\source\repos\comp371_project\Source\SwetangModel.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="TaqiModel">
+    <Position X="13.5" Y="9.5" Width="1.75" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAIAAAAAAAgAAAAAAAAAAAAhIAA=</HashCode>
+      <FileName>C:\Users\Taqi Haque\source\repos\comp371_project\Source\TaqiModel.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="WilliamModel">
+    <Position X="15.75" Y="9.5" Width="1.75" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAEAAAAAAAIAAAAAAAgAAAAAAAAAAQAgAAA=</HashCode>
+      <FileName>C:\Users\Taqi Haque\source\repos\comp371_project\Source\WilliamModel.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Font Name="Segoe UI" Size="9" />
+</ClassDiagram>

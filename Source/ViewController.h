@@ -8,17 +8,18 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/common.hpp>
 #include <algorithm>
+#include "Camera.h"
+#include "Light.h"
 using namespace glm;
 class ViewController {
 public:
 
 	ViewController();
-	ViewController(GLFWwindow* window, int width, int height, int shaderProgram, int shaderArray[]);
+	ViewController(GLFWwindow* window, int width, int height, int shaderProgram, int shaderArray[], Light* lights[]);
 	~ViewController();
 
 	void setShaderProgram(int shaderProgram) { this->shaderProgram = shaderProgram; }
 	void setViewMatrix(int shaderProgram);
-	void setFastCam(bool isFastCam) { this->fastCam = isFastCam; }
 	void setLastMousePosX(double lastMousePosX) { this->lastMousePosX = lastMousePosX; }
 	void setLastMousePosY(double lastMousePosY) { this->lastMousePosY = lastMousePosY; }
 	void setMousePosX(double mousePosX) { this->mousePosX = mousePosX; }
@@ -27,15 +28,16 @@ public:
     double getLastMousePosX() { return this->lastMousePosX; }
     double getLastMousePosY() { return this->lastMousePosY; }
 
-	void initCamera();
+	void initCamera(Camera* camera, Light* light);
+	void setView(Camera* camera, Light* light);
 	void updateDt(float dt) { this->dt = dt; }
-	void update(int shaderType);
+	void update(int shaderType, Light* light);
 
 private:
 	int width;
 	int height;
 	int shaderProgram;
-	int shaderArray[2];
+	int shaderArray[3];
 	GLFWwindow* window;
 	mat4 projection_matrix;
 	mat4 viewMatrix;
@@ -48,8 +50,10 @@ private:
 	double lastMousePosY;
 	double mousePosX;
 	double mousePosY;
-	bool fastCam;
 	
+	Camera* cam;
+	Light* lights[2];
+
 	// Camera parameters for view transform
 	vec3 cameraPosition;
 	vec3 cameraLookAt;

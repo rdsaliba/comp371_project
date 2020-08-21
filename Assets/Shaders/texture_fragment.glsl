@@ -5,6 +5,7 @@
  in vec2 vertexUV; 
  in vec3 norm; 
  in vec4 fragPosLightSpace; 
+ uniform int isOn;
  uniform vec3 lightPos; 
  uniform vec3 viewPos; 
  uniform sampler2D textureSampler; 
@@ -50,10 +51,10 @@
  void main() 
  { 
     vec3 color = vertexColor; 
-    vec3 lightColor = vec3(0.3);  //Bright White
+    vec3 lightColor = vec3(1);  //Bright White
 //ambiant
     vec3 lightPos = vec3(0.0f, 30.0f, 0.0f);  //TODO: Remove
-    vec3 ambient = 0.05 * color;   //0.05
+    vec3 ambient = 0.15 * color;   //0.15
 //diffuse
     vec3 lightDir = normalize(lightPos - fragPos); 
     vec3 normal = normalize(norm); 
@@ -63,7 +64,7 @@
     vec3 viewDir = normalize(viewPos - fragPos); 
     float spec = 0.0; 
     vec3 reflectDir = reflect(-lightDir, normal); 
-    spec = pow(max(dot(viewDir, reflectDir), 0.0), 2.0);  
+    spec = pow(max(dot(viewDir, reflectDir), 0.0), 32.0);  
     vec3 specular = spec * lightColor;  
 
 // calculate shadow
@@ -72,4 +73,6 @@
     vec4 textureColor = texture( textureSampler, vertexUV ); 
     FragColor = textureColor * vec4(lighting, 1.0); 
 // FragColor = textureColor; 
+   if(isOn == 0) {FragColor = textureColor * vec4(ambient, 1.0);}
+   if(isOn == 1) {FragColor = textureColor * vec4(lighting, 1.0);}
  } ;

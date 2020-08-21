@@ -7,8 +7,8 @@ ViewController::ViewController() {
 	this->shaderProgram = -1;
     this->shaderArray[0] = -1;
     this->shaderArray[1] = -1;
+    this->shaderArray[2] = -1;
 
-    this->fastCam = false;
     this->cameraSpeed = 1.0f;
     this->cameraHorizontalAngle = 90.0f;
     this->cameraVerticalAngle = 0.0f;
@@ -24,19 +24,24 @@ ViewController::ViewController() {
     this->mousePosX = 0;
     this->mousePosY = 0;
     this->viewMatrix = mat4(1.0f);
+    cam = NULL;
+
 }
 
 
-ViewController::ViewController(GLFWwindow* window, int width, int height, int shaderProgram, int shaderArray[]) {
+ViewController::ViewController(GLFWwindow* window, int width, int height, int shaderProgram, int shaderArray[], Light * l[]) {
 	this->window = window;
 	this->width = width;
 	this->height = height;
 	this->shaderProgram = shaderProgram;
     this->shaderArray[0] = shaderArray[0];
     this->shaderArray[1] = shaderArray[1];
+    this->shaderArray[2] = shaderArray[2];
     this->projection_matrix = mat4(1.0f);
     
-    this->fastCam = false;
+    this->lights[0] = l[0];
+    this->lights[1] = l[1];
+
     this->cameraSpeed = 7.0f;
     this->cameraHorizontalAngle = 90.0f;
     this->cameraVerticalAngle = 0.0f;
@@ -51,6 +56,8 @@ ViewController::ViewController(GLFWwindow* window, int width, int height, int sh
     this->mousePosX = 0;
     this->mousePosY = 0;
     this->viewMatrix = mat4(1.0f);
+
+    cam = NULL;
 }
 
 ViewController::~ViewController() {
@@ -60,7 +67,7 @@ ViewController::~ViewController() {
 /// <summary>
 /// Initialize Cursos position, view matrix, and projection matrix to default (center screen, looking at origin)
 /// </summary>
-void ViewController::initCamera() {
+void ViewController::initCamera(Camera *camera, Light *light) {
     //Set Projection
     this->projection_matrix = perspective(45.0f, (GLfloat)width / (GLfloat)height, 0.01f, 100.0f);
     glProgramUniformMatrix4fv(shaderProgram, glGetUniformLocation(shaderProgram, "projectionMatrix"), 1, GL_FALSE, &projection_matrix[0][0]);
@@ -70,12 +77,31 @@ void ViewController::initCamera() {
     mousePosY = height / 2.0;
     glfwSetCursorPos(window, mousePosX, mousePosY);
 
-    // Set initial view matrix
-    viewMatrix = lookAt(cameraPosition, cameraLookAt, cameraUp);
-    setViewMatrix(shaderArray[0]);
-    setViewMatrix(shaderArray[1]);
+    setView(camera, light);
 }
 
+void ViewController::setView(Camera* camera, Light* light)
+{
+    cam = camera;
+    viewMatrix = lookAt(cam->getPos(), cam->getLookAt(), cam->getUp());
+    mat4 lightVM = lookAt(light->getPos(), light->getLookAt(), light->getUp());
+    mat4 lightSM = lightVM * light->getProj();
+    glProgramUniformMatrix4fv(shaderProgram, glGetUniformLocation(shaderProgram, "viewMatrix"), 1, GL_FALSE, &viewMatrix[0][0]);
+    glProgramUniform3f(shaderProgram, glGetUniformLocation(shaderProgram, "viewPos"), 1, GL_FALSE, cam->getPos()[0]);
+    glProgramUniformMatrix4fv(shaderProgram, glGetUniformLocation(shaderProgram, "lightSpaceMatrix"), 1, GL_FALSE, &light->getSpaceMatrix()[0][0]);
+    glProgramUniform3fv(shaderProgram, glGetUniformLocation(shaderProgram, "lightPos"), 1, &light->getPos()[0]);
+    glProgramUniform1i(shaderProgram, glGetUniformLocation(shaderProgram, "isOn"), light->_on);
+
+    glProgramUniformMatrix4fv(shaderArray[1], glGetUniformLocation(shaderArray[1], "viewMatrix"), 1, GL_FALSE, &viewMatrix[0][0]);
+    glProgramUniform3f(shaderArray[1], glGetUniformLocation(shaderArray[1], "viewPos"), 1, GL_FALSE, cam->getPos()[0]);
+    glProgramUniform3fv(shaderArray[1], glGetUniformLocation(shaderArray[1], "lightPos"), 1, &light->getPos()[0]);
+    glProgramUniformMatrix4fv(shaderArray[1], glGetUniformLocation(shaderArray[1], "lightSpaceMatrix"), 1, GL_FALSE, &light->getSpaceMatrix()[0][0]);
+    glProgramUniform1i(shaderArray[1], glGetUniformLocation(shaderArray[1], "isOn"), light->_on);
+
+    glProgramUniformMatrix4fv(shaderArray[2], glGetUniformLocation(shaderArray[2], "lightSpaceMatrix"), 1, GL_FALSE, &light->getSpaceMatrix()[0][0]);
+
+
+}
 
 void ViewController::setViewMatrix(int shaderType){
 	glUseProgram(shaderType);
@@ -83,11 +109,12 @@ void ViewController::setViewMatrix(int shaderType){
 	glUniformMatrix4fv(viewMatrixLocation, 1, GL_FALSE, &viewMatrix[0][0]);
 }
 
+
 /// <summary>
 /// Update View/camera according to user inputs
 /// </summary>
-void ViewController::update(int shaderType) {
-	float currentCameraSpeed = cameraSpeed;
+void ViewController::update(int shaderType, Light* light) {
+    float currentCameraSpeed = cameraSpeed;
 
     // - Calculate mouse motion dx and dy
     double dx = mousePosX - lastMousePosX;
@@ -171,5 +198,22 @@ void ViewController::update(int shaderType) {
         vec3 eyeVertical(0.0f, 0.0f, cameraVerticalAngle);
         viewMatrix = lookAt(cameraPosition + eyeVertical, cameraLookAt, cameraUp);
     }
+
+    mat4 lightVM = lookAt(light->getPos(), light->getLookAt(), light->getUp());
+    mat4 lightSM = lightVM * light->getProj();
+    glProgramUniformMatrix4fv(shaderProgram, glGetUniformLocation(shaderProgram, "viewMatrix"), 1, GL_FALSE, &viewMatrix[0][0]);
+    glProgramUniform3f(shaderProgram, glGetUniformLocation(shaderProgram, "viewPos"), 1, GL_FALSE, cam->getPos()[0]);
+    glProgramUniformMatrix4fv(shaderProgram, glGetUniformLocation(shaderProgram, "lightSpaceMatrix"), 1, GL_FALSE, &light->getSpaceMatrix()[0][0]);
+    glProgramUniform3fv(shaderProgram, glGetUniformLocation(shaderProgram, "lightPos"), 1, &light->getPos()[0]);
+    glProgramUniform1i(shaderProgram, glGetUniformLocation(shaderProgram, "isOn"), light->_on);
+
+    glProgramUniformMatrix4fv(shaderArray[1], glGetUniformLocation(shaderArray[1], "viewMatrix"), 1, GL_FALSE, &viewMatrix[0][0]);
+    glProgramUniform3f(shaderArray[1], glGetUniformLocation(shaderArray[1], "viewPos"), 1, GL_FALSE, cam->getPos()[0]);
+    glProgramUniform3fv(shaderArray[1], glGetUniformLocation(shaderArray[1], "lightPos"), 1, &light->getPos()[0]);
+    glProgramUniformMatrix4fv(shaderArray[1], glGetUniformLocation(shaderArray[1], "lightSpaceMatrix"), 1, GL_FALSE, &light->getSpaceMatrix()[0][0]);
+    glProgramUniform1i(shaderArray[1], glGetUniformLocation(shaderArray[1], "isOn"), light->_on);
+
+    glProgramUniformMatrix4fv(shaderArray[2], glGetUniformLocation(shaderArray[2], "lightSpaceMatrix"), 1, GL_FALSE, &light->getSpaceMatrix()[0][0]);
+
     setViewMatrix(shaderType);
 }
