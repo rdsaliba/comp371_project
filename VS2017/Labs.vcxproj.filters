@@ -160,6 +160,7 @@
     <None Include="..\Assets\Shaders\depth_vertex.glsl">
       <Filter>Resource Files\Shaders</Filter>
     </None>
+    <None Include="ClassDiagram.cd" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Source Files">

@@ -9,7 +9,6 @@ ViewController::ViewController() {
     this->shaderArray[1] = -1;
     this->shaderArray[2] = -1;
 
-    this->fastCam = false;
     this->cameraSpeed = 1.0f;
     this->cameraHorizontalAngle = 90.0f;
     this->cameraVerticalAngle = 0.0f;
@@ -43,7 +42,6 @@ ViewController::ViewController(GLFWwindow* window, int width, int height, int sh
     this->lights[0] = l[0];
     this->lights[1] = l[1];
 
-    this->fastCam = false;
     this->cameraSpeed = 7.0f;
     this->cameraHorizontalAngle = 90.0f;
     this->cameraVerticalAngle = 0.0f;

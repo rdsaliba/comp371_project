@@ -98,26 +98,26 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
             toggleShadow = true;
         }
     }
-    if (key == GLFW_KEY_X && action == GLFW_PRESS)
-    {
-        if (toggle == 0)
-        {
-            toggle = 1; //Texture is on
-            textureArray[0] = toggle;
+    //if (key == GLFW_KEY_X && action == GLFW_PRESS)
+    //{
+    //    if (toggle == 0)
+    //    {
+    //        toggle = 1; //Texture is on
+    //        textureArray[0] = toggle;
 
-            shaderType = texturedShaderProgram; //Shader for texture
-            glUseProgram(shaderType);
-            glActiveTexture(GL_TEXTURE1);
-            GLuint textureLocation = glGetUniformLocation(shaderType, "textureSampler");
-            glUniform1i(textureLocation, 1);  // Set our Texture sampler to user Texture Unit 0*/
-        }
-        else if (toggle == 1)
-        {
-            toggle = 0; //Texture is off
-            textureArray[0] = toggle;
-            shaderType = shaderProgram; //Shader for color
-        }
-    }
+    //        shaderType = texturedShaderProgram; //Shader for texture
+    //        glUseProgram(shaderType);
+    //        glActiveTexture(GL_TEXTURE1);
+    //        GLuint textureLocation = glGetUniformLocation(shaderType, "textureSampler");
+    //        glUniform1i(textureLocation, 1);  // Set our Texture sampler to user Texture Unit 0*/
+    //    }
+    //    else if (toggle == 1)
+    //    {
+    //        toggle = 0; //Texture is off
+    //        textureArray[0] = toggle;
+    //        shaderType = shaderProgram; //Shader for color
+    //    }
+    //}
 
 
 }
@@ -566,7 +566,7 @@ int main(int argc, char* argv[])
         return -1;
     }
 
-    //glfwSetKeyCallback(window, key_callback);
+    glfwSetKeyCallback(window, key_callback);
 
     //Initiale Light
     stdLight = Light(vec3(0.0f, 30.0f, -10.0f), vec3(0.0f), vec3(0.0f, 1.0f, 0.0f), 1.0f, 150.0f);
@@ -984,8 +984,6 @@ int main(int argc, char* argv[])
         //    }
         //}
 
-        viewController->setFastCam(glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS || glfwGetKey(window, GLFW_KEY_RIGHT_SHIFT) == GLFW_PRESS); //Press shift to go faster
-        
         viewController->update(shaderType, currentLight);
                                                                                                                                            
         // End Frame

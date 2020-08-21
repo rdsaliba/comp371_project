@@ -20,7 +20,6 @@ public:
 
 	void setShaderProgram(int shaderProgram) { this->shaderProgram = shaderProgram; }
 	void setViewMatrix(int shaderProgram);
-	void setFastCam(bool isFastCam) { this->fastCam = isFastCam; }
 	void setLastMousePosX(double lastMousePosX) { this->lastMousePosX = lastMousePosX; }
 	void setLastMousePosY(double lastMousePosY) { this->lastMousePosY = lastMousePosY; }
 	void setMousePosX(double mousePosX) { this->mousePosX = mousePosX; }
@@ -51,7 +50,6 @@ private:
 	double lastMousePosY;
 	double mousePosX;
 	double mousePosY;
-	bool fastCam;
 	
 	Camera* cam;
 	Light* lights[2];

@@ -120,6 +120,7 @@
     <None Include="..\Assets\Shaders\texture_vertex.glsl">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</ExcludedFromBuild>
     </None>
+    <None Include="ClassDiagram.cd" />
   </ItemGroup>
   <ItemGroup>
     <Image Include="..\Assets\Textures\BillboardTest.bmp" />
