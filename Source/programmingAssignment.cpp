@@ -84,42 +84,6 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
         currentLight->_on = !currentLight->_on;
         viewController->setView(currentCam, currentLight);
     }
-
-    if (key == GLFW_KEY_E && action == GLFW_PRESS)
-    {
-        if (toggleShadow == true)
-        {
-            glProgramUniformMatrix4fv(depthShaderProgram, glGetUniformLocation(depthShaderProgram, "lightSpaceMatrix"), 1, GL_FALSE, &currentLight->getSpaceMatrix()[0][0]);
-            toggleShadow = false;
-        }
-        else
-        {
-            glProgramUniformMatrix4fv(depthShaderProgram, glGetUniformLocation(depthShaderProgram, "lightSpaceMatrix"), 0, GL_FALSE, &currentLight->getSpaceMatrix()[0][0]);
-            toggleShadow = true;
-        }
-    }
-    //if (key == GLFW_KEY_X && action == GLFW_PRESS)
-    //{
-    //    if (toggle == 0)
-    //    {
-    //        toggle = 1; //Texture is on
-    //        textureArray[0] = toggle;
-
-    //        shaderType = texturedShaderProgram; //Shader for texture
-    //        glUseProgram(shaderType);
-    //        glActiveTexture(GL_TEXTURE1);
-    //        GLuint textureLocation = glGetUniformLocation(shaderType, "textureSampler");
-    //        glUniform1i(textureLocation, 1);  // Set our Texture sampler to user Texture Unit 0*/
-    //    }
-    //    else if (toggle == 1)
-    //    {
-    //        toggle = 0; //Texture is off
-    //        textureArray[0] = toggle;
-    //        shaderType = shaderProgram; //Shader for color
-    //    }
-    //}
-
-
 }
 
 void setProjectionMatrix(int shaderProgram, mat4 projectionMatrix)
@@ -408,7 +372,7 @@ void updateInput(GLFWwindow* window, float dt, vec3& worldRotation, int shaderAr
             glUseProgram(shaderType);
             glActiveTexture(GL_TEXTURE1);
             GLuint textureLocation = glGetUniformLocation(shaderType, "textureSampler");
-            glUniform1i(textureLocation, 1);  // Set our Texture sampler to user Texture Unit 0
+            glUniform1i(textureLocation, 1);  // Set our Texture sampler to user Texture Unit 1
         }
         else if (toggle == 1)
         {
@@ -642,6 +606,17 @@ int main(int argc, char* argv[])
         GLuint x2y0z0ID = TextureLoader::LoadTextureUsingStb("Textures/x2y0z0.png");
         GLuint x2y1z0ID = TextureLoader::LoadTextureUsingStb("Textures/x2y1z0.png");
         GLuint x2y2z0ID = TextureLoader::LoadTextureUsingStb("Textures/x2y2z0.png");
+
+        GLuint digit0 = TextureLoader::LoadTextureUsingStb("Textures/digit0.png");
+        GLuint digit1 = TextureLoader::LoadTextureUsingStb("Textures/digit1.png");
+        GLuint digit2 = TextureLoader::LoadTextureUsingStb("Textures/digit2.png");
+        GLuint digit3 = TextureLoader::LoadTextureUsingStb("Textures/digit3.png");
+        GLuint digit4 = TextureLoader::LoadTextureUsingStb("Textures/digit4.png");
+        GLuint digit5 = TextureLoader::LoadTextureUsingStb("Textures/digit5.png");
+        GLuint digit6 = TextureLoader::LoadTextureUsingStb("Textures/digit6.png");
+        GLuint digit7 = TextureLoader::LoadTextureUsingStb("Textures/digit7.png");
+        GLuint digit8 = TextureLoader::LoadTextureUsingStb("Textures/digit8.png");
+        GLuint digit9 = TextureLoader::LoadTextureUsingStb("Textures/digit9.png");
 
     #else
         GLuint boxTextureID = TextureLoader::LoadTextureUsingStb("../Assets/Textures/box_texture.png"); //Source: https://jooinn.com/wood-texture-box.html
@@ -888,6 +863,7 @@ int main(int argc, char* argv[])
 
     // Toggle Shadow on/off
     toggleShadow = false;
+
     // timer
   	bool timer = false;
 
@@ -969,21 +945,6 @@ int main(int argc, char* argv[])
         //MODELS
         modelController->drawModels(worldRotationUpdate, textureArray, shaderType);
         
-        //Toggle Shadow
-        //if (glfwGetKey(window, GLFW_KEY_N) == GLFW_PRESS)
-        //{
-        //    if (toggleShadow == true)
-        //    {
-        //        glProgramUniformMatrix4fv(depthShaderProgram, glGetUniformLocation(depthShaderProgram, "lightSpaceMatrix"), 1, GL_FALSE, &lightSpaceMatrix[0][0]);
-        //        toggleShadow = false;
-        //    }
-        //    else
-        //    {
-        //        glProgramUniformMatrix4fv(depthShaderProgram, glGetUniformLocation(depthShaderProgram, "lightSpaceMatrix"), 0, GL_FALSE, &lightSpaceMatrix[0][0]);
-        //        toggleShadow = true;
-        //    }
-        //}
-
         viewController->update(shaderType, currentLight);
                                                                                                                                            
         // End Frame

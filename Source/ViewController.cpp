@@ -77,11 +77,6 @@ void ViewController::initCamera(Camera *camera, Light *light) {
     mousePosY = height / 2.0;
     glfwSetCursorPos(window, mousePosX, mousePosY);
 
-    // Set initial view matrix
-    //viewMatrix = lookAt(cameraPosition, cameraLookAt, cameraUp);
-    //setViewMatrix(shaderArray[0]);
-    //setViewMatrix(shaderArray[1]);
-
     setView(camera, light);
 }
 
