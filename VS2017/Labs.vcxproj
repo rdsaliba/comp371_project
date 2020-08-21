@@ -127,7 +127,9 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\Source\Axis.cpp" />
+    <ClCompile Include="..\Source\Camera.cpp" />
     <ClCompile Include="..\Source\CubeModel.cpp" />
+    <ClCompile Include="..\Source\Light.cpp" />
     <ClCompile Include="..\Source\ModelController.cpp" />
     <ClCompile Include="..\Source\RubiksModel.cpp" />
     <ClCompile Include="..\Source\Sphere.cpp" />
@@ -148,7 +150,9 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\Source\Axis.h" />
+    <ClInclude Include="..\Source\Camera.h" />
     <ClInclude Include="..\Source\CubeModel.h" />
+    <ClInclude Include="..\Source\Light.h" />
     <ClInclude Include="..\Source\ModelController.h" />
     <ClInclude Include="..\Source\RubiksModel.h" />
     <ClInclude Include="..\Source\shaderloader.h">
