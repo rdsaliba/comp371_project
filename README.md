@@ -34,6 +34,8 @@ There is a Rubix Cube at the middle of the scene. The user can start the game by
 
 ## Controls
 
+keypad_0: (Starts the game)
+
 ## Rubiks Cube:
 Rubiks Cube Notation info:
 The faces of a rubiks cube are commonly referred to by the first letter of each face in this manner:
@@ -69,7 +71,7 @@ The faces of a rubiks cube are commonly referred to by the first letter of each 
 ### Rubiks Cube Controls:
 lower case input will trigger a clockwise rotation of the desired face while uppercase (shift + [key]) will trigger a counterclockwise rotation
 
-keypad_0: Scramble the cube with a random sequence of 3 to 10 moves. *(Starts the game)*
+keypad_0: Scramble the cube with a random sequence of 3 to 10 moves.
 
 keypad_enter: Solve the rubiks cube automatically
 
