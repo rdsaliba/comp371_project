@@ -30,6 +30,8 @@ Platform Toolset: Visual Studia 2019 (v142)
 ## Features and Functionalities
 This OpenGL application contains a simple virtual scene consisting of 5 models. The 5 models are placed on a 100x100 square grid. Each model consists of the 3rd letter of the name and 4th digit of the student ID of the team member who created it. Each model were transformed using scaling, rotation, and translation. The user can select any of the models using the keys 1-5, and apply transformations using the controls listed below.
 
+There is a Rubix Cube at the middle of the scene. The user can start the game by pressing keypad_0 to start the scrambling. The user can then use the keys mentionned below to rotate the rubix cube. If the user wants to give up, he can press keypad_enter and it will solve the rubix cube automatically.
+
 ## Controls
 
 ## Rubiks Cube:
@@ -67,6 +69,10 @@ The faces of a rubiks cube are commonly referred to by the first letter of each 
 ### Rubiks Cube Controls:
 lower case input will trigger a clockwise rotation of the desired face while uppercase (shift + [key]) will trigger a counterclockwise rotation
 
+keypad_0: Scramble the cube with a random sequence of 3 to 10 moves. *(Starts the game)*
+
+keypad_enter: Solve the rubiks cube automatically
+
 i/I: L/L'
 
 o/O: R/R'
@@ -91,9 +97,6 @@ keypad_6: MH
 
 keypad_4: MH'
 
-keypad_0: Scramble the cube with a random sequence of 3 to 10 moves. 
-
-keypad_enter: Solve the rubiks cube automatically
 
 ### General Controls:
 
@@ -104,8 +107,6 @@ ESC: close window
 H: home button
 
 X: texture toggle
-
-N: shadow toggle
 
 ### Model Controls:
 
