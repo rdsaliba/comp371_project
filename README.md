@@ -110,6 +110,8 @@ H: home button
 
 X: texture toggle
 
+E: lighting toggle
+
 ### Model Controls:
 
 U: scale up by 0.1f
